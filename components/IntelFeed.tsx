@@ -102,9 +102,7 @@ export default function IntelFeed() {
                 alt="Anime Safe House Escape Mode" 
                 className="w-full h-full object-contain opacity-90"
               />
-              <div className="absolute top-2 left-2 bg-black/60 px-2 py-0.5 rounded text-[8px] text-lime-400 backdrop-blur-md border border-white/5">
-                COMFY MODE
-              </div>
+
             </div>
 
             <button 
