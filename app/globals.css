@@ -1,0 +1,52 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Hacker Matrix Mode CSS (Tối ưu 0KB vì dùng utility) */
+.hacker-mode h1,
+.hacker-mode h2,
+.hacker-mode h3,
+.hacker-mode h4,
+.hacker-mode p,
+.hacker-mode span,
+.hacker-mode a,
+.hacker-mode div:not(.absolute) {
+  @apply !font-mono !text-green-400 !bg-transparent !shadow-none;
+  text-shadow: 0 0 5px #00ff00; /* Hiệu ứng Ma trận mờ ảo */
+}
+
+.hacker-mode {
+  @apply !bg-[#000d00] !border-green-700/30;
+}
+
+.hacker-mode .absolute.blur-full {
+  @apply !bg-green-900/10 blur-[150px]; /* Đốm sáng xanh tối ưu */
+}
+
+.hacker-mode .border {
+  @apply !border-green-900/50;
+}
