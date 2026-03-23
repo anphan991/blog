@@ -5,7 +5,7 @@ description: "Take-note buổi học đầu tiên về mô hình OSI, TCP/IP, So
 tags: ["Networking", "OSI", "TCP/IP",]
 ---
 
-> "Muốn hack được hệ thống, trước tiên phải hiểu cách dữ liệu đi từ máy mình sang máy nạn nhân như thế nào."
+> Welcome to networking, where packets disappear and nobody knows why. 🤡
 
 Dưới đây là tổng hợp những kiến thức cốt lõi nhất từ buổi học mạng đầu tiên.
 

@@ -26,7 +26,7 @@ export default function IntelFeed() {
     // DANH SÁCH BÀI VIẾT (An có thể thêm bớt thoải mái ở đây)
     setLatestPosts([
       "Day 1: WHO_ATE_MY_PACKETS 🤡 — Intro networking | OSI & TCP/IP",
-      ""
+      "Day 2: JUST_ONE_MORE_REFRESH 💀 — Web Basics | How Web Works",
     ]);
   }, []);
 
