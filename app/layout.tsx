@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 // 1. Import font từ next/font/google
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
-
+import { Analytics } from "@vercel/analytics/react"
 // 2. Cấu hình Font Sans (Inter) với subset 'vietnamese'
 const inter = Inter({ 
   subsets: ['vietnamese'], // BẮT BUỘC để không lỗi tiếng Việt
@@ -44,6 +44,7 @@ export default function RootLayout({
       {/* 4. Nhúng 2 biến font này vào thẻ body */}
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-[#0a0a0a]`}>
         {children}
+        <Analytics />
       </body>
     </html>
   )
