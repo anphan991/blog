@@ -166,7 +166,12 @@ return (
                   <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-400">CTF Training</h3>
                   <p className="text-slate-400 text-xs">A note dump of my CTF journey / where confusion slowly turns into “ohhh”</p>
                 </div>
-                <span className="text-[10px] text-blue-400/80 bg-blue-500/10 px-2 py-1 rounded w-fit mt-3">#CyberSec</span>
+                
+                {/* Phần gạch ngang, tag và chấm xanh đã được gộp chung vào đây */}
+                <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+                  <span className="text-[10px] text-blue-400/80 bg-blue-500/10 px-2 py-1 rounded">#CyberSec</span>
+                  <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                </div>
               </div>
             </motion.div>
           </Link>
