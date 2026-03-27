@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next";
 // 2. Cấu hình Font Sans (Inter) với subset 'vietnamese'
 const inter = Inter({ 
   subsets: ['vietnamese'], // BẮT BUỘC để không lỗi tiếng Việt
@@ -45,6 +46,7 @@ export default function RootLayout({
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-[#0a0a0a]`}>
         {children}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
