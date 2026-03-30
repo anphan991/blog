@@ -111,7 +111,8 @@ return (
               </h2>
               <p className="text-slate-400 max-w-md leading-relaxed transition-colors hacker:text-green-400/80">
                 "Please excuse me for being antisocial 🙏"<br/>
-                Hết sương cạn gió, vết mưa mạn phố 🏍️.
+                Я не знаю почему это работает, но не трогай.<br/>
+                Built for PC — mobile is a side quest 🤡
               </p>
             </div>
 
