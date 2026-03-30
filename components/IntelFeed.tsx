@@ -23,10 +23,11 @@ export default function IntelFeed() {
     // Random status vui nhộn
     setRandomStatus("● " + memeStatuses[Math.floor(Math.random() * memeStatuses.length)]);
     
-    // DANH SÁCH BÀI VIẾT (An có thể thêm bớt thoải mái ở đây)
+    // DANH SÁCH BÀI VIẾT 
     setLatestPosts([
       "Day 1: WHO_ATE_MY_PACKETS 🤡 — Intro networking | OSI & TCP/IP",
       "Day 2: JUST_ONE_MORE_REFRESH 💀 — Web Basics | How Web Works",
+      "Day 3: KERNEL_PANIC_AGAIN 💀 — Computer Architecture & OS | Memory Management",
     ]);
   }, []);
 
