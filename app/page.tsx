@@ -112,7 +112,7 @@ return (
               <p className="text-slate-400 max-w-md leading-relaxed transition-colors hacker:text-green-400/80">
                 "Please excuse me for being antisocial 🙏"<br/>
                 Я не знаю почему это работает, но не трогай.<br/>
-                Built for PC — mobile is a side quest 🤡
+                Сделано для ПК — мобилка это побочный квест 
               </p>
             </div>
 
@@ -265,6 +265,9 @@ return (
         <div className="flex gap-4">
           <span>wakeupTeddy...</span>
           <span>© 2026 An Phan</span>
+          <span>Seeing a suspicious amount of emojis 👀</span>
+          <span>that’s my doing, no regrets</span>
+          <span>if they look dumb… AI caught in 4K 🧠❌</span>
         </div>
         <motion.span 
           className="hover:text-pink-400 cursor-crosshair text-lg transition-colors duration-300" 
