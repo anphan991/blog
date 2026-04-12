@@ -198,7 +198,7 @@ return (
 
           {/* BENTO 6: RICKROLL COOKIE */}
           <motion.a 
-            href="https://shattereddisk.github.io/rickroll/rickroll.mp4" target="_blank" rel="noopener noreferrer"
+            href="/free-cookie" target="_blank" rel="noopener noreferrer"
             className="bg-gradient-to-br from-amber-950/40 to-amber-900/50 border border-amber-500/20 rounded-3xl p-6 group cursor-help transition-all hover:scale-105 hover:border-amber-400/50"
           >
             <div className="flex items-center gap-3 mb-2">
