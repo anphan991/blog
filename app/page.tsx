@@ -118,7 +118,7 @@ return (
 
             {/* Social Links */}
             <div className="flex flex-wrap gap-3 mt-8 z-10">
-              {['https://github.com/anphan991', 'https://x.com/wakeupTeddyQQ', 'mailto:an0915129080@gmail.com'].map((href, index) => (
+              {['https://github.com/anphan991', 'https://x.com/TezD991', 'mailto:an0915129080@gmail.com'].map((href, index) => (
                 <motion.a 
                   key={index} href={href} target="_blank" rel="noopener noreferrer" 
                   className="p-3 bg-black/50 border border-white/10 hover:border-blue-500 rounded-xl transition-colors hacker:hover:border-green-500"
