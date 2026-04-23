@@ -178,6 +178,7 @@ return (
           </Link>
 
           {/* BENTO 5: IOT PROJECT */}
+          <Link href="/projects/rfid" className="md:col-span-1">
           <motion.div 
             className="md:col-span-1 bg-gradient-to-br from-slate-900 to-slate-800 border border-white/10 rounded-3xl p-6 group cursor-pointer hover:border-purple-500/50 transition-all relative overflow-hidden"
             whileHover={{ y: -10, transition: { type: "spring", stiffness: 300 } }}
@@ -195,7 +196,8 @@ return (
               </div>
             </div>
           </motion.div>
-
+        </Link>
+        
           {/* BENTO 6: RICKROLL COOKIE */}
           <motion.a 
             href="/free-cookie" target="_blank" rel="noopener noreferrer"
