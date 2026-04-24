@@ -2,6 +2,8 @@
 
 import { Terminal, ShieldAlert, LogOut, PackageCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Activity } from 'lucide-react';
 
 // Link Direct GIF Anime Good Morning
 const BOCCHI_ESCAPE_GIF = "https://media1.tenor.com/m/tUCOeHmPtTcAAAAC/good-morning-anime.gif";
@@ -12,6 +14,8 @@ const memeStatuses = [
   "STATUS: AVOIDING EYE CONTACT",
   "STATUS: 500 INTERNAL SOCIAL ERROR",
   "STATUS: OVERTHINKING THE LAYOUT",
+
+  
 ];
 
 export default function IntelFeed() {
@@ -25,9 +29,10 @@ export default function IntelFeed() {
     
     // DANH SÁCH BÀI VIẾT 
     setLatestPosts([
-      "Day 1: WHO_ATE_MY_PACKETS 🤡 — Intro networking | OSI & TCP/IP",
-      "Day 2: JUST_ONE_MORE_REFRESH 💀 — Web Basics | How Web Works",
+      "SCAN_OR_SCAM — RFID System Update Complete",
       "Day 3: KERNEL_PANIC_AGAIN 💀 — Computer Architecture & OS | Memory Management",
+      "Day 2: JUST_ONE_MORE_REFRESH 💀 — Web Basics | How Web Works",
+      "Day 1: WHO_ATE_MY_PACKETS 🤡 — Intro networking | OSI & TCP/IP",
     ]);
   }, []);
 

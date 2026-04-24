@@ -84,3 +84,9 @@ body {
 .animate-shake {
   animation: shake 0.5s infinite;
 }
+
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+}

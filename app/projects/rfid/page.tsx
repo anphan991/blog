@@ -6,13 +6,18 @@ import {
   Terminal, Cpu, Database, Globe, Zap, Bug,
   ShieldAlert, Users, ExternalLink, PlayCircle, ArrowLeft, ChevronRight, 
   ChevronDown, FileText, Folder, Activity,
-  Coffee, Lock 
+  Coffee, Lock ,AlertTriangle, BatteryWarning, BadgeCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import InteractiveTerminal from '@/components/Terminal'; // Hoặc '../../components/Terminal' tùy config alias
 import ViewCounter from '@/components/Terminal'; // Tui thấy ông có file này, nhớ gọi ra luôn cho xịn!
 import { Terminal as TerminalIcon, ShieldCheck,  } from 'lucide-react';
+import RFIDCard3D from '@/components/RFIDCard3D';
+import NodeGraph from '@/components/NodeGraph';
+import LandscapeEnforcer from '@/components/LandscapeEnforcer';
+import SelfDestructFooter from '@/components/SelfDestructFooter';
+
 
 // --- 1. DỮ LIỆU NHIỆM VỤ (MISSION DATA) ---
 const MissionData = [
@@ -133,6 +138,10 @@ const MissionData = [
           </div>
         </div>
       </div>
+
+      {/* CHÈN BẢN ĐỒ VÀO ĐÂY */}
+      <NodeGraph />
+
     </div>
   )
 },
@@ -719,7 +728,7 @@ const MissionData = [
 
           {/* Thêm một cái badge nhỏ ở góc */}
           <div className="absolute bottom-6 bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-md uppercase tracking-tighter">
-            Unit_01: Killed In Action
+            Killed In Action
           </div>
         </div>
         </div>
@@ -790,12 +799,26 @@ const MissionData = [
         </div>
       </section>
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="space-y-6">
+          <p className="text-slate-300 text-lg leading-relaxed italic">
+            "Sản phẩm thực tế sử dụng thẻ <strong className="text-white">RFID Mifare 13.56MHz</strong>. 
+            Mỗi thẻ được định danh qua một UID duy nhất, được mã hóa và đối soát thông qua kiến trúc Edge-to-Cloud."
+          </p>
+        </div>
+        
+        {/* HIỂN THỊ THẺ 3D TẠI ĐÂY */}
+        <div className="flex justify-center items-center py-10">
+          <RFIDCard3D />
+        </div>
+      </div>
+
       {/* Footer Chapter Note */}
       <div className="pt-10 border-t border-white/5 flex justify-center">
         <div className="flex items-center gap-4 text-base text-slate-500 bg-zinc-900 px-10 py-5 rounded-full border border-white/10 shadow-2xl group">
           <Coffee size={24} className="text-amber-600" />
           <span className="font-black tracking-tight italic">
-            "Có những ngày trông như ông chủ tịch, có những ngày trông như thằng trông xe"
+            "ASAP=amsatAP?"
           </span>
         </div>
       </div>
@@ -882,7 +905,7 @@ const MissionData = [
               </div>
             </div>
             <p className="text-sm text-slate-500 italic pt-4 border-t border-white/5">
-              "Tại thực địa, chip ESP32 thật quẩy còn gắt hơn mô phỏng (0.61s vs 0.8s). Dù Wifi trường đôi khi 'hơi lag' làm Cloud trễ lên 4.5s, nhưng Operator An vẫn cảm thấy hài lòng."
+              "Tại thực địa, chip ESP32 thật quẩy còn gắt hơn mô phỏng (0.61s vs 0.8s). Dù Wifi đôi khi 'hơi lag' làm Cloud trễ lên 4.5s, nhưng vẫn cứ là mướt mườn mượt."
             </p>
           </div>
 
@@ -1095,6 +1118,9 @@ function ProjectContent() {
 }
 
 // --- 3. COMPONENT CHÍNH (TRANG DỰ ÁN) ---
+
+
+
 export default function RFIDProject() {
   const contributors = [
     { name: 'Nguyễn Đức Học', role: 'System Architect', alias: 'hoc0g', img: '/images/team/hoc0g.jpg' },
@@ -1106,7 +1132,10 @@ export default function RFIDProject() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-slate-300 font-mono p-4 md:p-8 lg:p-12 selection:bg-purple-500/30">
-      
+
+      {/* 🛑 ĐẶT COMPONENT ÉP XOAY MÀN HÌNH Ở NGAY ĐÂY */}
+      <LandscapeEnforcer />
+
       {/* 🔙 NÚT BACK */}
       <nav className="max-w-6xl mx-auto mb-8">
         <Link 
@@ -1257,7 +1286,7 @@ export default function RFIDProject() {
              [ SYSTEM_CONSOLE ]
            </h2>
            <p className="text-slate-500 text-lg md:text-xl italic max-w-2xl mx-auto">
-             "Bản ghi logs chỉ là bề nổi. Hãy sử dụng Terminal để truy xuất các chỉ lệnh Intel tối mật."
+             "Bản ghi logs chỉ là bề nổi. Sử dụng Terminal để truy xuất các chỉ lệnh tối mật."
            </p>
         </div>
 
@@ -1266,20 +1295,48 @@ export default function RFIDProject() {
       </section>
 
       {/* 🔗 FOOTER */}
-      <footer className="max-w-6xl mx-auto border-t border-white/5 pt-12 flex flex-col md:flex-row justify-between items-center gap-6 opacity-50 hover:opacity-100 transition-opacity pb-12">
-        <div className="flex gap-8 text-xs underline underline-offset-4">
-          <Link href="https://drive.google.com/file/d/10L3jvclMYc2lfLkkUZcmZdWlb1N288H6/view?usp=sharing" className="flex items-center gap-1 hover:text-white transition-colors">
-            <PlayCircle size={14} /> Video Demo
-          </Link>
-          <Link href="https://github.com/anphan991/IoT-Student-Attendance-System" className="flex items-center gap-1 hover:text-white transition-colors">
-            <ExternalLink size={14} /> GitHub Repo
-          </Link>
+
+      {/* CHÈN QUẢ BOM TỰ HỦY Ở ĐÂY */}
+      <SelfDestructFooter />
+
+{/* FOOTER: THE "NO WARRANTY" EDITION */}
+      <footer className="max-w-6xl mx-auto border-t border-dashed border-zinc-800/50 pt-8 pb-12 mt-20 flex flex-col items-center justify-center gap-5 opacity-40 hover:opacity-100 transition-opacity duration-500">
+        
+        {/* Nhãn cảnh báo siêu bựa */}
+        <div className="flex items-center gap-2 px-4 py-1.5 bg-red-500/5 border border-red-500/20 text-red-500/80 rounded-full text-[10px] font-mono uppercase tracking-widest cursor-default hover:bg-red-500/10 transition-colors">
+          <AlertTriangle size={12} className="animate-pulse" />
+          Mất bảo hành nếu soi Source Code
         </div>
-        <p className="text-[10px]">
-          Developed with <Coffee size={10} className="inline mx-1 text-amber-600" /> by Group 09 @ HCMUTE
+
+        {/* Các chỉ số sinh tồn của team */}
+        <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 text-[10px] font-mono text-zinc-500">
+          <span className="flex items-center gap-1.5" title="Sắp trầm cảm đến nơi rùi...">
+            <BatteryWarning size={14} className="text-pink-500 animate-pulse" />
+            Group 09 Sanity Level: 67%
+          </span>
+          
+          <span className="text-zinc-800 hidden md:inline">|</span>
+          
+          <span className="flex items-center gap-1.5" title="Code chạy được là do tổ tiên phù hộ">
+            <BadgeCheck size={14} className="text-lime-600" />
+            Certified "Works on my machine"
+          </span>
+
+          <span className="text-zinc-800 hidden md:inline">|</span>
+          
+          <span className="flex items-center gap-1.5" title="Cháy mạch bao nhiêu lần rồi?">
+            <Cpu size={14} className="text-amber-600" />
+            0 ESP32s were harmed (Lie)
+          </span>
+        </div>
+
+        <p className="text-[9px] text-zinc-600 mt-2 font-mono uppercase tracking-[0.2em] flex items-center justify-center">
+          Deployed with 
+          <Coffee size={10} className="mx-1.5 text-amber-700" /> 
+          & Bocchi Magic @ HCMUTE
         </p>
       </footer>
-    </div>
+    </div> // Thẻ đóng cuối cùng của trang
   );
 }
 

@@ -188,10 +188,10 @@ return (
               <div>
                 <div className="text-3xl mb-3">📟</div>
                 <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors hacker:text-green-300">IoT RFID</h3>
-                <p className="text-slate-400 text-sm leading-relaxed hacker:text-green-400/70">Final chance to run it with my G / updating soon...</p>
+                <p className="text-slate-400 text-sm leading-relaxed hacker:text-green-400/70">Final chance to run it with my G / Updated</p>
               </div>
               <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-                <span className="text-xs text-purple-400/80 bg-purple-500/10 px-2 py-1 rounded">#IoT #Supabase</span>
+                <span className="text-xs text-purple-400/80 bg-purple-500/10 px-2 py-1 rounded">#IoT | #Supabase | #ESP32,...</span>
                 <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
               </div>
             </div>
