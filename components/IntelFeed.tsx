@@ -90,6 +90,7 @@ export default function IntelFeed() {
               Activate escape protocol below.
             </p>
             <button 
+              suppressHydrationWarning
               onClick={() => setIsEscaped(true)}
               className="mt-1 flex items-center gap-2 px-3 py-1.5 border border-red-900 bg-red-950/20 text-red-300 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all shadow-lg shadow-red-950/20 text-[10px]"
             >

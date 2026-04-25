@@ -1,20 +1,83 @@
-'use client'; // <-- Quan trọng: Client Component để dùng Framer Motion & React State
+'use client'; 
 
-import Image from 'next/image';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { motion, useAnimation, AnimatePresence } from 'framer-motion';
-import { useState, useRef } from 'react';
 import IntelFeed from '@/components/IntelFeed';
-import { Terminal, X } from 'lucide-react';
+import { Terminal, X, Skull, Bug, Zap, ShieldAlert, KeySquare, Mail, Github, Twitter } from 'lucide-react';
 
+// ==========================================
+// COMPONENT: MÀN HÌNH KHỞI ĐỘNG (Crystal Blue Carbon)
+// ==========================================
+const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
+  const [logs, setLogs] = useState<string[]>([]);
+  
+  useEffect(() => {
+    const bootLogs = [
+      "Initializing core services...",
+      "Loading StackOverflow copy-paste buffer... [OK]",
+      "Praying to the Machine God... [FAILED]",
+      "Ignoring 42 compiler warnings... [DONE]",
+      "Bypassing firewall... Wait, we don't have one.",
+      "Loading Crystal Glass UI Module... Please don't inspect element.",
+      "SYSTEM (barely) READY."
+    ];
+    
+    let currentIndex = 0;
+    const interval = setInterval(() => {
+      if (currentIndex < bootLogs.length) {
+        setLogs(prev => [...prev, bootLogs[currentIndex]]);
+        currentIndex++;
+      } else {
+        clearInterval(interval);
+        setTimeout(onComplete, 800);
+      }
+    }, 250);
+
+    return () => clearInterval(interval);
+  }, [onComplete]);
+
+  return (
+    <motion.div 
+      exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+      className="fixed inset-0 z-[9999] bg-[#010409] font-mono text-xs md:text-sm p-8 flex flex-col justify-end pb-20"
+    >
+      <div className="space-y-2 max-w-3xl border-l-2 border-[#3B82F6]/50 pl-4">
+        {logs.map((log, i) => (
+          <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-[#94A3B8]">
+            <span className="text-[#3B82F6] font-bold">{`>_ `}</span> 
+            <span>
+              {String(log).includes('[FAILED]') ? (
+                <span>{log.split('[FAILED]')[0]}<span className="text-red-500">[FAILED]</span></span>
+              ) : (
+                log
+              )}
+            </span>
+          </motion.div>
+        ))}
+        <motion.div animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 0.8 }} className="text-[#3B82F6] mt-2">█</motion.div>
+      </div>
+    </motion.div>
+  );
+};
+
+// ==========================================
+// MAIN PAGE: CRYSTAL BLUE CARBON
+// ==========================================
 export default function Home() {
-  // --- STATE handle Easter Eggs ---
+  const [isBooting, setIsBooting] = useState(true);
+  const [isIntelOpen, setIsIntelOpen] = useState(false);
+  
+  const [chaosMode, setChaosMode] = useState(false);
+  const [runawayPos, setRunawayPos] = useState({ x: 0, y: 0 });
   const [clickCount, setClickCount] = useState(0);
   const [bsodState, setBsodState] = useState(false);
   const hackerControls = useAnimation();
   const holdTimeout = useRef<NodeJS.Timeout | null>(null);
-  const [isIntelOpen, setIsIntelOpen] = useState(false);
-  // --- 1. Hiệu ứng spam click Status Badge ---
+
+
+  
   const handleStatusClick = () => {
     if (bsodState) {
       setBsodState(false);
@@ -23,264 +86,527 @@ export default function Home() {
     }
     const newCount = clickCount + 1;
     setClickCount(newCount);
-    
-    if (newCount > 5) {
-      setBsodState(true);
-    }
-    setTimeout(() => setClickCount(0), 2000);
+    if (newCount > 5) setBsodState(true);
+    setTimeout(() => setClickCount(0), 2000); 
   };
 
-  // --- 2. Hiệu ứng nhấn giữ tên 'An Phan' ---
   const startHackerHold = () => {
     holdTimeout.current = setTimeout(() => {
-      document.documentElement.classList.add('dark', 'hacker-mode');
+      document.documentElement.classList.add('hacker-mode');
       hackerControls.start({
-        opacity: [0, 1],
+        color: "#3B82F6", // Royal Blue Glow
+        textShadow: "0px 0px 15px rgba(59, 130, 246, 0.6)",
         transition: { duration: 0.2 },
       });
-    }, 1000);
+    }, 1000); 
   };
 
   const stopHackerHold = () => {
-    if (holdTimeout.current) {
-      clearTimeout(holdTimeout.current);
-    }
+    if (holdTimeout.current) clearTimeout(holdTimeout.current);
     document.documentElement.classList.remove('hacker-mode');
+    hackerControls.start({
+      color: "#FFFFFF", 
+      textShadow: "none",
+      transition: { duration: 0.2 },
+    });
   };
 
-return (
-    <main className="relative min-h-screen bg-[#0a0a0a] text-slate-200 overflow-y-auto z-0 font-sans p-4 md:p-8 flex flex-col items-center pt-20 md:pt-32 transition-colors duration-500">
-      
-      {/* Background Gradient giữ nguyên */}
-      <div className="fixed top-[-20%] left-[-10%] w-[50rem] h-[50rem] rounded-full bg-blue-600/10 blur-[120px] -z-10 pointer-events-none"></div>
-      <div className="fixed bottom-[-20%] right-[-10%] w-[50rem] h-[50rem] rounded-full bg-purple-600/10 blur-[120px] -z-10 pointer-events-none"></div>
+  const handleHireHover = () => {
+    if(!chaosMode) {
+      // Random bay ra xa trong phạm vi -250px đến +250px cả X và Y
+      const randomX = (Math.random() - 0.5) * 500; 
+      const randomY = (Math.random() - 0.5) * 500;
+      setRunawayPos({ x: randomX, y: randomY });
+    }
+  };
 
-      {/* === LAYOUT CHIA 2 CỘT: ÉP CHIỀU CAO BẰNG NHAU (VẠCH VÀNG) === */}
-      {/* Sử dụng Grid thay vì Flex. items-stretch là mặc định. */}
-      {/* Dùng 'lg:' thay vì 'xl:' để Layout 2 cột hiện sớm hơn trên ThinkPad */}
-<div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 mb-20 items-stretch">
-        
-        {/* --- CỘT TRÁI (HUD SIDEBAR) --- */}
-        {/* FIX 1: Bỏ hoàn toàn sticky và h-fit đi. Dùng h-full để nó căng tràn bằng đúng vạch vàng! */}
-        <div className="hidden lg:block h-full w-full">
-          <IntelFeed />
-        </div>
+  const resetRunaway = () => {
+      setRunawayPos({ x: 0, y: 0 });
+    };
 
-        {/* --- CỘT PHẢI (BENTO GRID) --- */}
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[minmax(180px,auto)] h-full">
+  // --- ĐẶT CÁI NÀY Ở TRÊN CÙNG, TRƯỚC LỆNH RETURN ---
+// --- CYBERCAT v2.0 LOGIC (ASCII ART + INTERACTION) ---
+// --- ĐẶT CÁI NÀY TRONG COMPONENT ---
+  const [petMood, setPetMood] = useState<'chill' | 'happy' | 'hack' | 'angry' | 'shield' | 'chaos' | 'dance'>('chill');
+  const [speech, setSpeech] = useState('System online. Awaiting orders, Boss An... 🐈');
+  const [command, setCommand] = useState('');
+
+  const asciiFrames = {
+    chill: `  |\\__/,|   (\`\\ \n _.0-0._ |  _) ) \n_(_(_/-(_(_/  `,
+    happy: `  /\\_/\\  \n ( ^.^ )  *purr*\n  > ~ <   `,
+    hack: `  /\\_/\\   [😎] \n ( -.- )  [SSH]\n  > ^ <   [BUSY]`,
+    angry: `  /\\_/\\  \n ( >_< )  *HISS!*\n  vv vv  `,
+    shield: `  /\\_/\\   [🛡️]\n ( o.o )  [SEC]\n  > ^ <   `,
+    chaos: `  /\\_/\\  \n ( X.X )  FATAL_ERR\n  UNSTABLE`,
+    // THÊM DANCE VÀO ĐÂY ĐỂ FIX LỖI
+    dance: `  /\\_/\\  \n ~( v.v )~\n  > ^ <   ` 
+  };
+
+  const handleCommand = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const cmd = command.trim().toLowerCase();
+      setCommand('');
+
+      switch(cmd) {
+        case 'hi':
+        case 'hello':
+          setPetMood('happy');
+          setSpeech('Hello! Systems are 100% green today.');
+          break;
+        case 'coffee':
+        case 'feed':
+          setPetMood('happy');
+          setSpeech('System injected! Compile speed +50%... ☕');
+          break;
+        case 'hack':
+        case 'pwn':
+          setPetMood('hack');
+          setSpeech('Bypassing firewall... Please wait for the Flag.');
+          break;
+        case 'shield':
+        case 'secure':
+          setPetMood('shield');
+          setSpeech('Shields UP! Monitoring for suspicious packets.');
+          break;
+        case 'whoami':
+          setSpeech('You are the Admin. I am your Loyal Cyber-Companion.');
+          break;
+        case 'status':
+          setSpeech('CPU: Chill | Mood: Stable | Hunger: Coffee_Required');
+          break;
+        case 'help':
+          setSpeech('Try: hi, coffee, hack, shield, whoami, status, clear');
+          break;
+        case 'clear':
+          setPetMood('chill');
+          setSpeech('Terminal reset. Chilling in the background...');
+          break;
+        default:
+          setPetMood('angry');
+          setSpeech(`Unknown command: "${cmd}". My database is confused.`);
+      }
+    }
+  };
+
+  return (
+    <>
+      <AnimatePresence>
+        {isBooting && <BootSequence onComplete={() => setIsBooting(false)} />}
+      </AnimatePresence>
+
+      {/* BACKGROUND CHÍNH: #010409 (Đen sâu thẳm ánh xanh nhẹ) */}
+      <main className={`min-h-screen font-mono transition-all duration-700 overflow-x-hidden selection:bg-[#3B82F6]/30 selection:text-white
+        ${chaosMode ? 'bg-[#1a0505] text-red-300' : 'bg-[#010409] text-[#94A3B8]'}`}>
         
-          {/* BENTO 1: HERO CARD */}
-          <div className="md:col-span-2 md:row-span-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 flex flex-col justify-between relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-32 bg-blue-500/10 blur-3xl rounded-full group-hover:bg-blue-500/20 transition-all duration-700"></div>
+        {/* LƯỚI CHẤM MỜ (Tạo cảm giác Grid) */}
+        <div className={`fixed inset-0 pointer-events-none z-0 transition-all duration-700
+          ${chaosMode 
+            ? 'opacity-30 bg-[radial-gradient(circle_at_2px_2px,#ef4444_2px,transparent_0)] bg-[size:20px_20px] rotate-3 scale-110' 
+            : 'opacity-10 bg-[radial-gradient(circle_at_1px_1px,#ffffff_1px,transparent_0)] bg-[size:32px_32px]'}`} 
+        />
+        
+        {/* GLOW ÁNH SÁNG XANH NHẸ NHÀNG DƯỚI LỚP KÍNH */}
+        <div className={`fixed top-[0%] left-[10%] w-[40rem] h-[40rem] rounded-full blur-[150px] -z-10 pointer-events-none transition-colors duration-1000 
+          ${chaosMode ? 'bg-red-600/20' : 'bg-[#3B82F6]/10'}`}></div>
+        <div className={`fixed bottom-[-10%] right-[0%] w-[30rem] h-[30rem] rounded-full blur-[120px] -z-10 pointer-events-none transition-colors duration-1000 
+          ${chaosMode ? 'bg-orange-600/10' : 'bg-[#3B82F6]/5'}`}></div>
+
+        {/* HEADER KÍNH MỜ (Glassmorphism) */}
+        <header className={`fixed top-0 left-0 w-full z-40 backdrop-blur-md border-b transition-all duration-700
+          ${chaosMode ? 'border-red-500/30 bg-red-950/70' : 'border-white/10 bg-[#0d1117]/70'}`}>
+          <div className="max-w-7xl mx-auto px-4 md:px-8 h-14 flex items-center justify-between">
             
-            <div className="z-10">
-              <motion.div 
-                className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-medium mb-6 cursor-pointer transition-colors ${
-                  bsodState ? 'bg-red-500/20 border-red-500 text-red-300' : 'bg-black/50 border-white/10 text-slate-300'
-                }`}
-                onClick={handleStatusClick}
-                whileHover={{ rotate: [0, -5, 5, -5, 5, 0], scale: 1.1 }}
-              >
-                <span className={`flex h-2 w-2 rounded-full animate-pulse ${bsodState ? 'bg-red-500' : 'bg-green-500'}`}></span>
-                {bsodState ? 'System: CRASHED (418)' : 'System: Online | Social Battery: 1%'}
-              </motion.div>
-              
-              {bsodState && (
-                <div className="absolute inset-0 bg-[#0000aa] text-white p-6 font-mono text-xs z-30 space-y-2">
-                  <p className="text-sm">A problem has been detected and Windows has been shut down...</p>
-                  <p>Meme_Found_Exception</p>
-                  <p>*** STOP: 0x0000007B (0xF789E524, 0xC0000034, 0x00000000, 0x00000000)</p>
-                  <p className="font-bold text-center mt-4">_spam_click_detec_</p>
-                  <p className="animate-pulse font-bold text-center mt-2">(Click badge again to reset)</p>
-                </div>
-              )}
-
-              <h1 className="text-5xl md:text-6xl font-black tracking-tight text-white mb-2 flex items-center gap-3">
-                <span 
-                  className="cursor-pointer"
-                  onMouseDown={startHackerHold}
-                  onMouseUp={stopHackerHold}
-                  onMouseLeave={stopHackerHold}
-                >
-                  An Phan
-                </span>
-                <span className="inline-block cursor-help text-4xl hover:animate-spin">🐧</span>
-              </h1>
-              <h2 className="text-xl font-medium text-blue-400 mb-4 transition-colors hacker:text-green-400">
-                InfoSec Student & Break-stuff Enthusiast
-              </h2>
-              <p className="text-slate-400 max-w-md leading-relaxed transition-colors hacker:text-green-400/80">
-                "Please excuse me for being antisocial 🙏"<br/>
-                Я не знаю почему это работает, но не трогай.<br/>
-                Сделано для ПК — мобилка это побочный квест 
-              </p>
+            {/* Logo */}
+            <div className="flex items-center gap-3 text-xs md:text-sm">
+              <Skull className={chaosMode ? "text-red-500 animate-ping" : "text-[#3B82F6]"} size={18} />
+              <span className="font-black tracking-widest text-white">
+                {chaosMode ? 'WTF_IS_HAPPENING' : 'TezD'}
+              </span>
             </div>
 
             {/* Social Links */}
-            <div className="flex flex-wrap gap-3 mt-8 z-10">
-              {['https://github.com/anphan991', 'https://x.com/TezD991', 'mailto:an0915129080@gmail.com'].map((href, index) => (
-                <motion.a 
-                  key={index} href={href} target="_blank" rel="noopener noreferrer" 
-                  className="p-3 bg-black/50 border border-white/10 hover:border-blue-500 rounded-xl transition-colors hacker:hover:border-green-500"
-                  whileHover={{ scale: 1.2, y: -5, transition: { type: "spring", stiffness: 300 } }}
-                >
-                  {index === 0 && <svg fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5"><path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd"></path></svg>}
-                  {index === 1 && <svg fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.007 4.076H5.036z"></path></svg>}
-                  {index === 2 && <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>}
-                </motion.a>
-              ))}
+            <div className={`hidden md:flex items-center gap-6 ${chaosMode ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
+              <span className="text-[10px] font-black text-[#94A3B8] uppercase tracking-widest border-r border-white/10 pr-4 mr-1">CONNECT //</span>
+              <a href="https://github.com/anphan991" target="_blank" rel="noopener noreferrer" className="text-[#94A3B8] hover:text-[#3B82F6] hover:scale-110 transition-all hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">
+                <Github size={18} />
+              </a>
+              <a href="https://x.com/TezD991" target="_blank" rel="noopener noreferrer" className="text-[#94A3B8] hover:text-[#3B82F6] hover:scale-110 transition-all hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">
+                <Twitter size={18} />
+              </a>
+              <a href="mailto:an0915129080@gmail.com" className="text-[#94A3B8] hover:text-[#3B82F6] hover:scale-110 transition-all hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">
+                <Mail size={18} />
+              </a>
+            </div>
+
+            {/* Status Phải */}
+            <div className={`text-[10px] font-bold flex items-center gap-2 ${chaosMode ? 'text-red-500' : 'text-[#3B82F6]'}`}>
+              <span className="hidden md:inline">{chaosMode ? 'Status: CRITICAL' : 'Status: Operating'}</span>
+              <span className={`flex h-2 w-2 rounded-full ${chaosMode ? 'bg-red-500 shadow-[0_0_8px_#ef4444] animate-ping' : 'bg-[#3B82F6] shadow-[0_0_8px_#3B82F6] animate-pulse'}`}></span>
             </div>
           </div>
+        </header>
 
-          {/* BENTO 2: FAKE TERMINAL */}
-          <div className="md:col-span-1 md:row-span-1 bg-black border border-slate-800 rounded-3xl p-6 font-mono text-sm flex flex-col hover:border-green-500/50 transition-colors">
-            <div className="flex gap-2 mb-4">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-            </div>
-            <p className="text-green-400 hacker:text-green-300">anphan991㉿kali:~$ <span className="text-white">./get_sleep.sh</span></p>
-            <p className="text-red-400 mt-1">bash: ./get_sleep.sh: Permission denied</p>
-            <p className="text-green-400 mt-2 hacker:text-green-300">anphan991㉿kali:~$ <span className="inline-block w-2 h-4 bg-white animate-pulse"></span></p>
-          </div>
-
-          {/* BENTO 3: FUN STATS (404 Sleep) */}
-          <motion.div 
-            className="md:col-span-1 md:row-span-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer hacker:border-green-500/30"
-            whileHover={{ x: [0, -10, 10, -10, 10, 0], y: [0, 5, -5, 5, -5, 0], transition: { duration: 0.3, repeat: Infinity } }}
-          >
-            <div className="text-4xl mb-2">☕</div>
-            <h3 className="text-3xl font-black text-white hacker:text-green-300">404</h3>
-            <p className="text-slate-400 text-sm font-medium hacker:text-green-400/80">Sleep Not Found</p>
-          </motion.div>
-
-          {/* BENTO 4: CTF PROJECT */}
-          <Link href="/blog" className="md:col-span-1">
+        {/* ========================================== */}
+        {/* DASHBOARD LAYOUT */}
+        {/* ========================================== */}
+        <div className={`relative z-10 max-w-7xl mx-auto w-full px-4 md:px-8 pt-32 pb-20 transition-all duration-700`}>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 items-stretch">
+            
+            {/* CỘT TRÁI: INTEL FEED (Lớp kính mờ) */}
             <motion.div 
-              className="h-full bg-gradient-to-br from-slate-900 to-slate-800 border border-white/10 rounded-3xl p-6 group cursor-pointer hover:border-blue-500/50 transition-all relative overflow-hidden"
-              whileHover={{ y: -10 }}
+              className={`hidden lg:block h-full w-full transition-all duration-500 overflow-hidden
+                ${chaosMode 
+                  ? 'border border-red-500/50 bg-red-950/50 backdrop-blur-md rounded-3xl -rotate-2 scale-95 opacity-90' 
+                  : '[&>*]:!border-white/10 [&>*]:!bg-[#0d1117]/70 [&>*]:backdrop-blur-md [&>*]:!text-[#94A3B8] rounded-3xl border border-white/10'}`} 
             >
-              <div className="absolute inset-0 bg-blue-500/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-              <div className="relative z-10 flex flex-col h-full justify-between">
-                <div>
-                  <div className="text-3xl mb-3">🚩</div>
-                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-400">CTF Training</h3>
-                  <p className="text-slate-400 text-xs">A note dump of my CTF journey / where confusion slowly turns into “ohhh”</p>
-                </div>
-                
-                {/* Phần gạch ngang, tag và chấm xanh đã được gộp chung vào đây */}
-                <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-                  <span className="text-[10px] text-blue-400/80 bg-blue-500/10 px-2 py-1 rounded">#CyberSec</span>
-                  <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                </div>
-              </div>
-            </motion.div>
-          </Link>
-
-          {/* BENTO 5: IOT PROJECT */}
-          <Link href="/projects/rfid" className="md:col-span-1">
-          <motion.div 
-            className="md:col-span-1 bg-gradient-to-br from-slate-900 to-slate-800 border border-white/10 rounded-3xl p-6 group cursor-pointer hover:border-purple-500/50 transition-all relative overflow-hidden"
-            whileHover={{ y: -10, transition: { type: "spring", stiffness: 300 } }}
-          >
-            <div className="absolute inset-0 bg-purple-500/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
-            <div className="relative z-10 flex flex-col h-full justify-between">
-              <div>
-                <div className="text-3xl mb-3">📟</div>
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors hacker:text-green-300">IoT RFID</h3>
-                <p className="text-slate-400 text-sm leading-relaxed hacker:text-green-400/70">Final chance to run it with my G / Updated</p>
-              </div>
-              <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-                <span className="text-xs text-purple-400/80 bg-purple-500/10 px-2 py-1 rounded">#IoT | #Supabase | #ESP32,...</span>
-                <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-              </div>
-            </div>
-          </motion.div>
-        </Link>
-        
-          {/* BENTO 6: RICKROLL COOKIE */}
-          <motion.a 
-            href="/free-cookie" target="_blank" rel="noopener noreferrer"
-            className="bg-gradient-to-br from-amber-950/40 to-amber-900/50 border border-amber-500/20 rounded-3xl p-6 group cursor-help transition-all hover:scale-105 hover:border-amber-400/50"
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <div className="text-4xl">🍪</div>
-              <h3 className="text-lg font-bold text-amber-100">Free Cookie Here:</h3>
-            </div>
-            <p className="text-amber-300/60 text-xs font-mono">🍪🍪🍪🍪🍪</p>
-            <div className="mt-4 flex justify-end">
-              <span className="text-[10px] px-2 py-1 bg-amber-600/20 text-amber-200 rounded border border-amber-500/30">Do Not Click</span>
-            </div>
-          </motion.a>
-
-        </div>
-      </div>
-      
-{/* Nút bấm Terminal lơ lửng ở góc phải dưới (Chỉ hiện trên điện thoại) */}
-      <motion.button
-        className="lg:hidden fixed bottom-6 right-6 z-40 p-4 bg-black/80 border border-lime-500/50 rounded-full text-lime-400 backdrop-blur-md shadow-lg shadow-lime-900/40"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setIsIntelOpen(true)}
-      >
-        <Terminal className="w-6 h-6" />
-      </motion.button>
-
-      {/* Cửa sổ Popup (Modal) */}
-      <AnimatePresence>
-        {isIntelOpen && (
-          <motion.div
-            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
-            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            className="lg:hidden fixed inset-0 z-50 p-6 flex flex-col justify-center items-center bg-black/80"
-            onClick={() => setIsIntelOpen(false)} // Bấm ra ngoài vùng tối sẽ tự đóng
-          >
-            {/* Khung chứa bảng IntelFeed */}
-          {/* FIX: Tăng chiều cao lên 650px và max-h-[85vh] để dài y như bản Web */}
-            <motion.div 
-              initial={{ scale: 1, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="w-full max-w-sm h-[650px] max-h-[85vh] relative" 
-              onClick={(e) => e.stopPropagation()} 
-            >
-              {/* Nút X để tắt */}
-              <button 
-                className="absolute -top-12 right-0 p-2 text-zinc-400 hover:text-white bg-white/10 rounded-full backdrop-blur-md border border-white/10"
-                onClick={() => setIsIntelOpen(false)}
-              >
-                <X className="w-5 h-5" />
-              </button>
-              
-              {/* Render lại IntelFeed ở đây */}
               <IntelFeed />
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
+            {/* CỘT PHẢI: BENTO GRID */}
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-5 auto-rows-[minmax(180px,auto)] h-full">
+              
+              {/* CARD 1: INTRO (LỚP KÍNH MỜ TRONG SUỐT VỚI VIỀN 1PX) */}
+              <motion.div 
+                onMouseLeave={resetRunaway}
+                className={`md:col-span-8 md:row-span-2 rounded-3xl p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden group backdrop-blur-md
+                  ${chaosMode ? 'bg-red-950/60 border border-red-500/50 rotate-1' : 'bg-[#0d1117]/70 border border-white/10 hover:border-[#3B82F6]/50 hover:bg-[#0d1117]/90 hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)]'}`}
+              >
+                <div className="z-10 w-full relative h-full flex flex-col">
+                  {/* TAGS */}
+                  <div className="flex flex-wrap items-center gap-3 mb-6">
+                    <span className={`px-3 py-1 bg-white/5 text-white border border-white/10 text-[10px] rounded-md uppercase font-bold tracking-widest ${chaosMode ? 'border-red-500/50 text-red-500 bg-red-900/30' : ''}`}>
+                      Copy-Paste Architect
+                    </span>
+                    <motion.span 
+                      className={`px-3 py-1 text-[#3B82F6] border border-[#3B82F6]/30 text-[10px] rounded-md uppercase font-bold tracking-widest cursor-pointer transition-colors ${
+                        bsodState ? 'bg-red-500 text-white border-red-500' : 'bg-[#3B82F6]/10 hover:bg-[#3B82F6]/20'
+                      }`}
+                      onClick={handleStatusClick}
+                    >
+                      {bsodState ? 'ERROR: 418' : 'Professional Googler'}
+                    </motion.span>
+                  </div>
 
-      
-      {/* Footer */}
-      <footer className="w-full max-w-7xl py-8 border-t border-white/5 text-xs text-slate-600 flex justify-between items-center transition-colors hacker:text-green-800">
-        <div className="flex gap-4">
-          <span>wakeupTeddy...</span>
-          <span>© 2026 An Phan</span>
-          <span>Seeing a suspicious amount of emojis 👀</span>
-          <span>that’s my doing, no regrets</span>
-          <span>if they look dumb… AI caught in 4K 🧠❌</span>
+                  {bsodState && (
+                    <div className="absolute inset-0 bg-[#010409] border border-red-500/50 text-red-500 p-6 font-mono text-xs z-30 space-y-2 flex flex-col justify-center rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+                      <p className="bg-red-500 text-white w-fit px-2 mb-2 font-bold">SYSTEM_CRASH</p>
+                      <p className="text-sm font-black text-white">An exception 0E has occurred.</p>
+                      <p>Copy-Paste buffer overflow.</p>
+                      <p className="mt-4">* Professional Googler status compromised.</p>
+                      <p className="animate-pulse font-bold text-center mt-6 cursor-pointer hover:text-white" onClick={() => setBsodState(false)}>(Click to reset system)</p>
+                    </div>
+                  )}
+                  
+                  {/* TEXT CHÍNH (TRẮNG/BLUE MƯỢT MÀ) */}
+                  <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white mb-2 flex items-center gap-3 leading-none">
+                    <motion.span 
+                      className="cursor-pointer transition-colors"
+                      onMouseDown={startHackerHold}
+                      onMouseUp={stopHackerHold}
+                      onMouseLeave={stopHackerHold}
+                      onTouchStart={startHackerHold}
+                      onTouchEnd={stopHackerHold}
+                      animate={hackerControls}
+                    >
+                      An Phan
+                    </motion.span>
+                    <span className="inline-block cursor-help text-4xl hover:animate-spin">🐧</span>
+                  </h1>
+                  <h2 className="text-lg md:text-xl font-medium text-[#3B82F6] mb-5">
+                    InfoSec Student & Break-stuff Enthusiast
+                  </h2>
+                  <p className="text-[#94A3B8] text-xs md:text-sm max-w-md leading-relaxed space-y-1 font-sans">
+                    <span className="block font-mono text-[15px] opacity-70">"Please excuse me for being antisocial 🙏"</span>
+                    <span className="block italic text-[18px] ">Я не знаю почему это работает, но не трогай.</span>
+                    <span className="block text-[18px]">Сделано для ПК — мобилка это побочный квест</span>
+                  </p>
+
+                  {/* NÚT HIRE ME (HIỆU ỨNG BOX-SHADOW NEON MỜ) */}
+                  <div className="mt-auto pt-6 flex items-center justify-end z-10 relative">
+                    <motion.button 
+                      suppressHydrationWarning
+                      onMouseEnter={handleHireHover} // Chạm nhẹ viền là bay ngay lập tức
+                      onClick={() => { if(!chaosMode) alert("Bắt được rồiii! 🐧") }} // Phòng hờ ai đó xài tab hoặc hack click trúng
+                      animate={{ x: runawayPos.x, y: runawayPos.y }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }} // Tốc độ bay cực gắt
+                      className={`ml-auto px-8 py-3 text-xs font-black uppercase rounded-xl transition-colors z-50
+                        ${chaosMode ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.4)]' : 'bg-[#3B82F6] text-white shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]'}`}
+                    >
+                      Hire Me?
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+
+{/* CARD 2: ASCII CYBER PET */}
+              <motion.div 
+                className={`md:col-span-4 md:row-span-2 relative overflow-hidden rounded-3xl border bg-[#0d1117]/70 backdrop-blur-md p-5 flex flex-col transition-all duration-500 group
+                  ${chaosMode ? 'border-red-500 shadow-[0_0_40px_rgba(239,68,68,0.4)]' : 'border-white/10 hover:border-[#3B82F6]/50 hover:bg-[#090d14]/90'}`}
+              >
+                {/* Header */}
+                <div className="relative z-10 flex justify-between items-center mb-3 border-b border-white/10 pb-2 font-mono">
+                  <h3 className={`text-xs font-bold uppercase tracking-widest ${chaosMode ? 'text-red-400' : 'text-white'}`}>
+                    {chaosMode ? '🚨 SYSTEM_GLITCH' : '🐈 ASCII_COMPANION.v1'}
+                  </h3>
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/20"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/20"></div>
+                  </div>
+                </div>
+
+                {/* ASCII Display Area */}
+                <div className="relative z-10 flex flex-col items-center justify-center flex-grow font-mono py-4 cursor-help" 
+                     onClick={() => { setPetMood('angry'); setSpeech('Hiss! I am compiling Kernel! Do not touch!'); }}>
+                  
+                  {/* Speech Bubble */}
+                  <div className={`mb-6 px-4 py-2 rounded-xl border text-[10px] sm:text-xs min-h-[45px] w-full flex items-center shadow-inner transition-colors
+                    ${chaosMode ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-white/5 border-white/10 text-white/90'}`}>
+                    <span className={`mr-2 font-bold ${chaosMode ? 'text-red-500' : 'text-[#3B82F6]'}`}>&gt;</span> 
+                    {speech}
+                  </div>
+
+                  {/* ASCII Art */}
+                  <div className="h-24 flex items-center justify-center">
+                    <pre className={`text-sm sm:text-base font-bold leading-tight transition-all duration-300
+                      ${chaosMode ? 'text-red-600 animate-pulse scale-125' : 
+                        petMood === 'happy' ? 'text-green-400 scale-110' :
+                        petMood === 'dance' ? 'text-yellow-400 animate-bounce' :
+                        petMood === 'angry' ? 'text-red-400' : 'text-[#3B82F6] group-hover:text-white'}`}>
+                      {chaosMode ? asciiFrames.chaos : asciiFrames[petMood]}
+                    </pre>
+                  </div>
+                </div>
+
+                {/* Input Area (Terminal Style) */}
+                <div className="relative z-10 mt-4 font-mono text-xs bg-black/50 rounded-xl border border-white/5 p-3">
+                  <div className="flex items-center gap-2">
+                    <span className={`font-black italic ${chaosMode ? 'text-red-500' : 'text-[#3B82F6]'}`}>admin@root:~</span>
+                    <input 
+                      suppressHydrationWarning
+                      type="text" 
+                      value={command}
+                      onChange={(e) => setCommand(e.target.value)}
+                      onKeyDown={handleCommand}
+                      placeholder="Type 'help'..."
+                      className="flex-1 bg-transparent border-none outline-none text-white/90 placeholder:text-white/20 tracking-wide"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* CARD 3: NÚT "TỐI ƯU HÓA CODE" (KÍNH MỜ) */}
+              <motion.div 
+                className={`md:col-span-12 md:row-span-1 rounded-3xl flex items-center justify-between p-6 cursor-pointer transition-all duration-500 group border backdrop-blur-md
+                  ${chaosMode ? 'bg-red-950/60 border-red-500/50 text-white' : 'bg-[#0d1117]/70 border-white/10 hover:border-[#3B82F6]/50 hover:bg-[#0d1117]/90 hover:shadow-[0_4px_20px_rgba(59,130,246,0.1)]'}`}
+                onClick={() => setChaosMode(!chaosMode)}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${chaosMode ? 'bg-red-500 text-white' : 'bg-white/5 text-[#3B82F6] border border-white/10 group-hover:scale-110 group-hover:bg-[#3B82F6]/10'}`}>
+                    {chaosMode ? <Bug size={24} /> : <Zap size={24} />}
+                  </div>
+                  <div>
+                    <h3 className={`text-xl font-black uppercase tracking-widest ${chaosMode ? 'text-red-400' : 'text-white group-hover:text-[#3B82F6] transition-colors'}`}>
+                      {chaosMode ? 'CTRL+Z! CTRL+Z!' : 'Click to Optimize Code'}
+                    </h3>
+                    <p className={`text-xs mt-1 ${chaosMode ? 'text-red-300' : 'text-[#94A3B8]'}`}>
+                      {chaosMode ? 'ĐÃ BẢO ĐỪNG CÓ ĐỤNG VÀO RỒI MÀ!!! LỖI HẾT CSS RỒI!!!' : 'Đảm bảo web chạy nhanh x10 lần (Trust me bro)'}
+                    </p>
+                  </div>
+                </div>
+                <ShieldAlert size={32} className={`opacity-20 transition-opacity ${chaosMode ? 'animate-ping opacity-100 text-red-500' : 'text-[#3B82F6] group-hover:opacity-100 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]'}`} />
+              </motion.div>
+
+          {/* CARD 4: CTF */}
+              <Link href="/blog" className="md:col-span-4 md:row-span-1 block h-full group">
+                <motion.div 
+                  className={`relative h-full overflow-hidden rounded-3xl border bg-[#0d1117]/70 backdrop-blur-md p-6 flex flex-col justify-between transition-all duration-500
+                    ${chaosMode ? 'border-red-500/50 rotate-2 translate-y-2' : 'border-white/10 hover:border-[#3B82F6]/50 hover:bg-[#0d1117]/90 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]'}`}
+                >
+                  {/* Lớp phủ ánh sáng mờ xuất hiện khi Hover */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#3B82F6]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+                  {/* Header */}
+                  <div className="relative z-10 flex items-center justify-between">
+                    <h3 className={`text-lg font-bold uppercase tracking-widest flex items-center gap-2 ${chaosMode ? 'text-red-400' : 'text-white'}`}>
+                      <span className={`${chaosMode ? 'text-red-500' : 'text-[#3B82F6]'} group-hover:animate-pulse`}>
+                        {/* Thay emoji bằng SVG Icon cho Clean */}
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="inline-block">
+                          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                          <line x1="4" y1="22" x2="4" y2="15"></line>
+                        </svg>
+                      </span> 
+                      CTF_Training
+                    </h3>
+                    
+                    {/* Icon mũi tên trượt vào khi hover */}
+                    <span className={`text-[#3B82F6] transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 font-bold`}>
+                      ↗
+                    </span>
+                  </div>
+
+                  {/* Terminal Mockup (Phần bùng nổ) */}
+                  <div className="relative z-10 flex-grow mt-3 mb-2 space-y-1.5 font-mono text-[11px] sm:text-xs">
+                    <div className={`${chaosMode ? 'text-red-400/80' : 'text-[#3B82F6]/80'}`}>
+                      <span className="text-[#94A3B8] mr-2">&gt;</span>./get_flags.sh
+                    </div>
+                    
+                    <div className={`pl-4 ${chaosMode ? 'text-red-300' : 'text-white/80'} flex justify-between items-center group-hover:text-white transition-colors`}>
+                      <span>[+] DAY1</span>
+                      <span className="text-[#3B82F6] text-[10px]">Pwned</span>
+                    </div>
+                    
+                    <div className={`pl-4 ${chaosMode ? 'text-red-300' : 'text-white/80'} flex justify-between items-center group-hover:text-white transition-colors delay-75`}>
+                      <span>[+] DAY67</span>
+                      <span className="text-[#3B82F6] text-[10px]">100%</span>
+                    </div>
+
+                    {/* Dấu nhấp nháy mô phỏng Terminal */}
+                    <div className="pl-4 flex items-center gap-1 mt-1">
+                      <span className="w-1.5 h-3 bg-[#3B82F6]/70 animate-pulse"></span>
+                    </div>
+                  </div>
+
+                  {/* Footer Text */}
+                  <p className={`relative z-10 text-[10px] sm:text-xs italic border-t pt-3 ${chaosMode ? 'text-red-300 border-red-500/20' : 'text-[#64748B] border-white/10'}`}>
+                    // A note dump of my CTF journey where confusion slowly turns into “ohhh”
+                  </p>
+                </motion.div>
+              </Link>
+
+            {/* CARD 5: RFID */}
+              <Link href="/projects/rfid" className="md:col-span-4 md:row-span-1 block h-full group">
+                <motion.div 
+                  className={`relative h-full overflow-hidden rounded-3xl border bg-[#0d1117]/70 backdrop-blur-md p-6 flex flex-col justify-between transition-all duration-500
+                    ${chaosMode ? 'border-red-500/50 bg-red-950/30 -rotate-1 -translate-x-2' : 'border-white/10 hover:border-[#3B82F6]/50 hover:bg-[#0d1117]/90 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]'}`}
+                >
+                  {/* Lớp phủ ánh sáng mờ khi Hover */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-[#3B82F6]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+                  {/* Header */}
+                  <div className="relative z-10 flex items-center justify-between">
+                    <h3 className={`text-lg font-bold uppercase tracking-widest flex items-center gap-2 ${chaosMode ? 'text-red-400' : 'text-white'}`}>
+                      <span className={`${chaosMode ? 'text-red-500' : 'text-[#3B82F6]'} group-hover:animate-pulse`}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="inline-block">
+                          <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                          <rect x="9" y="9" width="6" height="6"></rect>
+                          <line x1="9" y1="1" x2="9" y2="4"></line>
+                          <line x1="15" y1="1" x2="15" y2="4"></line>
+                          <line x1="9" y1="20" x2="9" y2="23"></line>
+                          <line x1="15" y1="20" x2="15" y2="23"></line>
+                          <line x1="20" y1="9" x2="23" y2="9"></line>
+                          <line x1="20" y1="14" x2="23" y2="14"></line>
+                          <line x1="1" y1="9" x2="4" y2="9"></line>
+                          <line x1="1" y1="14" x2="4" y2="14"></line>
+                        </svg>
+                      </span> 
+                      IoT_RFID_Vault
+                    </h3>
+                    <span className={`text-[#3B82F6] transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 font-bold`}>
+                      ↗
+                    </span>
+                  </div>
+
+                  {/* Hardware Status Mockup */}
+                  <div className="relative z-10 flex-grow mt-3 mb-2 grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 font-mono text-[11px] sm:text-xs">
+                    <div className={`${chaosMode ? 'text-red-400' : 'text-[#94A3B8]'} flex items-center group-hover:text-white transition-colors`}>Build:</div>
+                    <div className={`${chaosMode ? 'text-red-300' : 'text-white/90'} tracking-wider font-semibold group-hover:text-white transition-colors ml-3`}>FINAL_RUN</div>
+                    
+                    <div className={`${chaosMode ? 'text-red-400' : 'text-[#94A3B8]'} mt-0.5 group-hover:text-white transition-colors delay-75`}>Co-op Squad:</div>
+                    <div className="flex flex-col items-start gap-1 group-hover:text-white transition-colors delay-75">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${chaosMode ? 'bg-red-500' : 'bg-[#00FF41]'} animate-pulse`}></span>
+                        <span className={`${chaosMode ? 'text-red-300' : 'text-[#3B82F6]'}`}>@ndhoc</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${chaosMode ? 'bg-red-500' : 'bg-[#00FF41]'} animate-pulse delay-75`}></span>
+                        <span className={`${chaosMode ? 'text-red-300' : 'text-[#3B82F6]'}`}>@pigeon_king</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${chaosMode ? 'bg-red-500' : 'bg-[#00FF41]'} animate-pulse delay-150`}></span>
+                        <span className={`${chaosMode ? 'text-red-300' : 'text-[#3B82F6]'}`}>@nck</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${chaosMode ? 'bg-red-500' : 'bg-[#00FF41]'} animate-pulse delay-300`}></span>
+                        <span className={`${chaosMode ? 'text-red-300' : 'text-[#3B82F6]'}`}>@bo_nam</span>
+                      </div>
+                    </div>
+
+                    <div className={`${chaosMode ? 'text-red-400' : 'text-[#94A3B8]'} flex items-center group-hover:text-white transition-colors delay-100`}>Hardware:</div>
+                    <div className={`${chaosMode ? 'text-red-300' : 'text-white/60'} group-hover:text-white transition-colors delay-100 ml-3`}>ESP32_Core</div>
+                  </div>
+
+                  {/* Footer Text */}
+                  <p className={`relative z-10 text-[10px] sm:text-xs italic border-t pt-3 ${chaosMode ? 'text-red-300 border-red-500/20' : 'text-[#64748B] border-white/10'}`}>
+                    // Final chance to run it with mah G.
+                  </p>
+                </motion.div>
+              </Link>
+
+              {/* CARD 6: FREE COOKIE */}
+              <motion.a 
+                href="/free-cookie" target="_blank" rel="noopener noreferrer"
+                className={`md:col-span-4 md:row-span-1 block h-full rounded-3xl border bg-[#0d1117]/70 backdrop-blur-md p-6 flex flex-col justify-between transition-all duration-500 group cursor-help
+                  ${chaosMode ? 'border-red-500/50 rotate-3 translate-y-2' : 'border-white/10 hover:border-amber-500/40 hover:bg-[#0d1117]/90'}`}
+                whileHover={chaosMode ? {} : { scale: 1.02 }}
+              >
+                <div>
+                  <div className="text-3xl mb-2">{chaosMode ? '☢️' : '🍪'}</div>
+                  <h3 className={`text-lg font-bold uppercase tracking-widest flex items-center gap-2 ${chaosMode ? 'text-red-500' : 'text-amber-500'}`}>
+                    Free_Cookie
+                  </h3>
+                  <p className={`text-[10px] mt-1 ${chaosMode ? 'text-red-400' : 'text-[#94A3B8]'}`}>Totally safe. Not a rickroll. I promise.</p>
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <span className={`text-[9px] px-2 py-1 rounded-md border font-mono uppercase font-bold
+                    ${chaosMode ? 'bg-red-500/10 text-red-500 border-red-500/50 animate-pulse' : 'bg-white/5 text-amber-500 border-amber-500/30 group-hover:border-amber-500 transition-colors'}`}>
+                    {chaosMode ? 'DO NOT CLICK' : 'Do Not Click'}
+                  </span>
+                </div>
+              </motion.a>
+
+            </div>
+          </div>
         </div>
-        <motion.span 
-          className="hover:text-pink-400 cursor-crosshair text-lg transition-colors duration-300" 
-          title="Bocchi the Rock!"
-          whileHover={{ scale: 1.2, rotate: 15 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          🎸
-        </motion.span>
-      </footer>
 
-    </main>
+        {/* NÚT TERMINAL MOBILE */}
+        <motion.button
+          className={`lg:hidden fixed bottom-6 right-6 z-40 p-4 rounded-full backdrop-blur-md shadow-lg border transition-all
+            ${chaosMode ? 'bg-red-600 border-red-500 text-white animate-bounce' : 'bg-[#0d1117]/80 border-white/10 text-[#3B82F6] shadow-[0_0_15px_rgba(59,130,246,0.3)]'}`}
+          onClick={() => setIsIntelOpen(true)}
+        >
+          <Terminal className="w-6 h-6" />
+        </motion.button>
+
+        {/* MODAL INTEL FEED CHO MOBILE */}
+        <AnimatePresence>
+          {isIntelOpen && (
+            <motion.div
+              initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+              animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
+              exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+              className="lg:hidden fixed inset-0 z-50 p-6 flex flex-col justify-center items-center bg-[#010409]/80"
+              onClick={() => setIsIntelOpen(false)}
+            >
+              <motion.div 
+                className="w-full max-w-sm h-[650px] max-h-[85vh] relative rounded-3xl border border-white/10 overflow-hidden bg-[#0d1117]/90 backdrop-blur-xl shadow-[0_0_50px_rgba(59,130,246,0.15)]" 
+                onClick={(e) => e.stopPropagation()} 
+              >
+                <button 
+                  className="absolute -top-12 right-0 p-2 text-[#94A3B8] hover:text-white bg-white/10 rounded-full"
+                  onClick={() => setIsIntelOpen(false)}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <IntelFeed />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+      </main>
+    </>
   );
 }
