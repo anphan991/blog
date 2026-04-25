@@ -128,7 +128,7 @@ export default function Home() {
 // --- CYBERCAT v2.0 LOGIC (ASCII ART + INTERACTION) ---
 // --- ĐẶT CÁI NÀY TRONG COMPONENT ---
   const [petMood, setPetMood] = useState<'chill' | 'happy' | 'hack' | 'angry' | 'shield' | 'chaos' | 'dance'>('chill');
-  const [speech, setSpeech] = useState('System online. Awaiting orders, Boss An... 🐈');
+  const [speech, setSpeech] = useState('System online. Awaiting orders,... 🐈');
   const [command, setCommand] = useState('');
 
   const asciiFrames = {
