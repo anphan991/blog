@@ -412,7 +412,7 @@ export default function Home() {
                       {chaosMode ? 'CTRL+Z! CTRL+Z!' : 'Click to Optimize Code'}
                     </h3>
                     <p className={`text-xs mt-1 ${chaosMode ? 'text-red-300' : 'text-[#94A3B8]'}`}>
-                      {chaosMode ? 'ĐÃ BẢO ĐỪNG CÓ ĐỤNG VÀO RỒI MÀ!!! LỖI HẾT CSS RỒI!!!' : 'Đảm bảo web chạy nhanh x10 lần (Trust me bro)'}
+                      {chaosMode ? 'Never trust anything on the internet!!!' : 'x10 performance boost (trust me bro)'}
                     </p>
                   </div>
                 </div>
