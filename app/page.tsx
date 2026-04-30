@@ -6,6 +6,7 @@ import Link from 'next/link';
 import IntelFeed from '@/components/IntelFeed';
 import CyberFlyGame from '@/components/FlappyBird';
 import { Terminal, X, Skull, Bug, Zap, ShieldAlert, KeySquare, Mail, Github, Twitter, Gamepad2 } from 'lucide-react';
+import CyberChat from '@/components/CyberChat';
 
 // ==========================================
 // COMPONENT: MÀN HÌNH KHỞI ĐỘNG (Crystal Blue Carbon)
@@ -612,6 +613,8 @@ export default function Home() {
             </motion.div>
           )}
         </AnimatePresence>
+        
+        <CyberChat />
 
       </main>
     </>
