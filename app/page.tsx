@@ -4,7 +4,8 @@ import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import IntelFeed from '@/components/IntelFeed';
-import { Terminal, X, Skull, Bug, Zap, ShieldAlert, KeySquare, Mail, Github, Twitter } from 'lucide-react';
+import CyberFlyGame from '@/components/FlappyBird';
+import { Terminal, X, Skull, Bug, Zap, ShieldAlert, KeySquare, Mail, Github, Twitter, Gamepad2 } from 'lucide-react';
 
 // ==========================================
 // COMPONENT: MÀN HÌNH KHỞI ĐỘNG (Crystal Blue Carbon)
@@ -63,6 +64,31 @@ const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
 };
 
 // ==========================================
+// THẺ GAME DÙNG CHUNG (DESKTOP & MOBILE)
+// ==========================================
+const GameCard = ({ chaosMode, className = "" }: { chaosMode: boolean, className?: string }) => (
+  <motion.div 
+    className={`w-full rounded-3xl border p-4 flex flex-col gap-3 transition-all duration-500 overflow-hidden relative group backdrop-blur-md shrink-0 ${className}
+      ${chaosMode ? 'bg-red-950/60 border-red-500/50 shadow-[0_0_30px_rgba(239,68,68,0.2)]' : 'bg-[#0d1117]/70 border-white/10 hover:border-[#3B82F6]/50 hover:bg-[#090d14]/90'}`}
+  >
+    <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150px] h-[150px] blur-[80px] rounded-full pointer-events-none transition-all duration-700 
+      ${chaosMode ? 'bg-red-600/10' : 'bg-[#3B82F6]/10 group-hover:bg-[#3B82F6]/20'}`} />
+
+    <div className="flex items-center justify-between z-10 border-b border-white/10 pb-2">
+      <h3 className={`text-sm font-bold uppercase tracking-widest flex items-center gap-2 ${chaosMode ? 'text-red-400' : 'text-white'}`}>
+        <Gamepad2 size={16} className={`${chaosMode ? 'text-red-500' : 'text-[#3B82F6]'} group-hover:animate-pulse`} />
+        Cyber_Fly
+      </h3>
+    </div>
+
+    {/* Bỏ hoàn toàn class rounded và isolate ở đây */}
+    <div className="w-full flex-1 min-h-[120px] relative z-10 overflow-hidden shadow-inner border border-white/5 bg-[#0d1117]">
+       <CyberFlyGame />
+    </div>
+  </motion.div>
+);
+
+// ==========================================
 // MAIN PAGE: CRYSTAL BLUE CARBON
 // ==========================================
 export default function Home() {
@@ -76,8 +102,6 @@ export default function Home() {
   const hackerControls = useAnimation();
   const holdTimeout = useRef<NodeJS.Timeout | null>(null);
 
-
-  
   const handleStatusClick = () => {
     if (bsodState) {
       setBsodState(false);
@@ -94,7 +118,7 @@ export default function Home() {
     holdTimeout.current = setTimeout(() => {
       document.documentElement.classList.add('hacker-mode');
       hackerControls.start({
-        color: "#3B82F6", // Royal Blue Glow
+        color: "#3B82F6", 
         textShadow: "0px 0px 15px rgba(59, 130, 246, 0.6)",
         transition: { duration: 0.2 },
       });
@@ -113,7 +137,6 @@ export default function Home() {
 
   const handleHireHover = () => {
     if(!chaosMode) {
-      // Random bay ra xa trong phạm vi -250px đến +250px cả X và Y
       const randomX = (Math.random() - 0.5) * 500; 
       const randomY = (Math.random() - 0.5) * 500;
       setRunawayPos({ x: randomX, y: randomY });
@@ -124,9 +147,7 @@ export default function Home() {
       setRunawayPos({ x: 0, y: 0 });
     };
 
-  // --- ĐẶT CÁI NÀY Ở TRÊN CÙNG, TRƯỚC LỆNH RETURN ---
-// --- CYBERCAT v2.0 LOGIC (ASCII ART + INTERACTION) ---
-// --- ĐẶT CÁI NÀY TRONG COMPONENT ---
+  // --- CYBERCAT v2.0 LOGIC (ASCII ART + INTERACTION) ---
   const [petMood, setPetMood] = useState<'chill' | 'happy' | 'hack' | 'angry' | 'shield' | 'chaos' | 'dance'>('chill');
   const [speech, setSpeech] = useState('System online. Awaiting orders,... 🐈');
   const [command, setCommand] = useState('');
@@ -138,7 +159,6 @@ export default function Home() {
     angry: `  /\\_/\\  \n ( >_< )  *HISS!*\n  vv vv  `,
     shield: `  /\\_/\\   [🛡️]\n ( o.o )  [SEC]\n  > ^ <   `,
     chaos: `  /\\_/\\  \n ( X.X )  FATAL_ERR\n  UNSTABLE`,
-    // THÊM DANCE VÀO ĐÂY ĐỂ FIX LỖI
     dance: `  /\\_/\\  \n ~( v.v )~\n  > ^ <   ` 
   };
 
@@ -194,29 +214,26 @@ export default function Home() {
         {isBooting && <BootSequence onComplete={() => setIsBooting(false)} />}
       </AnimatePresence>
 
-      {/* BACKGROUND CHÍNH: #010409 (Đen sâu thẳm ánh xanh nhẹ) */}
       <main className={`min-h-screen font-mono transition-all duration-700 overflow-x-hidden selection:bg-[#3B82F6]/30 selection:text-white
         ${chaosMode ? 'bg-[#1a0505] text-red-300' : 'bg-[#010409] text-[#94A3B8]'}`}>
         
-        {/* LƯỚI CHẤM MỜ (Tạo cảm giác Grid) */}
+        {/* BACKGROUND GRID */}
         <div className={`fixed inset-0 pointer-events-none z-0 transition-all duration-700
           ${chaosMode 
             ? 'opacity-30 bg-[radial-gradient(circle_at_2px_2px,#ef4444_2px,transparent_0)] bg-[size:20px_20px] rotate-3 scale-110' 
             : 'opacity-10 bg-[radial-gradient(circle_at_1px_1px,#ffffff_1px,transparent_0)] bg-[size:32px_32px]'}`} 
         />
         
-        {/* GLOW ÁNH SÁNG XANH NHẸ NHÀNG DƯỚI LỚP KÍNH */}
+        {/* GLOW ÁNH SÁNG */}
         <div className={`fixed top-[0%] left-[10%] w-[40rem] h-[40rem] rounded-full blur-[150px] -z-10 pointer-events-none transition-colors duration-1000 
           ${chaosMode ? 'bg-red-600/20' : 'bg-[#3B82F6]/10'}`}></div>
         <div className={`fixed bottom-[-10%] right-[0%] w-[30rem] h-[30rem] rounded-full blur-[120px] -z-10 pointer-events-none transition-colors duration-1000 
           ${chaosMode ? 'bg-orange-600/10' : 'bg-[#3B82F6]/5'}`}></div>
 
-        {/* HEADER KÍNH MỜ (Glassmorphism) */}
+        {/* HEADER KÍNH MỜ */}
         <header className={`fixed top-0 left-0 w-full z-40 backdrop-blur-md border-b transition-all duration-700
           ${chaosMode ? 'border-red-500/30 bg-red-950/70' : 'border-white/10 bg-[#0d1117]/70'}`}>
           <div className="max-w-7xl mx-auto px-4 md:px-8 h-14 flex items-center justify-between">
-            
-            {/* Logo */}
             <div className="flex items-center gap-3 text-xs md:text-sm">
               <Skull className={chaosMode ? "text-red-500 animate-ping" : "text-[#3B82F6]"} size={18} />
               <span className="font-black tracking-widest text-white">
@@ -224,7 +241,6 @@ export default function Home() {
               </span>
             </div>
 
-            {/* Social Links */}
             <div className={`hidden md:flex items-center gap-6 ${chaosMode ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
               <span className="text-[10px] font-black text-[#94A3B8] uppercase tracking-widest border-r border-white/10 pr-4 mr-1">CONNECT //</span>
               <a href="https://github.com/anphan991" target="_blank" rel="noopener noreferrer" className="text-[#94A3B8] hover:text-[#3B82F6] hover:scale-110 transition-all hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">
@@ -238,7 +254,6 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Status Phải */}
             <div className={`text-[10px] font-bold flex items-center gap-2 ${chaosMode ? 'text-red-500' : 'text-[#3B82F6]'}`}>
               <span className="hidden md:inline">{chaosMode ? 'Status: CRITICAL' : 'Status: Operating'}</span>
               <span className={`flex h-2 w-2 rounded-full ${chaosMode ? 'bg-red-500 shadow-[0_0_8px_#ef4444] animate-ping' : 'bg-[#3B82F6] shadow-[0_0_8px_#3B82F6] animate-pulse'}`}></span>
@@ -251,29 +266,40 @@ export default function Home() {
         {/* ========================================== */}
         <div className={`relative z-10 max-w-7xl mx-auto w-full px-4 md:px-8 pt-32 pb-20 transition-all duration-700`}>
           
-          <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 items-start">
             
-            {/* CỘT TRÁI: INTEL FEED (Lớp kính mờ) */}
-            <motion.div 
-              className={`hidden lg:block h-full w-full transition-all duration-500 overflow-hidden
-                ${chaosMode 
-                  ? 'border border-red-500/50 bg-red-950/50 backdrop-blur-md rounded-3xl -rotate-2 scale-95 opacity-90' 
-                  : '[&>*]:!border-white/10 [&>*]:!bg-[#0d1117]/70 [&>*]:backdrop-blur-md [&>*]:!text-[#94A3B8] rounded-3xl border border-white/10'}`} 
-            >
-              <IntelFeed />
-            </motion.div>
+            {/* ========================================== */}
+            {/* CỘT TRÁI (Đồng bộ Grid Auto-rows với Cột Phải) */}
+            {/* ========================================== */}
+            <div className="hidden lg:grid grid-cols-1 auto-rows-[minmax(180px,auto)] gap-5 w-full h-full">
+              
+              {/* INTEL FEED (Chiếm 3 row, ngang bằng với thẻ Optimize) */}
+              <motion.div 
+                className={`row-span-3 w-full h-full transition-all duration-500 overflow-hidden flex flex-col
+                  ${chaosMode 
+                    ? 'border border-red-500/50 bg-red-950/50 backdrop-blur-md rounded-3xl -rotate-2 scale-95 opacity-90' 
+                    : '[&>*]:!border-white/10 [&>*]:!bg-[#0d1117]/70 [&>*]:backdrop-blur-md [&>*]:!text-[#94A3B8] rounded-3xl border border-white/10'}`} 
+              >
+                <IntelFeed />
+              </motion.div>
 
+              {/* DESKTOP GAME CARD (Chiếm 1 row cuối, nằm ngay dưới Intel Feed ngang với CTF) */}
+              <GameCard chaosMode={chaosMode} className="row-span-1" />
+
+            </div>
+
+            {/* ========================================== */}
             {/* CỘT PHẢI: BENTO GRID */}
+            {/* ========================================== */}
             <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-5 auto-rows-[minmax(180px,auto)] h-full">
               
-              {/* CARD 1: INTRO (LỚP KÍNH MỜ TRONG SUỐT VỚI VIỀN 1PX) */}
+              {/* CARD 1: INTRO (Row 1-2) */}
               <motion.div 
                 onMouseLeave={resetRunaway}
                 className={`md:col-span-8 md:row-span-2 rounded-3xl p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden group backdrop-blur-md
                   ${chaosMode ? 'bg-red-950/60 border border-red-500/50 rotate-1' : 'bg-[#0d1117]/70 border border-white/10 hover:border-[#3B82F6]/50 hover:bg-[#0d1117]/90 hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)]'}`}
               >
                 <div className="z-10 w-full relative h-full flex flex-col">
-                  {/* TAGS */}
                   <div className="flex flex-wrap items-center gap-3 mb-6">
                     <span className={`px-3 py-1 bg-white/5 text-white border border-white/10 text-[10px] rounded-md uppercase font-bold tracking-widest ${chaosMode ? 'border-red-500/50 text-red-500 bg-red-900/30' : ''}`}>
                       Copy-Paste Architect
@@ -298,7 +324,6 @@ export default function Home() {
                     </div>
                   )}
                   
-                  {/* TEXT CHÍNH (TRẮNG/BLUE MƯỢT MÀ) */}
                   <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white mb-2 flex items-center gap-3 leading-none">
                     <motion.span 
                       className="cursor-pointer transition-colors"
@@ -322,14 +347,13 @@ export default function Home() {
                     <span className="block text-[18px]">Сделано для ПК — мобилка это побочный квест</span>
                   </p>
 
-                  {/* NÚT HIRE ME (HIỆU ỨNG BOX-SHADOW NEON MỜ) */}
                   <div className="mt-auto pt-6 flex items-center justify-end z-10 relative">
                     <motion.button 
                       suppressHydrationWarning
-                      onMouseEnter={handleHireHover} // Chạm nhẹ viền là bay ngay lập tức
-                      onClick={() => { if(!chaosMode) alert("Bắt được rồiii! 🐧") }} // Phòng hờ ai đó xài tab hoặc hack click trúng
+                      onMouseEnter={handleHireHover}
+                      onClick={() => { if(!chaosMode) alert("Bắt được rồiii! 🐧") }}
                       animate={{ x: runawayPos.x, y: runawayPos.y }}
-                      transition={{ type: "spring", stiffness: 400, damping: 10 }} // Tốc độ bay cực gắt
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
                       className={`ml-auto px-8 py-3 text-xs font-black uppercase rounded-xl transition-colors z-50
                         ${chaosMode ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.4)]' : 'bg-[#3B82F6] text-white shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]'}`}
                     >
@@ -339,12 +363,11 @@ export default function Home() {
                 </div>
               </motion.div>
 
-{/* CARD 2: ASCII CYBER PET */}
+              {/* CARD 2: ASCII CYBER PET (Row 1-2) */}
               <motion.div 
                 className={`md:col-span-4 md:row-span-2 relative overflow-hidden rounded-3xl border bg-[#0d1117]/70 backdrop-blur-md p-5 flex flex-col transition-all duration-500 group
                   ${chaosMode ? 'border-red-500 shadow-[0_0_40px_rgba(239,68,68,0.4)]' : 'border-white/10 hover:border-[#3B82F6]/50 hover:bg-[#090d14]/90'}`}
               >
-                {/* Header */}
                 <div className="relative z-10 flex justify-between items-center mb-3 border-b border-white/10 pb-2 font-mono">
                   <h3 className={`text-xs font-bold uppercase tracking-widest ${chaosMode ? 'text-red-400' : 'text-white'}`}>
                     {chaosMode ? '🚨 SYSTEM_GLITCH' : '🐈 ASCII_COMPANION.v1'}
@@ -356,18 +379,15 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* ASCII Display Area */}
                 <div className="relative z-10 flex flex-col items-center justify-center flex-grow font-mono py-4 cursor-help" 
                      onClick={() => { setPetMood('angry'); setSpeech('Hiss! I am compiling Kernel! Do not touch!'); }}>
                   
-                  {/* Speech Bubble */}
                   <div className={`mb-6 px-4 py-2 rounded-xl border text-[10px] sm:text-xs min-h-[45px] w-full flex items-center shadow-inner transition-colors
                     ${chaosMode ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-white/5 border-white/10 text-white/90'}`}>
                     <span className={`mr-2 font-bold ${chaosMode ? 'text-red-500' : 'text-[#3B82F6]'}`}>&gt;</span> 
                     {speech}
                   </div>
 
-                  {/* ASCII Art */}
                   <div className="h-24 flex items-center justify-center">
                     <pre className={`text-sm sm:text-base font-bold leading-tight transition-all duration-300
                       ${chaosMode ? 'text-red-600 animate-pulse scale-125' : 
@@ -379,7 +399,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Input Area (Terminal Style) */}
                 <div className="relative z-10 mt-4 font-mono text-xs bg-black/50 rounded-xl border border-white/5 p-3">
                   <div className="flex items-center gap-2">
                     <span className={`font-black italic ${chaosMode ? 'text-red-500' : 'text-[#3B82F6]'}`}>admin@root:~</span>
@@ -396,7 +415,7 @@ export default function Home() {
                 </div>
               </motion.div>
 
-              {/* CARD 3: NÚT "TỐI ƯU HÓA CODE" (KÍNH MỜ) */}
+              {/* CARD 3: NÚT TỐI ƯU HÓA CODE (Row 3) */}
               <motion.div 
                 className={`md:col-span-12 md:row-span-1 rounded-3xl flex items-center justify-between p-6 cursor-pointer transition-all duration-500 group border backdrop-blur-md
                   ${chaosMode ? 'bg-red-950/60 border-red-500/50 text-white' : 'bg-[#0d1117]/70 border-white/10 hover:border-[#3B82F6]/50 hover:bg-[#0d1117]/90 hover:shadow-[0_4px_20px_rgba(59,130,246,0.1)]'}`}
@@ -419,20 +438,17 @@ export default function Home() {
                 <ShieldAlert size={32} className={`opacity-20 transition-opacity ${chaosMode ? 'animate-ping opacity-100 text-red-500' : 'text-[#3B82F6] group-hover:opacity-100 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]'}`} />
               </motion.div>
 
-          {/* CARD 4: CTF */}
+              {/* CARD 4: CTF (Row 4) */}
               <Link href="/blog" className="md:col-span-4 md:row-span-1 block h-full group">
                 <motion.div 
                   className={`relative h-full overflow-hidden rounded-3xl border bg-[#0d1117]/70 backdrop-blur-md p-6 flex flex-col justify-between transition-all duration-500
                     ${chaosMode ? 'border-red-500/50 rotate-2 translate-y-2' : 'border-white/10 hover:border-[#3B82F6]/50 hover:bg-[#0d1117]/90 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]'}`}
                 >
-                  {/* Lớp phủ ánh sáng mờ xuất hiện khi Hover */}
                   <div className="absolute inset-0 bg-gradient-to-br from-[#3B82F6]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-                  {/* Header */}
                   <div className="relative z-10 flex items-center justify-between">
                     <h3 className={`text-lg font-bold uppercase tracking-widest flex items-center gap-2 ${chaosMode ? 'text-red-400' : 'text-white'}`}>
                       <span className={`${chaosMode ? 'text-red-500' : 'text-[#3B82F6]'} group-hover:animate-pulse`}>
-                        {/* Thay emoji bằng SVG Icon cho Clean */}
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="inline-block">
                           <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
                           <line x1="4" y1="22" x2="4" y2="15"></line>
@@ -440,52 +456,42 @@ export default function Home() {
                       </span> 
                       CTF_Training
                     </h3>
-                    
-                    {/* Icon mũi tên trượt vào khi hover */}
                     <span className={`text-[#3B82F6] transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 font-bold`}>
                       ↗
                     </span>
                   </div>
 
-                  {/* Terminal Mockup (Phần bùng nổ) */}
                   <div className="relative z-10 flex-grow mt-3 mb-2 space-y-1.5 font-mono text-[11px] sm:text-xs">
                     <div className={`${chaosMode ? 'text-red-400/80' : 'text-[#3B82F6]/80'}`}>
                       <span className="text-[#94A3B8] mr-2">&gt;</span>./get_flags.sh
                     </div>
-                    
                     <div className={`pl-4 ${chaosMode ? 'text-red-300' : 'text-white/80'} flex justify-between items-center group-hover:text-white transition-colors`}>
                       <span>[+] DAY1</span>
                       <span className="text-[#3B82F6] text-[10px]">Pwned</span>
                     </div>
-                    
                     <div className={`pl-4 ${chaosMode ? 'text-red-300' : 'text-white/80'} flex justify-between items-center group-hover:text-white transition-colors delay-75`}>
                       <span>[+] DAY67</span>
                       <span className="text-[#3B82F6] text-[10px]">100%</span>
                     </div>
-
-                    {/* Dấu nhấp nháy mô phỏng Terminal */}
                     <div className="pl-4 flex items-center gap-1 mt-1">
                       <span className="w-1.5 h-3 bg-[#3B82F6]/70 animate-pulse"></span>
                     </div>
                   </div>
 
-                  {/* Footer Text */}
                   <p className={`relative z-10 text-[10px] sm:text-xs italic border-t pt-3 ${chaosMode ? 'text-red-300 border-red-500/20' : 'text-[#64748B] border-white/10'}`}>
                     // A note dump of my CTF journey where confusion slowly turns into “ohhh”
                   </p>
                 </motion.div>
               </Link>
 
-            {/* CARD 5: RFID */}
+              {/* CARD 5: RFID (Row 4) */}
               <Link href="/projects/rfid" className="md:col-span-4 md:row-span-1 block h-full group">
                 <motion.div 
                   className={`relative h-full overflow-hidden rounded-3xl border bg-[#0d1117]/70 backdrop-blur-md p-6 flex flex-col justify-between transition-all duration-500
                     ${chaosMode ? 'border-red-500/50 bg-red-950/30 -rotate-1 -translate-x-2' : 'border-white/10 hover:border-[#3B82F6]/50 hover:bg-[#0d1117]/90 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]'}`}
                 >
-                  {/* Lớp phủ ánh sáng mờ khi Hover */}
                   <div className="absolute inset-0 bg-gradient-to-tr from-[#3B82F6]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-                  {/* Header */}
                   <div className="relative z-10 flex items-center justify-between">
                     <h3 className={`text-lg font-bold uppercase tracking-widest flex items-center gap-2 ${chaosMode ? 'text-red-400' : 'text-white'}`}>
                       <span className={`${chaosMode ? 'text-red-500' : 'text-[#3B82F6]'} group-hover:animate-pulse`}>
@@ -509,7 +515,6 @@ export default function Home() {
                     </span>
                   </div>
 
-                  {/* Hardware Status Mockup */}
                   <div className="relative z-10 flex-grow mt-3 mb-2 grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 font-mono text-[11px] sm:text-xs">
                     <div className={`${chaosMode ? 'text-red-400' : 'text-[#94A3B8]'} flex items-center group-hover:text-white transition-colors`}>Build:</div>
                     <div className={`${chaosMode ? 'text-red-300' : 'text-white/90'} tracking-wider font-semibold group-hover:text-white transition-colors ml-3`}>FINAL_RUN</div>
@@ -538,14 +543,13 @@ export default function Home() {
                     <div className={`${chaosMode ? 'text-red-300' : 'text-white/60'} group-hover:text-white transition-colors delay-100 ml-3`}>ESP32_Core</div>
                   </div>
 
-                  {/* Footer Text */}
                   <p className={`relative z-10 text-[10px] sm:text-xs italic border-t pt-3 ${chaosMode ? 'text-red-300 border-red-500/20' : 'text-[#64748B] border-white/10'}`}>
                     // Final chance to run it with mah G.
                   </p>
                 </motion.div>
               </Link>
 
-              {/* CARD 6: FREE COOKIE */}
+              {/* CARD 6: FREE COOKIE (Row 4) */}
               <motion.a 
                 href="/free-cookie" target="_blank" rel="noopener noreferrer"
                 className={`md:col-span-4 md:row-span-1 block h-full rounded-3xl border bg-[#0d1117]/70 backdrop-blur-md p-6 flex flex-col justify-between transition-all duration-500 group cursor-help
@@ -566,6 +570,9 @@ export default function Home() {
                   </span>
                 </div>
               </motion.a>
+
+              {/* MOBILE GAME CARD (Hiển thị mượt mà trên Mobile, ẩn trên bản PC do Desktop đã có ở bên trái) */}
+              <GameCard chaosMode={chaosMode} className="lg:hidden md:col-span-12 md:row-span-1" />
 
             </div>
           </div>
