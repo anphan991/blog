@@ -18,18 +18,39 @@ export default function CyberChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Gợi ý nhanh cho người dùng (Chỉ tập trung vào tính năng Blog)
+  // Gợi ý nhanh cho người dùng
   const quickActions = [
-    { label: 'Cyber Fly?', icon: <Zap size={10} />, query: 'Làm sao để chơi game Cyber Fly?' },
-    { label: 'Tech Stack', icon: <Globe size={10} />, query: 'Blog này sử dụng những công nghệ gì?' },
-    { label: 'Chức năng', icon: <Terminal size={10} />, query: 'Hệ thống này có những tính năng gì nổi bật?' },
+    { label: 'Cyber Fly?', icon: <Zap size={12} />, query: 'Làm sao để chơi game Cyber Fly?' },
+    { label: 'Tech Stack', icon: <Globe size={12} />, query: 'Hệ thống này sử dụng những công nghệ gì?' },
+    { label: 'Chức năng', icon: <Terminal size={12} />, query: 'Blog có những tính năng gì nổi bật?' },
   ];
 
+  // Auto-scroll xuống cuối cùng
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Bộ phân tích Markdown siêu nhẹ tự code (Không cần cài thư viện)
+  const formatMarkdown = (text: string) => {
+    let formatted = text;
+    // 1. Xử lý in đậm: **text** -> in đậm, đổi màu nhấn
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#60A5FA] font-black tracking-wide">$1</strong>');
+    
+    // 2. Xử lý gạch đầu dòng: * text hoặc - text -> Thẻ <li>
+    formatted = formatted.replace(/^(?:\*|-)\s+(.*)/gm, '<li class="ml-4 list-disc marker:text-[#3B82F6] mb-1">$1</li>');
+    
+    // 3. Xử lý in nghiêng: *text* formatted = formatted.replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em class="text-gray-400 italic">$1</em>');
+    
+    // 4. Xử lý xuống dòng: \n -> <br />
+    formatted = formatted.replace(/\n/g, '<br />');
+    
+    // 5. Fix lỗi <br /> thừa lọt vào giữa các list
+    formatted = formatted.replace(/<\/li><br \/>/g, '</li>');
+
+    return formatted;
+  };
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
@@ -74,7 +95,7 @@ export default function CyberChat() {
       setMessages(prev => [...prev, { 
         id: 'err-' + Date.now(), 
         role: 'assistant', 
-        content: '[ERROR]: Kết nối hệ thống bị gián đoạn.' 
+        content: '**[LỖI HỆ THỐNG]:** Kết nối tới AI_Core bị gián đoạn. Vui lòng thử lại sau.' 
       }]);
     } finally {
       setIsLoading(false);
@@ -87,64 +108,80 @@ export default function CyberChat() {
   };
 
   return (
-    <div className="fixed bottom-24 md:bottom-6 right-6 md:right-24 z-[50] font-mono">
+    <div className="fixed bottom-24 md:bottom-6 right-6 md:right-10 z-[50] font-mono">
       <AnimatePresence>
         {!isOpen ? (
           <motion.button
             initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
             onClick={() => setIsOpen(true)}
-            className="p-4 rounded-full bg-[#0d1117] border border-[#3B82F6]/50 text-[#3B82F6] shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:scale-110 transition-all"
+            className="p-4 rounded-full bg-[#0d1117] border border-[#3B82F6]/50 text-[#3B82F6] shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:scale-110 hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all"
           >
-            <Bot size={24} />
+            <Bot size={28} />
           </motion.button>
         ) : (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="w-[320px] md:w-[360px] h-[480px] bg-[#0d1117]/95 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.8)] overflow-hidden"
+            // TĂNG KÍCH THƯỚC KHUNG CHAT (Rộng hơn, cao hơn)
+            className="w-[340px] md:w-[420px] h-[550px] md:h-[600px] bg-[#0d1117]/95 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden"
           >
             {/* Header */}
-            <div className="p-3 border-b border-white/10 bg-white/5 flex justify-between items-center">
+            <div className="p-4 border-b border-white/10 bg-gradient-to-r from-blue-900/20 to-transparent flex justify-between items-center">
               <div className="flex items-center gap-2 text-[#3B82F6]">
-                <Cpu size={14} className={isLoading ? "animate-spin" : "animate-pulse"} />
-                <span className="text-[10px] font-black uppercase tracking-widest">System_Assistant.v2</span>
+                <Cpu size={18} className={isLoading ? "animate-spin" : "animate-pulse"} />
+                <span className="text-[12px] font-black uppercase tracking-widest text-blue-100 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]">
+                  System_Assistant
+                </span>
               </div>
-              <button onClick={() => setIsOpen(false)} className="text-white/30 hover:text-white"><X size={16} /></button>
+              <button 
+                onClick={() => setIsOpen(false)} 
+                className="text-white/40 hover:text-white hover:bg-white/10 p-1.5 rounded-lg transition-all"
+              >
+                <X size={18} />
+              </button>
             </div>
 
             {/* Messages Area */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar bg-gradient-to-b from-transparent to-black/20">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-5 space-y-5 no-scrollbar bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%)] bg-[size:100%_4px]">
               {messages.length === 0 && (
-                <div className="text-white/20 text-[10px] text-center mt-20 italic px-6 uppercase tracking-tight">
-                  Core initialized. Awaiting system commands or inquiries.
+                <div className="text-white/30 text-xs text-center mt-24 italic px-6 uppercase tracking-widest leading-relaxed">
+                  <Bot size={40} className="mx-auto mb-4 opacity-20" />
+                  Core initialized.<br/>Awaiting system commands.
                 </div>
               )}
               
               {messages.map((m) => (
                 <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] p-3 rounded-xl text-[11px] leading-relaxed shadow-sm ${
-                    m.role === 'user' ? 'bg-[#3B82F6] text-white rounded-br-none' : 'bg-white/5 border border-white/10 text-gray-300 rounded-bl-none'
+                  <div className={`max-w-[88%] p-3.5 md:p-4 rounded-xl text-[13px] md:text-sm leading-relaxed shadow-md ${
+                    m.role === 'user' 
+                      ? 'bg-[#2563EB] text-white rounded-br-none' 
+                      : 'bg-[#1e293b]/80 border border-white/10 text-gray-200 rounded-bl-none shadow-inner'
                   }`}>
-                    <span className="font-black block mb-1 opacity-40 uppercase text-[8px] tracking-tighter">
+                    <span className="font-black block mb-2 opacity-50 uppercase text-[10px] tracking-widest border-b border-white/10 pb-1">
                       {m.role === 'user' ? 'Guest@Root' : 'Core_AI'}
                     </span>
-                    {m.content}
+                    
+                    {/* KHU VỰC HIỂN THỊ MARKDOWN */}
+                    <div 
+                      className="font-sans"
+                      dangerouslySetInnerHTML={{ __html: formatMarkdown(m.content) }} 
+                    />
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Quick Actions - FIX SPACE ISSUE HERE */}
-            <div className="px-3 py-2 flex flex-wrap gap-2 bg-black/20">
+            {/* Quick Actions */}
+            <div className="px-4 py-3 flex flex-wrap gap-2 bg-black/40 border-t border-white/5">
               {quickActions.map((action) => (
                 <button
                   key={action.label}
                   onClick={(e) => {
                     sendMessage(action.query);
-                    (e.currentTarget as HTMLButtonElement).blur(); // NHẢ FOCUS ĐỂ SPACE DÙNG CHO GAME
+                    (e.currentTarget as HTMLButtonElement).blur();
                   }}
-                  className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-md bg-[#3B82F6]/10 border border-[#3B82F6]/20 text-[#3B82F6] hover:bg-[#3B82F6]/20 transition-all active:scale-95"
+                  className="flex items-center gap-1.5 text-[11px] md:text-xs px-2.5 py-1.5 rounded-lg bg-[#3B82F6]/10 border border-[#3B82F6]/30 text-blue-300 hover:bg-[#3B82F6]/20 hover:text-white transition-all active:scale-95"
                 >
                   {action.icon}
                   {action.label}
@@ -155,25 +192,24 @@ export default function CyberChat() {
             {/* Input Form */}
             <form 
               onSubmit={handleSubmit} 
-              className="p-3 bg-black/40 border-t border-white/10 flex gap-2"
+              className="p-3 md:p-4 bg-[#090c10] border-t border-white/10 flex gap-3 items-center"
             >
               <input
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                // NGĂN PHÍM SPACE KÍCH HOẠT GAME KHI ĐANG GÕ
                 onKeyDown={(e) => {
                   if (e.code === 'Space') e.stopPropagation();
                 }}
-                placeholder="Nhập lệnh..."
-                className="flex-1 bg-transparent border-none outline-none text-white text-xs placeholder:text-white/20"
+                placeholder="Nhập lệnh hoặc câu hỏi..."
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 outline-none text-white text-sm placeholder:text-white/30 focus:border-blue-500/50 transition-colors"
               />
               <button 
                 type="submit" 
                 disabled={isLoading || !input.trim()}
-                className="text-[#3B82F6] disabled:opacity-30 p-1 hover:scale-110 transition-transform"
+                className="text-white bg-[#3B82F6] disabled:bg-gray-700 disabled:text-gray-400 p-2.5 rounded-lg hover:bg-blue-500 transition-colors disabled:hover:bg-gray-700"
               >
-                <Send size={16} />
+                <Send size={18} className={isLoading ? "opacity-50" : ""} />
               </button>
             </form>
           </motion.div>

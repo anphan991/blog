@@ -310,12 +310,14 @@ const CyberFlyGame: React.FC = () => {
           
           <div className="flex flex-col gap-3 w-full max-w-[200px]">
             <button 
+              suppressHydrationWarning
               onClick={(e) => resetGame(e)}
               className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold flex items-center justify-center gap-2 transition-all active:scale-95 rounded-xl text-xs"
             >
               <Play size={14} fill="currentColor" /> INJECT PAYLOAD
             </button>
             <button 
+              suppressHydrationWarning
               onClick={(e) => { e.stopPropagation(); setShowSelector(!showSelector); }}
               className="w-full py-2.5 border border-white/10 hover:border-red-500/50 text-white/70 text-[10px] font-medium rounded-xl"
             >
