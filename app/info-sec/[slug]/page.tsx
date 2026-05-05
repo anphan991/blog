@@ -60,7 +60,7 @@ export default async function InfoSecPostPage({ params }: { params: Promise<{ sl
               <div className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-400 cursor-pointer"></div>
             </div>
             <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2">
-              <TerminalSquare size={12} /> root@thinkpad:/vault/notes
+              <TerminalSquare size={12} /> root@991:/vault/notes
             </div>
             <div className="w-10"></div> {/* Spacer để căn giữa text */}
           </div>
