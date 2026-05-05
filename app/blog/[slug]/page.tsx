@@ -14,7 +14,8 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
   const resolvedParams = await params;
   const slug = decodeURIComponent(resolvedParams.slug);
   
-  const contentDir = path.join(process.cwd(), 'content');
+  // Đã sửa đường dẫn trỏ vào thư mục con 'ctf'
+  const contentDir = path.join(process.cwd(), 'content', 'ctf');
   const filePath = path.join(contentDir, `${slug}.md`);
 
   if (!fs.existsSync(filePath)) {

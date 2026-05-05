@@ -572,6 +572,51 @@ export default function Home() {
                 </div>
               </motion.a>
 
+              {/* CARD 7: NEW MODULE (Row 5) */}
+              <Link href="/info-sec" className="md:col-span-4 md:row-span-1 block h-full group">
+                <motion.div 
+                  className={`relative h-full overflow-hidden rounded-3xl border bg-[#0d1117]/70 backdrop-blur-md p-6 flex flex-col justify-between transition-all duration-500
+                    ${chaosMode ? 'border-red-500/50 -rotate-2 translate-y-2' : 'border-white/10 hover:border-[#3B82F6]/50 hover:bg-[#0d1117]/90 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]'}`}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#3B82F6]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+                  <div className="relative z-10 flex items-center justify-between">
+                    <h3 className={`text-lg font-bold uppercase tracking-widest flex items-center gap-2 ${chaosMode ? 'text-red-400' : 'text-white'}`}>
+                      <span className={`${chaosMode ? 'text-red-500' : 'text-[#3B82F6]'} group-hover:animate-pulse`}>
+                        <KeySquare size={18} strokeWidth={2.5} />
+                      </span> 
+                      InfoSec_Notes
+                    </h3>
+                    <span className={`text-[#3B82F6] transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 font-bold`}>
+                      ↗
+                    </span>
+                  </div>
+
+                  <div className="relative z-10 flex-grow mt-3 mb-2 space-y-1.5 font-mono text-[11px] sm:text-xs">
+                    <div className={`${chaosMode ? 'text-red-400/80' : 'text-[#3B82F6]/80'}`}>
+                      <span className="text-[#94A3B8] mr-2">&gt;</span>./init_project.sh
+                    </div>
+                    <div className={`pl-4 ${chaosMode ? 'text-red-300' : 'text-white/80'} flex justify-between items-center group-hover:text-white transition-colors`}>
+                      <span>[+] STATUS</span>
+                      <span className="text-[#3B82F6] text-[10px]">Deploying</span>
+                    </div>
+                    <div className={`pl-4 ${chaosMode ? 'text-red-300' : 'text-white/80'} flex justify-between items-center group-hover:text-white transition-colors delay-75`}>
+                      <span>[+] PROGRESS</span>
+                      <span className="text-[#3B82F6] text-[10px]">Loading...</span>
+                    </div>
+                    <div className="pl-4 flex items-center gap-1 mt-1">
+                      <span className="w-1.5 h-3 bg-[#3B82F6]/70 animate-pulse"></span>
+                    </div>
+                  </div>
+
+                  <p className={`relative z-10 text-[10px] sm:text-xs italic border-t pt-3 ${chaosMode ? 'text-red-300 border-red-500/20' : 'text-[#64748B] border-white/10'}`}>
+                    // Description...
+                  </p>
+                </motion.div>
+              </Link>
+
+                {/*New Card Here*/}
+
               {/* MOBILE GAME CARD (Hiển thị mượt mà trên Mobile, ẩn trên bản PC do Desktop đã có ở bên trái) */}
               <GameCard chaosMode={chaosMode} className="lg:hidden md:col-span-12 md:row-span-1" />
 
@@ -579,6 +624,7 @@ export default function Home() {
           </div>
         </div>
 
+        
         {/* NÚT TERMINAL MOBILE */}
         <motion.button
           className={`lg:hidden fixed bottom-6 right-6 z-40 p-4 rounded-full backdrop-blur-md shadow-lg border transition-all

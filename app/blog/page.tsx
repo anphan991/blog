@@ -3,9 +3,10 @@ import path from 'path';
 import matter from 'gray-matter';
 import Link from 'next/link';
 
-// 1. Hàm tự động hút data từ thư mục content
+// 1. Hàm tự động hút data từ thư mục content/ctf
 function getPosts() {
-  const contentDir = path.join(process.cwd(), 'content');
+  // Đã sửa đường dẫn trỏ vào thư mục con 'ctf'
+  const contentDir = path.join(process.cwd(), 'content', 'ctf');
   
   // Tránh lỗi nếu lỡ quên tạo thư mục
   if (!fs.existsSync(contentDir)) return [];
