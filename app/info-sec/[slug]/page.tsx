@@ -100,7 +100,7 @@ export default async function InfoSecPostPage({ params }: { params: Promise<{ sl
 
             {/* End of File Marker */}
             <div className="mt-16 pt-8 border-t-2 border-slate-800 text-center">
-              <span className="text-[#3B82F6] font-bold animate-pulse text-xl">EOF _</span>
+              <span className="text-[#3B82F6] font-bold animate-pulse text-xl">Bye World!</span>
             </div>
           </div>
         </article>

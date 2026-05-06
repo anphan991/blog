@@ -610,7 +610,7 @@ export default function Home() {
                   </div>
 
                   <p className={`relative z-10 text-[10px] sm:text-xs italic border-t pt-3 ${chaosMode ? 'text-red-300 border-red-500/20' : 'text-[#64748B] border-white/10'}`}>
-                    // Description...
+                    // Documenting my transition from a script kiddie to a professional overthinker.
                   </p>
                 </motion.div>
               </Link>
