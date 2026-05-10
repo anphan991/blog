@@ -29,6 +29,7 @@ export default function IntelFeed() {
     
     // DANH SÁCH BÀI VIẾT 
     setLatestPosts([
+      "InFoSec: Software Security Topic",
       "InFoSec: Cryptography Intro",
       "NEW_SECTOR: INFOSEC_OR_IN_SECURITY 💀",
       "SCAN_OR_SCAM — RFID System Update Complete",
