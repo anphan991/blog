@@ -29,8 +29,9 @@ export default function IntelFeed() {
     
     // DANH SÁCH BÀI VIẾT 
     setLatestPosts([
+      "InFoSec: Malicious Software Topic",
       "InFoSec: Software Security Topic",
-      "InFoSec: Cryptography Intro",
+      "InFoSec: Cryptography Intro Topic",
       "NEW_SECTOR: INFOSEC_OR_IN_SECURITY 💀",
       "SCAN_OR_SCAM — RFID System Update Complete",
       "Day 3: KERNEL_PANIC_AGAIN 💀 — Computer Architecture & OS | Memory Management",
