@@ -29,6 +29,7 @@ export default function IntelFeed() {
     
     // DANH SÁCH BÀI VIẾT 
     setLatestPosts([
+      "InFoSec: Auth & Access Control Topic",
       "InFoSec: Malicious Software Topic",
       "InFoSec: Software Security Topic",
       "InFoSec: Cryptography Intro Topic",
