@@ -20,7 +20,7 @@ export default function CyberChat() {
 
   // Gợi ý nhanh cho người dùng
   const quickActions = [
-    { label: 'Cyber Fly?', icon: <Zap size={12} />, query: 'Làm sao để chơi game Cyber Fly?' },
+    { label: 'Flappy Clone?', icon: <Zap size={12} />, query: 'Làm sao để chơi game Flappy Clone?' },
     { label: 'Tech Stack', icon: <Globe size={12} />, query: 'Hệ thống này sử dụng những công nghệ gì?' },
     { label: 'Chức năng', icon: <Terminal size={12} />, query: 'Blog có những tính năng gì nổi bật?' },
   ];

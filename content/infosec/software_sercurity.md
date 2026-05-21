@@ -9,13 +9,13 @@ level: "PANIC_MODE_ON"
 ---
 > "Viết code mà không có bug cũng giống như nấu mì Hảo Hảo mà không bỏ gói muối: Tồn tại nhưng vô hồn. Nhưng nếu bug của bạn lỏ đến mức dâng luôn cả cái server cho giang hồ mạng, thì chúc mừng, bạn vừa đẻ ra một lỗ hổng bảo mật đi vào lòng đất." 🍜💥
 
-Dưới đây là phần mở bát cho chuyên mục Software Security - tập trung vào phần **Buffer Overflow** của mảng Pwnable: . Đọc kỹ để hiểu bộ nhớ máy tính nó vận hành thế nào, để sau này vác máy đi thực chiến không bị các pháp sư mạng khè cho khóc thét nhé!
+Dưới đây là phần mở bát cho chuyên mục Software Security - tập trung vào phần **Buffer Overflow** của mảng Pwnable: . Đọc kỹ để hiểu bộ nhớ máy tính nó vận hành thế nào, để sau này vác máy đi thực chiến không bị khè cho khóc thét nhé!
 
 ## 1.1 Khởi động: Lỗ hổng phần mềm và Sự thật cảm lạnh (The Reality Check)
 
-Chúng ta thường hay tự ái cãi cùn với Tester rằng "trên máy em nó vẫn chạy bình thường", nhưng sự thật từ các bô lão thống kê thì vả đôm đốp vào mặt:
+Chúng ta thường hay tự ái cãi cùn với Tester rằng "trên máy em nó vẫn chạy bình thường", nhưng sự thật từ thống kê thì vả đôm đốp vào mặt:
 
-* Trung bình một developer "đẻ" ra tới 70 con bugs trên mỗi 1000 dòng code. Một con số mang đậm tính chất báo thủ!
+* Trung bình một developer "đẻ" ra tới 70 con bugs trên mỗi 1000 dòng code. Quá báo!
 
 
 * Và buồn thay, khoảng 15 bugs/1000 dòng code sẽ lọt qua mọi vòng test và đến thẳng tay khách hàng.

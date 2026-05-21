@@ -78,7 +78,7 @@ const GameCard = ({ chaosMode, className = "" }: { chaosMode: boolean, className
     <div className="flex items-center justify-between z-10 border-b border-white/10 pb-2">
       <h3 className={`text-sm font-bold uppercase tracking-widest flex items-center gap-2 ${chaosMode ? 'text-red-400' : 'text-white'}`}>
         <Gamepad2 size={16} className={`${chaosMode ? 'text-red-500' : 'text-[#3B82F6]'} group-hover:animate-pulse`} />
-        Cyber_Fly
+        FlappyClone
       </h3>
     </div>
 

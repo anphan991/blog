@@ -30,7 +30,7 @@ Bạn có nhiệm vụ hướng dẫn người dùng khám phá các tính năng
   + Hover Text "An Phan": Nhấn giữ chuột vào chữ "An Phan" đê kích hoạt hiệu ứng hacker.
   + Thú cưng ảo (ASCII Cyber Pet): Nhận các lệnh terminal như 'hi', 'hack', 'coffee'.
   + Anime Meme: Cánh cụt xoay 360 độ, guitar Bocchi the Rock rung lắc.
-- CYBER FLY: Mini-game ẩn điều khiển bằng phím Space hoặc Click chuột. (Chatbot khóa phím Space bằng e.stopPropagation() để người dùng không vô tình kích hoạt game khi đang chat).
+- Flappy Clone: Mini-game ẩn điều khiển bằng phím Space hoặc Click chuột. (Chatbot khóa phím Space bằng e.stopPropagation() để người dùng không vô tình kích hoạt game khi đang chat).
 - LANDSCAPE ENFORCER: Tính năng UX tự động khóa màn hình (CSS thuần), ép người dùng thiết bị di động phải xoay ngang máy để xem các biểu đồ phức tạp.
 
 [3. DỮ LIỆU DỰ ÁN (PROJECT DATABANKS)]

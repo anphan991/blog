@@ -305,8 +305,8 @@ const CyberFlyGame: React.FC = () => {
       {gameState === 'START' && (
         <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#0d1117]/80 backdrop-blur-sm p-6">
           <div className="text-6xl mb-6 animate-bounce">{selectedEmoji}</div>
-          <h1 className="text-2xl font-black text-red-500 mb-1 tracking-tighter uppercase">Cyber_Fly</h1>
-          <p className="text-white/30 text-[9px] uppercase tracking-widest mb-8">Bypass the firewalls</p>
+          <h1 className="text-2xl font-black text-red-500 mb-1 tracking-tighter uppercase">FlappyClone</h1>
+          <p className="text-white/30 text-[9px] uppercase tracking-widest mb-8">boredom-driven</p>
           
           <div className="flex flex-col gap-3 w-full max-w-[200px]">
             <button 
@@ -314,7 +314,7 @@ const CyberFlyGame: React.FC = () => {
               onClick={(e) => resetGame(e)}
               className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold flex items-center justify-center gap-2 transition-all active:scale-95 rounded-xl text-xs"
             >
-              <Play size={14} fill="currentColor" /> INJECT PAYLOAD
+              <Play size={14} fill="currentColor" /> Play
             </button>
             <button 
               suppressHydrationWarning
