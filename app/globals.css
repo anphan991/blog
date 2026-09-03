@@ -185,9 +185,9 @@ html.show-intro .intro-veil { opacity: 1; animation: khzIntroOut 1.6s var(--ease
 .service-item { display: flex; align-items: flex-start; justify-content: space-between; border-top: 1px solid var(--border); padding: 1.5rem 0; gap: 2rem; transition: padding-left 0.5s var(--ease-khz); color: inherit; text-decoration: none; }
 .service-item:last-child { border-bottom: 1px solid var(--border); }
 .service-item:hover { padding-left: 1.5rem; padding-right: 1.5rem; background: #1A1A1A; }
-.service-item__title { font-family: var(--serif); font-size: clamp(1.25rem, 2.5vw, 2rem); font-weight: 300; color: var(--fg); transition: font-style 0.35s var(--ease); }
-.service-item:hover .service-item__title { font-style: italic; color: #4ade80; text-shadow: 0 0 10px rgba(74,222,128,0.3); }
-.service-item:hover .service-item__meta { color: #F5F5F0; }
+.service-item__title { font-family: var(--serif); font-size: clamp(1.25rem, 2.5vw, 2rem); font-weight: 300; color: var(--fg); transition: font-style 0.35s var(--ease), color 0.35s var(--ease); }
+.service-item:hover .service-item__title { font-style: italic; color: #4ade80 !important; text-shadow: 0 0 10px rgba(74,222,128,0.3) !important; }
+.service-item:hover .service-item__meta { color: #F5F5F0 !important; }
 .service-item__meta { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-3); font-family: var(--sans); }
 .service-item__arrow { font-size: 1.25rem; color: var(--fg-3); transition: transform 0.4s var(--ease-khz), color 0.3s; }
 .service-item:hover .service-item__arrow { transform: translate(4px, -4px); color: #4ade80; }
@@ -346,3 +346,118 @@ html.light-theme .service-item:hover .service-item__meta {
 
 /* Force hide system cursor */
 html, body, *, a, button, .cursor-pointer { cursor: none !important; }
+
+/* ═══ ANIMATED GRADIENT BORDER GLOW ═══ */
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes rotateBorder {
+  to { --border-angle: 360deg; }
+}
+
+.ms-section > div:not(.section-label) {
+  border: 1px solid transparent !important;
+  background: 
+    linear-gradient(#111111, #111111) padding-box,
+    conic-gradient(from var(--border-angle), transparent 25%, #4ade80 50%, transparent 75%) border-box !important;
+  animation: rotateBorder 4s linear infinite;
+}
+
+html.light-theme .ms-section > div:not(.section-label) {
+  background: 
+    linear-gradient(var(--light-bg-2), var(--light-bg-2)) padding-box,
+    conic-gradient(from var(--border-angle), transparent 25%, #4ade80 50%, transparent 75%) border-box !important;
+}
+
+/* ═══ SECTION TRANSITION LINE ═══ */
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  margin-top: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.section-label .section-line-sweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: #4ade80;
+  transform: translateX(-100%);
+  transition: transform 0.8s var(--ease-khz);
+}
+
+.section-label.is-visible .section-line-sweep {
+  transform: translateX(0%);
+}
+
+/* ═══ REVEAL ON SCROLL — SECTION LEVEL (applies to ALL text inside) ═══ */
+
+/* ═══ REVEAL ON SCROLL ═══ */
+.scroll-reveal-line {
+  color: #333330 !important;
+  transition: color 0.8s var(--ease-khz), text-shadow 0.8s var(--ease-khz);
+}
+
+.scroll-reveal-line.is-bright {
+  color: var(--fg) !important;
+}
+
+.scroll-reveal-line.is-bright[class*="text-green"],
+.scroll-reveal-line.is-bright.service-item__title {
+  color: #4ade80 !important;
+}
+
+html.light-theme .scroll-reveal-line {
+  color: #C8C0B0 !important;
+}
+
+html.light-theme .scroll-reveal-line.is-bright {
+  color: var(--light-text) !important;
+}
+
+/* Staggered delays based on attribute */
+.scroll-reveal-line[data-reveal-delay="0"] { transition-delay: 0s; }
+.scroll-reveal-line[data-reveal-delay="1"] { transition-delay: 0.15s; }
+.scroll-reveal-line[data-reveal-delay="2"] { transition-delay: 0.3s; }
+.scroll-reveal-line[data-reveal-delay="3"] { transition-delay: 0.45s; }
+.scroll-reveal-line[data-reveal-delay="4"] { transition-delay: 0.6s; }
+.scroll-reveal-line[data-reveal-delay="5"] { transition-delay: 0.75s; }
+.scroll-reveal-line:not(.is-bright) { transition-delay: 0s !important; } /* Dim instantly when leaving */
+
+
+/* ═══ NOISE TEXTURE OVERLAY ═══ */
+@keyframes noiseFlicker {
+  0%   { background-position: 0 0;       opacity: 0.04; }
+  10%  { background-position: -50px 30px; opacity: 0.06; }
+  20%  { background-position: 20px -60px; opacity: 0.04; }
+  30%  { background-position: -30px 10px; opacity: 0.05; }
+  40%  { background-position: 60px -20px; opacity: 0.04; }
+  50%  { background-position: -10px 50px; opacity: 0.08; }
+  51%  { background-position: 40px -40px; opacity: 0.04; }
+  60%  { background-position: -60px 60px; opacity: 0.05; }
+  70%  { background-position: 30px -10px; opacity: 0.04; }
+  80%  { background-position: -20px 40px; opacity: 0.06; }
+  90%  { background-position: 50px 20px;  opacity: 0.04; }
+  100% { background-position: 0 0;        opacity: 0.04; }
+}
+
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  animation: noiseFlicker 4s steps(1) infinite;
+}
+

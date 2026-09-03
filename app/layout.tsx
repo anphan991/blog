@@ -29,7 +29,7 @@ const cormorant = Cormorant_Garamond({
 })
 
 export const metadata: Metadata = {
-  title: "ANPHAN991",
+  title: "Hello World!",
   description: "AP's playground for system tinkering and learning",
 
   manifest: '/favicon_io/site.webmanifest',

@@ -203,16 +203,47 @@ export default function Home() {
       el.setAttribute('data-no', (i < 9 ? '0' : '') + (i + 1));
     });
 
+        // Scroll Reveal: observe each text element directly for perfect bidirectional trigger
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-bright');
+          } else {
+            entry.target.classList.remove('is-bright');
+          }
+        });
+      },
+      // Trigger when element is slightly inside viewport
+      { threshold: [0, 1], rootMargin: "0px" }
+    );
+    document.querySelectorAll('.scroll-reveal-line').forEach((el) => revealObserver.observe(el));
+
+
+    // Section label sweep animation
+    const labelObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    document.querySelectorAll('.section-label').forEach((el) => labelObserver.observe(el));
+
     return () => {
       window.removeEventListener('scroll', handleScrollNav);
       window.removeEventListener('scroll', handleScrollHero);
       clearInterval(bgInterval);
+      revealObserver.disconnect();
+      labelObserver.disconnect();
     };
   }, [chaosMode]);
 
   return (
     <>
-
       <main className="min-h-[100dvh]">
 
         
@@ -353,7 +384,7 @@ export default function Home() {
                 
                 {/* Khung ảnh bên trái dưới chữ Hire Me */}
                 <div className="mt-auto pt-16 hidden md:block w-full">
-                  <img src="/meme1.jpg" alt="Left Image" className="w-full aspect-square object-cover border border-[#333330] rounded-sm opacity-100" />
+                  <img src="/meme5.jpg" alt="Left Image" className="w-full aspect-square object-cover border border-[#333330] rounded-sm opacity-100" />
                 </div>
               </motion.div>
               
@@ -375,24 +406,24 @@ export default function Home() {
                 </div>
                 {bsodState && (
                   <div className="border border-white/20 p-6 font-mono text-xs mb-8 bg-white/5">
-                    <p className="bg-white text-black w-fit px-2 mb-3 font-bold text-[10px] uppercase tracking-widest">System Crash</p>
-                    <p className="text-white/70">An exception 0E has occurred at 0xDEADBEEF.</p>
-                    <p className="mt-4 text-white/50 cursor-pointer hover:text-white transition-colors" onClick={() => setBsodState(false)}>
+                    <p className="scroll-reveal-line">System Crash</p>
+                    <p className="scroll-reveal-line">An exception 0E has occurred at 0xDEADBEEF.</p>
+                    <p className="scroll-reveal-line" onClick={() => setBsodState(false)}>
                       › Reboot System
                     </p>
                   </div>
                 )}
                 
-                <h2 className="split-lines font-serif text-[clamp(2rem,4vw,3.5rem)] leading-[1.4] text-white font-light mb-12">
-                  InfoSec Student & <br/>
-                  Break-stuff Enthusiast.<br/>
-                  <span className="italic text-[#A9A9A2] text-[0.65em] inline-block pt-1">Please excuse me for being antisocial.</span>
+                <h2 className="split-lines scroll-reveal-line font-serif text-[clamp(2rem,4vw,3.5rem)] leading-[1.4] text-white font-light mb-12">
+                  <span className="scroll-reveal-line" data-reveal-delay="0">InfoSec Student &amp; </span><br/>
+                  <span className="scroll-reveal-line" data-reveal-delay="1">Break-stuff Enthusiast.</span><br/>
+                  <span className="scroll-reveal-line italic text-[#A9A9A2] text-[0.65em] inline-block pt-1" data-reveal-delay="2">Please excuse me for being antisocial.</span>
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-start">
-                  <p className="text-[#A9A9A2] font-sans font-light text-lg">
-                    Я не знаю почему это работает, но не трогай.<br/>
-                    Сделано для ПК — мобилка это побочный квест.
+                  <p className="scroll-reveal-line">
+                    <span className="scroll-reveal-line" data-reveal-delay="3">Я не знаю почему это работает, но не трогай.</span><br/>
+                    <span className="scroll-reveal-line" data-reveal-delay="4">Сделано для ПК — мобилка это побочный квест.</span>
                   </p>
                   <img src="/pic2.jpg" alt="Meme 1" className="max-w-full max-h-[35vh] object-contain border border-[#333330] bg-[#0A0A0A] scale-[1.15] translate-y-15" />
                 </div>
@@ -406,13 +437,17 @@ export default function Home() {
           <section id="sec-archive" className="ms-section">
             <div className="section-label">Visual Archive</div>
             <div className="flex flex-col md:flex-row gap-6 items-stretch justify-center h-[75vh]">
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }} className="flex-1 h-full w-full min-w-0 min-h-0 flex items-center justify-center">
-                <img src="/meme2.jpg" alt="Portrait Meme" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" />
+              <motion.div initial={{ opacity: 0, x: -60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }} className="flex-1 h-full w-full min-w-0 min-h-0 flex items-center justify-center">
+                <img src="/p1.jpg" alt="Portrait Meme" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" />
               </motion.div>
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.1 }} className="flex-1 flex flex-col gap-6 h-full w-full min-w-0 min-h-0">
+              <motion.div initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.2 }} className="flex-1 flex flex-col gap-6 h-full w-full min-w-0 min-h-0">
                 <div className="flex-1 w-full min-h-0 flex items-center justify-center"><img src="/meme3.jpg" alt="Landscape Meme 1" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" /></div>
                 <div className="flex-1 w-full min-h-0 flex items-center justify-center"><img src="/meme4.jpg" alt="Landscape Meme 2" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" /></div>
               </motion.div>
+             <motion.div initial={{ opacity: 0, x: 60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.4 }} className="flex-1 h-full w-full min-w-0 min-h-0 flex items-center justify-center">
+                <img src="/p2.jpg" alt="Portrait Meme" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" />
+              </motion.div>
+
             </div>
           </section>
 
@@ -424,8 +459,8 @@ export default function Home() {
               <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
                 <TiltCard><Link href="/info-sec" className="service-item">
                   <div className="service-item__body">
-                    <h3 className="service-item__title">InfoSec Notes</h3>
-                    <div className="service-item__meta mt-2">Transition from a script kiddie to a professional overthinker.</div>
+                    <h3 className="service-item__title scroll-reveal-line" data-reveal-delay="0">InfoSec Notes</h3>
+                    <div className="service-item__meta mt-2 scroll-reveal-line" data-reveal-delay="1">Transition from a script kiddie to a professional overthinker.</div>
                   </div>
                   <span className="service-item__arrow">→</span>
                 </Link></TiltCard>
@@ -434,8 +469,8 @@ export default function Home() {
               <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
                 <TiltCard><Link href="/blog" className="service-item">
                   <div className="service-item__body">
-                    <h3 className="service-item__title">CTF Training</h3>
-                    <div className="service-item__meta mt-2">A note dump of my CTF journey</div>
+                    <h3 className="service-item__title scroll-reveal-line" data-reveal-delay="0">CTF Training</h3>
+                    <div className="service-item__meta mt-2 scroll-reveal-line" data-reveal-delay="1">A note dump of my CTF journey</div>
                   </div>
                   <span className="service-item__arrow">→</span>
                 </Link></TiltCard>
@@ -444,8 +479,8 @@ export default function Home() {
               <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
                 <TiltCard><Link href="/projects/rfid" className="service-item">
                   <div className="service-item__body">
-                    <h3 className="service-item__title">IoT RFID Vault</h3>
-                    <div className="service-item__meta mt-2">Final chance to run it with mah G.</div>
+                    <h3 className="service-item__title scroll-reveal-line" data-reveal-delay="0">IoT RFID Vault</h3>
+                    <div className="service-item__meta mt-2 scroll-reveal-line" data-reveal-delay="1">Final chance to run it with mah G.</div>
                   </div>
                   <span className="service-item__arrow">→</span>
                 </Link></TiltCard>
@@ -454,8 +489,8 @@ export default function Home() {
               <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
                 <TiltCard><a href="/free-cookie" target="_blank" rel="noopener noreferrer" className="service-item">
                   <div className="service-item__body">
-                    <h3 className="service-item__title">Free Cookie {chaosMode ? '☢️' : '🍪'}</h3>
-                    <div className="service-item__meta mt-2">Totally safe. Not a rickroll. I promise.</div>
+                    <h3 className="service-item__title scroll-reveal-line">Free Cookie {chaosMode ? '☢️' : '🍪'}</h3>
+                    <div className="service-item__meta mt-2 scroll-reveal-line" data-reveal-delay="1">Totally safe. Not a rickroll. I promise.</div>
                   </div>
                   <span className="service-item__arrow">→</span>
                 </a></TiltCard>
@@ -472,29 +507,32 @@ export default function Home() {
                 initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease: "easeOut" }}
                 className="lg:col-span-4 flex flex-col gap-6"
               >
-                <h3 className="font-serif text-4xl text-white leading-tight">
-                  Home SOC<br/>LAB.
+                <h3 className="font-serif text-[clamp(2.5rem,4vw,3.8rem)] leading-[1.1] font-light text-white scroll-reveal-line">
+                  <span className="scroll-reveal-line" data-reveal-delay="0">Home SOC</span><br/>
+                  <span className="scroll-reveal-line" data-reveal-delay="1">LAB.</span>
                 </h3>
-                <div className="flex gap-3 items-center">
-                  <span className="relative flex h-3 w-3">
+                <div className="flex gap-4 items-center mt-6">
+                  <span className="relative flex h-4 w-4">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4ade80] opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-[#4ade80]"></span>
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-[#4ade80]"></span>
                   </span>
-                  <span className="font-mono text-[10px] text-[#4ade80] uppercase tracking-widest">
+                  <span className="font-mono text-[13px] font-semibold text-[#4ade80] uppercase tracking-widest scroll-reveal-line" data-reveal-delay="2">
                     4 MODULES ONLINE
                   </span>
                 </div>
-                <p className="text-[#A9A9A2] font-sans font-light text-sm mt-4">
-                ///abcdexyzjqk 
-                               </p>
-                <div className="mt-8 border-l border-[#333330] pl-4 font-mono text-[10px] text-[#A9A9A2] uppercase tracking-widest flex flex-col gap-2">
-                  <p>› Stack:  Wazuh</p>
-                  <p>› Status: Deploying</p>
-                  <p>› Access: Classified</p>
+                
+                <p className="text-[#A9A9A2] font-mono font-light text-base mt-6 scroll-reveal-line" data-reveal-delay="3">
+                  ///abcdexyzjqk 
+                </p>
+                
+                <div className="mt-10 border-l-2 border-[#333330] pl-6 font-mono text-[13px] text-[#A9A9A2] uppercase tracking-[0.15em] flex flex-col gap-4">
+                  <p className="scroll-reveal-line" data-reveal-delay="4">› Stack: Wazuh</p>
+                  <p className="scroll-reveal-line" data-reveal-delay="5">› Status: Deploying</p>
+                  <p className="scroll-reveal-line" data-reveal-delay="6">› Access: Classified</p>
                 </div>
 
-                <p className="text-[#A9A9A2] font-sans font-light text-sm mt-4">
-                |||||
+                <p className="mt-8 font-mono text-sm text-[#333330] tracking-widest scroll-reveal-line" data-reveal-delay="7">
+                  |||||
                 </p>
 
               </motion.div>
@@ -502,20 +540,20 @@ export default function Home() {
               {/* Right Terminal List */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                className="lg:col-span-8 bg-[#050505] border border-[#333330] flex flex-col font-mono text-xs h-[60vh] max-h-[500px]"
+                className="lg:col-span-8 bg-[#050505] border border-[#333330] flex flex-col font-mono text-sm h-[65vh] max-h-[600px]"
               >
                 {/* Terminal Header */}
-                <div className="flex justify-between items-center px-4 py-3 border-b border-[#333330] bg-[#0A0A0A]">
-                  <span className="text-[#A9A9A2]">~/projects/home-soc-lab</span>
+                <div className="flex justify-between items-center px-6 py-4 border-b border-[#333330] bg-[#0A0A0A]">
+                  <span className="text-[#A9A9A2] text-sm">~/projects/home-soc-lab</span>
                   <div className="flex gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#333330]"></div>
-                    <div className="w-2 h-2 rounded-full bg-[#333330]"></div>
-                    <div className="w-2 h-2 rounded-full bg-[#333330]"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#333330]"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#333330]"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#333330]"></div>
                   </div>
                 </div>
                 
                 {/* File List */}
-                <div className="flex-1 overflow-y-auto px-4 py-2 scrollbar-thin">
+                <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
                   {[
                     "01-deploy-wazuh-server.md",
                     "02-connect-agents-and-sysmon.md",
@@ -525,18 +563,18 @@ export default function Home() {
                     "Coming Soon...",
                     "Coming Soon..."
                   ].map((file, i) => (
-                    <TiltCard><a href={`/soc-lab/${file.replace('.md', '')}`} key={i} className="flex justify-between items-center py-3 border-b border-[#111111] hover:bg-[#111111] transition-colors group cursor-pointer px-2">
-                      <span className="flex gap-4 items-center">
-                        <span className="text-[#333330] group-hover:text-[#4ade80]">[{String(i+1).padStart(2, '0')}]</span>
-                        <span className="text-[#D8D8D1] group-hover:text-white transition-colors">{file}</span>
+                    <TiltCard key={i}><a href={`/soc-lab/${file.replace('.md', '')}`} className="flex justify-between items-center py-4 border-b border-[#111111] hover:bg-[#111111] transition-colors group cursor-pointer px-4">
+                      <span className="flex gap-5 items-center">
+                        <span className="text-[#333330] group-hover:text-[#4ade80] text-sm">[{String(i+1).padStart(2, '0')}]</span>
+                        <span className="text-[#D8D8D1] group-hover:text-white transition-colors text-base">{file}</span>
                       </span>
-                      <span className="text-[#333330] group-hover:text-[#4ade80] transition-colors">
+                      <span className="text-[#333330] group-hover:text-[#4ade80] transition-colors text-sm">
                         {10 + i * 2}.4kb
                       </span>
                     </a></TiltCard>
                   ))}
-                  <div className="py-4 text-[#333330] px-2">
-                    <span className="animate-pulse">_</span>
+                  <div className="py-6 text-[#333330] px-4">
+                    <span className="animate-pulse text-base">_</span>
                   </div>
                 </div>
               </motion.div>
@@ -554,7 +592,24 @@ export default function Home() {
                 initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}
                 className="lg:col-span-7"
               >
-                <h2 className="split-lines font-serif text-[clamp(3.5rem,7vw,6.5rem)] leading-[1.2] text-white font-light mb-12">
+                <h2 className="split-lines scroll-reveal-line font-serif text-[clamp(2.5rem,5vw,6.5rem)] leading-[1.5] text-white font-light mb-12 pb-6"
+                  style={{
+                    textShadow: `
+                      1px 1px 0 rgba(74,222,128,0.4),
+                      2px 2px 0 rgba(74,222,128,0.35),
+                      3px 3px 0 rgba(74,222,128,0.3),
+                      4px 4px 0 rgba(74,222,128,0.25),
+                      5px 5px 0 rgba(74,222,128,0.2),
+                      6px 6px 0 rgba(74,222,128,0.15),
+                      7px 7px 0 rgba(74,222,128,0.1),
+                      8px 8px 0 rgba(74,222,128,0.08),
+                      0 0 60px rgba(74,222,128,0.15),
+                      0 0 120px rgba(74,222,128,0.08)
+                    `,
+                    transform: 'perspective(600px) rotateY(-4deg) rotateX(2deg)',
+                    transformStyle: 'preserve-3d',
+                  }}
+                >
                   Let's break things<br/>
                   <span className="italic">together.</span>
                 </h2>
