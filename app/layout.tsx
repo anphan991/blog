@@ -47,6 +47,7 @@ export const metadata: Metadata = {
 
 import KhzCursor from '@/components/KhzCursor'
 
+
 export default function RootLayout({
   children,
 }: {

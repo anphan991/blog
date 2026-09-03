@@ -5,6 +5,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 import { Bug, Zap, Mail, Github, Twitter, Gamepad2 } from 'lucide-react';
+import HackerText from '@/components/HackerText';
+import TiltCard from '@/components/TiltCard';
+import MagneticWrapper from '@/components/MagneticWrapper';
 import CyberChat from '@/components/CyberChat';
 import NetworkParticles from '@/components/NetworkParticles';
 import ParallaxWireframes from '@/components/ParallaxWireframes';
@@ -19,10 +22,15 @@ const EASE_OUT = [0.16, 1, 0.3, 1] as [number, number, number, number];
 // MAIN PAGE
 // ==========================================
 export default function Home() {
+  useEffect(() => {
+    document.documentElement.classList.add('snap-enabled');
+    return () => document.documentElement.classList.remove('snap-enabled');
+  }, []);
   const [chaosMode, setChaosMode] = useState(false);
   const [runawayPos, setRunawayPos] = useState({ x: 0, y: 0 });
   const [clickCount, setClickCount] = useState(0);
   const [bsodState, setBsodState] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const [typedTitle, setTypedTitle] = useState({ line1: '', line2: '', cursorLine: 1 });
 
   useEffect(() => {
@@ -229,12 +237,32 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-8">
-            <div className="hidden md:flex gap-6 text-[11px] uppercase tracking-widest text-green-600 font-mono">
-              <a href="https://github.com/anphan991" target="_blank" rel="noopener noreferrer" className="hover:text-[#4ade80] transition-colors duration-300">GitHub</a>
-              <a href="https://x.com/TezD991" target="_blank" rel="noopener noreferrer" className="hover:text-[#4ade80] transition-colors duration-300">Twitter</a>
-              <a href="mailto:an0915129080@gmail.com" className="hover:text-[#4ade80] transition-colors duration-300">Mail</a>
+              <div className="relative hidden md:block">
+                <button 
+                  onClick={() => setNavOpen(!navOpen)} 
+                  className="text-[11px] uppercase tracking-widest text-green-600 font-mono hover:text-[#4ade80] transition-colors duration-300 flex items-center gap-2"
+                >
+                  [ MENU ] <span className="text-[8px]">{navOpen ? '▲' : '▼'}</span>
+                </button>
+                
+                {navOpen && (
+                  <div className="absolute top-full right-0 mt-4 bg-[#111111] border border-[#333330] p-4 flex flex-col gap-4 text-[11px] uppercase tracking-widest text-green-600 font-mono min-w-[160px] shadow-2xl z-50">
+                    <button onClick={() => { document.getElementById('sec-manifesto')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[01] MANIFESTO" /></button>
+                    <button onClick={() => { document.getElementById('sec-archive')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[02] ARCHIVE" /></button>
+                    <button onClick={() => { document.getElementById('sec-works')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[03] WORKS" /></button>
+                    <button onClick={() => { document.getElementById('sec-topic')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[04] TOPICS" /></button>
+                      <button onClick={() => { document.getElementById('sec-connect')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[05] CONNECT" /></button>
+                  </div>
+                )}
+              </div>
+              <button 
+                onClick={() => document.documentElement.classList.toggle('light-theme')}
+                className="w-8 h-8 flex items-center justify-center border border-[#333330] rounded-full text-[#A9A9A2] hover:text-[#4ade80] hover:border-[#4ade80] transition-all"
+                title="Toggle Theme"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+              </button>
             </div>
-          </div>
         </nav>
 
         {/* ══ HERO ════════════════════════════════════════════════════════════════ */}
@@ -288,7 +316,7 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-8 md:px-16 lg:px-24" style={{ paddingBottom: '160px' }}>
           
           {/* ══ MANIFESTO ════════════════════════════════ */}
-          <section className="ms-section">
+          <section id="sec-manifesto" className="ms-section">
             <div className="section-label">Manifesto</div>
             <div className="grid grid-cols-1 md:grid-cols-12 gap-16 items-start">
               
@@ -322,12 +350,29 @@ export default function Home() {
                     Hire Me?
                   </motion.button>
                 </div>
+                
+                {/* Khung ảnh bên trái dưới chữ Hire Me */}
+                <div className="mt-auto pt-16 hidden md:block w-full">
+                  <img src="/meme1.jpg" alt="Left Image" className="w-full aspect-square object-cover border border-[#333330] rounded-sm opacity-100" />
+                </div>
               </motion.div>
               
               <motion.div 
                 initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.15 }}
-                className="md:col-span-9"
+                className="md:col-span-9 relative"
               >
+                {/* Khung nhãn góc trên bên phải */}
+                <div className="absolute top-0 right-0 hidden md:flex flex-col items-end gap-2 z-10">
+                  <span className="px-3 py-1 border border-[#333330] text-[9px] uppercase tracking-widest font-mono text-[#4ade80]">
+                    SYS.STATUS: ONLINE
+                  </span>
+                  <span className="px-3 py-1 border border-[#333330] text-[9px] uppercase tracking-widest font-mono text-[#A9A9A2]">
+                    CAFFEINE: 99%
+                  </span>
+                  <span className="px-3 py-1 border border-[#333330] text-[9px] uppercase tracking-widest font-mono text-[#A9A9A2]">
+                    SLEEP: DEPRIVED
+                  </span>
+                </div>
                 {bsodState && (
                   <div className="border border-white/20 p-6 font-mono text-xs mb-8 bg-white/5">
                     <p className="bg-white text-black w-fit px-2 mb-3 font-bold text-[10px] uppercase tracking-widest">System Crash</p>
@@ -338,25 +383,27 @@ export default function Home() {
                   </div>
                 )}
                 
-                <h2 className="split-lines font-serif text-[clamp(2rem,4vw,3.5rem)] leading-[1.1] text-white font-light mb-12">
+                <h2 className="split-lines font-serif text-[clamp(2rem,4vw,3.5rem)] leading-[1.4] text-white font-light mb-12">
                   InfoSec Student & <br/>
                   Break-stuff Enthusiast.<br/>
-                  <span className="italic text-[#A9A9A2]">Please excuse me for being antisocial.</span>
+                  <span className="italic text-[#A9A9A2] text-[0.65em] inline-block pt-1">Please excuse me for being antisocial.</span>
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-start">
                   <p className="text-[#A9A9A2] font-sans font-light text-lg">
                     Я не знаю почему это работает, но не трогай.<br/>
                     Сделано для ПК — мобилка это побочный квест.
                   </p>
-                  <img src="/meme1.jpg" alt="Meme 1" className="max-w-full max-h-[35vh] object-contain border border-[#333330] bg-[#0A0A0A]" />
+                  <img src="/pic2.jpg" alt="Meme 1" className="max-w-full max-h-[35vh] object-contain border border-[#333330] bg-[#0A0A0A] scale-[1.15] translate-y-15" />
                 </div>
               </motion.div>
             </div>
+
+
           </section>
 
           {/* ══ VISUAL ARCHIVE (MEME GRID) ═══════════════ */}
-          <section className="ms-section">
+          <section id="sec-archive" className="ms-section">
             <div className="section-label">Visual Archive</div>
             <div className="flex flex-col md:flex-row gap-6 items-stretch justify-center h-[75vh]">
               <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }} className="flex-1 h-full w-full min-w-0 min-h-0 flex items-center justify-center">
@@ -370,54 +417,135 @@ export default function Home() {
           </section>
 
           {/* ══ SELECTED WORKS ───────────────────────── */}
-          <section className="ms-section">
+          <section id="sec-works" className="ms-section">
             <div className="section-label">Selected Works</div>
-            
             <div className="flex flex-col">
+
               <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
-                <Link href="/blog" className="service-item">
-                  <div className="service-item__body">
-                    <h3 className="service-item__title">CTF Training</h3>
-                    <div className="service-item__meta mt-2">A note dump of my CTF journey</div>
-                  </div>
-                  <span className="service-item__arrow">→</span>
-                </Link>
-              </motion.div>
-              
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
-                <Link href="/projects/rfid" className="service-item">
-                  <div className="service-item__body">
-                    <h3 className="service-item__title">IoT RFID Vault</h3>
-                    <div className="service-item__meta mt-2">Final chance to run it with mah G.</div>
-                  </div>
-                  <span className="service-item__arrow">→</span>
-                </Link>
-              </motion.div>
-              
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
-                <Link href="/info-sec" className="service-item">
+                <TiltCard><Link href="/info-sec" className="service-item">
                   <div className="service-item__body">
                     <h3 className="service-item__title">InfoSec Notes</h3>
                     <div className="service-item__meta mt-2">Transition from a script kiddie to a professional overthinker.</div>
                   </div>
                   <span className="service-item__arrow">→</span>
-                </Link>
+                </Link></TiltCard>
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
-                <a href="/free-cookie" target="_blank" rel="noopener noreferrer" className="service-item">
+                <TiltCard><Link href="/blog" className="service-item">
+                  <div className="service-item__body">
+                    <h3 className="service-item__title">CTF Training</h3>
+                    <div className="service-item__meta mt-2">A note dump of my CTF journey</div>
+                  </div>
+                  <span className="service-item__arrow">→</span>
+                </Link></TiltCard>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
+                <TiltCard><Link href="/projects/rfid" className="service-item">
+                  <div className="service-item__body">
+                    <h3 className="service-item__title">IoT RFID Vault</h3>
+                    <div className="service-item__meta mt-2">Final chance to run it with mah G.</div>
+                  </div>
+                  <span className="service-item__arrow">→</span>
+                </Link></TiltCard>
+              </motion.div>
+              
+              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
+                <TiltCard><a href="/free-cookie" target="_blank" rel="noopener noreferrer" className="service-item">
                   <div className="service-item__body">
                     <h3 className="service-item__title">Free Cookie {chaosMode ? '☢️' : '🍪'}</h3>
                     <div className="service-item__meta mt-2">Totally safe. Not a rickroll. I promise.</div>
                   </div>
                   <span className="service-item__arrow">→</span>
-                </a>
+                </a></TiltCard>
               </motion.div>
             </div>
           </section>
+          {/* ══ HOME SOC LAB ════════════════════════════════════════ */}
+          <section id="sec-topic" className="ms-section">
+            <div className="section-label">Project: SOC Lab</div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start h-full">
+              
+              {/* Left Info */}
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease: "easeOut" }}
+                className="lg:col-span-4 flex flex-col gap-6"
+              >
+                <h3 className="font-serif text-4xl text-white leading-tight">
+                  Home SOC<br/>LAB.
+                </h3>
+                <div className="flex gap-3 items-center">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4ade80] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-[#4ade80]"></span>
+                  </span>
+                  <span className="font-mono text-[10px] text-[#4ade80] uppercase tracking-widest">
+                    4 MODULES ONLINE
+                  </span>
+                </div>
+                <p className="text-[#A9A9A2] font-sans font-light text-sm mt-4">
+                ///abcdexyzjqk 
+                               </p>
+                <div className="mt-8 border-l border-[#333330] pl-4 font-mono text-[10px] text-[#A9A9A2] uppercase tracking-widest flex flex-col gap-2">
+                  <p>› Stack:  Wazuh</p>
+                  <p>› Status: Deploying</p>
+                  <p>› Access: Classified</p>
+                </div>
 
-                    {/* ══ CONNECT & ASCII COMPANION ═════════════════════════ */}
-          <section className="ms-section pb-0">
+                <p className="text-[#A9A9A2] font-sans font-light text-sm mt-4">
+                |||||
+                </p>
+
+              </motion.div>
+
+              {/* Right Terminal List */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                className="lg:col-span-8 bg-[#050505] border border-[#333330] flex flex-col font-mono text-xs h-[60vh] max-h-[500px]"
+              >
+                {/* Terminal Header */}
+                <div className="flex justify-between items-center px-4 py-3 border-b border-[#333330] bg-[#0A0A0A]">
+                  <span className="text-[#A9A9A2]">~/projects/home-soc-lab</span>
+                  <div className="flex gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#333330]"></div>
+                    <div className="w-2 h-2 rounded-full bg-[#333330]"></div>
+                    <div className="w-2 h-2 rounded-full bg-[#333330]"></div>
+                  </div>
+                </div>
+                
+                {/* File List */}
+                <div className="flex-1 overflow-y-auto px-4 py-2 scrollbar-thin">
+                  {[
+                    "01-deploy-wazuh-server.md",
+                    "02-connect-agents-and-sysmon.md",
+                    "03-generate-and-read-telemetry.md",
+                    "04-build-dashboard.md",
+                    "Coming Soon...",
+                    "Coming Soon...",
+                    "Coming Soon..."
+                  ].map((file, i) => (
+                    <TiltCard><a href={`/soc-lab/${file.replace('.md', '')}`} key={i} className="flex justify-between items-center py-3 border-b border-[#111111] hover:bg-[#111111] transition-colors group cursor-pointer px-2">
+                      <span className="flex gap-4 items-center">
+                        <span className="text-[#333330] group-hover:text-[#4ade80]">[{String(i+1).padStart(2, '0')}]</span>
+                        <span className="text-[#D8D8D1] group-hover:text-white transition-colors">{file}</span>
+                      </span>
+                      <span className="text-[#333330] group-hover:text-[#4ade80] transition-colors">
+                        {10 + i * 2}.4kb
+                      </span>
+                    </a></TiltCard>
+                  ))}
+                  <div className="py-4 text-[#333330] px-2">
+                    <span className="animate-pulse">_</span>
+                  </div>
+                </div>
+              </motion.div>
+              
+            </div>
+          </section>
+
+          {/* ══ CONNECT & ASCII COMPANION ═════════════════════════ */}
+          <section id="sec-connect" className="ms-section pb-0">
             <div className="section-label">Connect & Companion</div>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
               
@@ -426,14 +554,14 @@ export default function Home() {
                 initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}
                 className="lg:col-span-7"
               >
-                <h2 className="contact-heading split-lines mb-12">
+                <h2 className="split-lines font-serif text-[clamp(3.5rem,7vw,6.5rem)] leading-[1.2] text-white font-light mb-12">
                   Let's break things<br/>
                   <span className="italic">together.</span>
                 </h2>
                 <div className="cta-row">
-                  <a href="mailto:an0915129080@gmail.com" className="cta-link">Email</a>
-                  <a href="https://github.com/anphan991" target="_blank" rel="noopener noreferrer" className="cta-link">GitHub</a>
-                  <a href="https://x.com/TezD991" target="_blank" rel="noopener noreferrer" className="cta-link">Twitter</a>
+                  <MagneticWrapper><a href="mailto:an0915129080@gmail.com" className="cta-link"><HackerText text="Email"/></a></MagneticWrapper>
+                  <MagneticWrapper><a href="https://github.com/anphan991" target="_blank" rel="noopener noreferrer" className="cta-link"><HackerText text="GitHub"/></a></MagneticWrapper>
+                  <MagneticWrapper><a href="https://x.com/TezD991" target="_blank" rel="noopener noreferrer" className="cta-link"><HackerText text="Twitter"/></a></MagneticWrapper>
                 </div>
               </motion.div>
 

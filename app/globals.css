@@ -233,12 +233,116 @@ body.chaos-mode .cta-link:hover { background: #ef4444; color: #fff; }
   }
 }
 
-html { font-size: 90%; }
+html { font-size: 90%; transition: filter 0.5s ease, background 0.5s ease; }
 
 
-html { scroll-snap-type: y mandatory; }
-.ms-section, .hero { scroll-snap-align: center; }
+html.snap-enabled { scroll-snap-type: y mandatory; }
+html.snap-enabled .ms-section, html.snap-enabled .hero { scroll-snap-align: center; }
 
 
-footer { scroll-snap-align: end; }
+html.snap-enabled footer { scroll-snap-align: end; }
 
+
+
+
+/* Pseudo-element "sunglasses" overlay to cut down overall brightness */
+
+
+
+
+
+/* NATIVE LIGHT THEME OVERRIDES (NO FILTERS) */
+html.light-theme {
+  --light-bg: #EAE6DF; /* MÃ u giáº¥y cá»• Ã©p, cá»±c kÃ¬ dá»‹u máº¯t (Dusty Beige) */
+  --light-bg-2: #F3F0EA; /* MÃ u sÃ¡ng hÆ¡n 1 chÃºt cho cÃ¡c khung/panel Ä‘á»ƒ ná»•i khá»‘i 3D */
+  --light-text: #060606; /* Ä en xÃ¡m than, giáº£m Ä‘á»™ tÆ°Æ¡ng pháº£n gáº¯t */
+  --light-text-2: #161615; /* XÃ¡m khÃ³i cho cÃ¡c chá»¯ phá»¥ */
+  --light-border: #D6D2C9; /* ViÃªn mÃ u nÃ¢u Ä‘áº¥t nháº¡t */
+  background-color: var(--light-bg);
+}
+
+/* Backgrounds */
+html.light-theme body,
+html.light-theme .bg-\[\#0a0a0a\],
+html.light-theme .bg-\[\#050505\] {
+  background-color: var(--light-bg) !important;
+}
+
+html.light-theme .bg-\[\#111111\],
+html.light-theme .bg-\[\#151515\],
+html.light-theme .bg-\[\#0A0A0A\],
+html.light-theme .bg-zinc-900,
+html.light-theme .bg-black\/60,
+html.light-theme .bg-black\/40 {
+  background-color: var(--light-bg-2) !important;
+}
+
+/* Text */
+html.light-theme,
+html.light-theme .text-white,
+html.light-theme .text-\[\#F5F5F0\],
+html.light-theme .text-\[\#D8D8D1\],
+html.light-theme .text-slate-300 {
+  color: var(--light-text) !important;
+}
+
+html.light-theme .text-\[\#A9A9A2\],
+html.light-theme .text-slate-400,
+html.light-theme .text-slate-500,
+html.light-theme .text-zinc-400 {
+  color: var(--light-text-2) !important;
+}
+
+/* Borders */
+html.light-theme .border-\[\#333330\],
+html.light-theme .border-\[\#111111\],
+html.light-theme .border-white\/10,
+html.light-theme .border-white\/5 {
+  border-color: var(--light-border) !important;
+}
+
+/* Fix specific prose overrides for markdown */
+html.light-theme .prose-invert {
+  --tw-prose-body: var(--light-text);
+  --tw-prose-headings: var(--light-text);
+  --tw-prose-p: var(--light-text);
+  --tw-prose-a: #16a34a; /* Darker green for links in light mode */
+  --tw-prose-code: #16a34a;
+  --tw-prose-pre-bg: var(--light-bg-2);
+  --tw-prose-pre-border: var(--light-border);
+  --tw-prose-quotes: var(--light-text-2);
+}
+
+
+/* FIX HARDCODED BACKGROUNDS IN LIGHT THEME */
+html.light-theme {
+  --bg: var(--light-bg);
+  --bg-2: var(--light-bg-2);
+  --fg: var(--light-text);
+  --fg-2: var(--light-text);
+  --fg-3: var(--light-text-2);
+  --border: var(--light-border);
+}
+
+html.light-theme .ms-section > div:not(.section-label) {
+  background: var(--light-bg-2) !important;
+  border-color: var(--light-border) !important;
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05) !important;
+}
+
+html.light-theme .khz-nav,
+html.light-theme .khz-nav.is-scrolled {
+  background: var(--light-bg) !important;
+  border-bottom-color: var(--light-border) !important;
+}
+
+html.light-theme .service-item:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+html.light-theme .service-item:hover .service-item__meta {
+  color: var(--light-text) !important;
+}
+
+
+/* Force hide system cursor */
+html, body, *, a, button, .cursor-pointer { cursor: none !important; }

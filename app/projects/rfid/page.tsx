@@ -300,7 +300,7 @@ const MissionData = [
       <div className="pt-8 border-t border-white/5 flex justify-center">
         <div className="flex items-center gap-3 text-sm text-slate-500 bg-zinc-900 px-8 py-4 rounded-full border border-white/10 shadow-2xl">
           <Coffee size={16} className="text-amber-600" />
-          <span className="font-bold tracking-tight">DEBUG_TIP: Luôn check pin MISO/MOSI trước khi than vãn RFID không chạy.</span>
+          <span className="font-bold tracking-tight">Luôn check pin MISO/MOSI trước khi than vãn RFID không chạy.</span>
         </div>
       </div>
     </div>
@@ -470,7 +470,6 @@ const MissionData = [
       <div className="pt-10 border-t border-white/5 flex justify-center">
         <div className="flex items-center gap-4 text-sm text-slate-500 bg-zinc-900 px-10 py-5 rounded-full border border-white/10 shadow-2xl">
           <Bug size={20} className="text-red-500 animate-bounce" />
-          <span className="font-bold tracking-tight">THEORY_TIP: Đừng bao giờ hỏi "Tại sao code chạy?", hãy hỏi "Tại sao nó CHƯA CHẾT?".</span>
         </div>
       </div>
     </div>
@@ -572,15 +571,15 @@ const MissionData = [
         <ul className="space-y-6 text-xl text-slate-400 italic">
           <li className="flex gap-5 items-start">
             <span className="text-purple-500 font-black text-2xl">●</span> 
-            <span><strong className="text-white">Glassmorphism:</strong> Giao diện kính mờ xuyên thấu cực chill.</span>
+            <span><strong className="text-white">Glassmorphism</strong> </span>
           </li>
           <li className="flex gap-5 items-start">
             <span className="text-purple-500 font-black text-2xl">●</span> 
-            <span><strong className="text-white">Dark Mode:</strong> Bảo vệ đôi mắt cú đêm của các Operator.</span>
+            <span><strong className="text-white">Dark Mode</strong></span>
           </li>
           <li className="flex gap-5 items-start">
             <span className="text-purple-500 font-black text-2xl">●</span> 
-            <span><strong className="text-white">Toast Noti:</strong> Phản hồi ngọt ngào như cách crush rep tin nhắn.</span>
+            <span><strong className="text-white">Toast Noti</strong> </span>
           </li>
         </ul>
       </div>
@@ -943,7 +942,6 @@ const MissionData = [
         <div className="flex items-center gap-4 text-base text-slate-500 bg-zinc-900 px-10 py-5 rounded-full border border-white/10 shadow-2xl group">
           <Bug size={24} className="text-green-500 group-hover:rotate-180 transition-all duration-500" />
           <span className="font-black tracking-tight italic">
-            "Blog của anh ko thị trường nhưng mà thị trường lại ko có Blog của anh"
           </span>
         </div>
       </div>
@@ -1054,7 +1052,7 @@ const MissionData = [
           </span>
         </div>
         <p className="text-sm text-slate-600 font-mono tracking-widest uppercase">
-           Trình là chi đây người ơi mà sao cứ ối zồi ôi
+           
         </p>
       </div>
     </div>
@@ -1073,7 +1071,7 @@ function ProjectContent() {
       <div className="flex items-center gap-4 mb-10">
         <FileText className="text-purple-500 w-8 h-8" />
         <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter italic">
-          Mission Logs <span className="text-slate-500 text-lg ml-2 font-normal not-italic">(Nội dung chi tiết)</span>
+
         </h2>
       </div>
 
@@ -1131,7 +1129,7 @@ export default function RFIDProject() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-slate-300 font-mono p-4 md:p-8 lg:p-12 selection:bg-purple-500/30">
+    <div className="h-screen w-full overflow-x-hidden overflow-y-auto bg-[#0a0a0a] text-slate-300 font-mono p-4 md:p-8 lg:p-12 selection:bg-purple-500/30">
 
       {/* 🛑 ĐẶT COMPONENT ÉP XOAY MÀN HÌNH Ở NGAY ĐÂY */}
       <LandscapeEnforcer />
@@ -1183,7 +1181,6 @@ export default function RFIDProject() {
       {/* 🚀 TECH STACK: THE ARSENAL */}
       <section className="max-w-6xl mx-auto mb-20">
         <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
-          <Lock size={24} className="text-purple-500" /> Technical Arsenal (Vũ khí tác chiến)
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-6 bg-white/5 border border-white/10 rounded-3xl group hover:border-blue-500/50 transition-all">
@@ -1240,7 +1237,7 @@ export default function RFIDProject() {
       {/* 👥 THE OPERATORS: STRIKE TEAM */}
       <section className="max-w-6xl mx-auto mb-20">
         <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
-          <Users size={24} className="text-blue-500" /> The Order of Code (Strike Team)
+          <Users size={24} className="text-blue-500" /> 
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 [perspective:1000px] relative z-0">
           {contributors.map((member, i) => (
