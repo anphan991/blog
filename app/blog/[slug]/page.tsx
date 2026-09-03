@@ -5,7 +5,6 @@ import { remark } from 'remark';
 import html from 'remark-html';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import ViewCounter from '@/components/ViewCounter'; // Import từ thư mục components vừa tạo
 import remarkGfm from 'remark-gfm';
 
 export default async function BlogPost({ params }: { params: Promise<{ slug: string }> }) {
@@ -35,9 +34,6 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
 
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-slate-200 py-20 px-6 font-sans">
-      {/* 🟢 Máy đếm view chạy ngầm ở đây */}
-      <ViewCounter slug={slug} />
-
       <div className="max-w-3xl mx-auto space-y-8">
         <Link href="/blog" className="inline-flex items-center text-sm font-mono text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20">
           <span className="mr-2">cd ..</span> Quay lại 
