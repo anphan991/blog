@@ -924,9 +924,9 @@ export default function Home() {
             {/* Cards Container */}
             <div className="flex flex-wrap justify-center gap-6 md:gap-10 px-4 max-w-6xl z-20 relative">
               {[
-                { id: 'cyber', name: 'CYBERCORE', role: 'CURRENT REALITY', img: '/pic2.jpg', color: 'cyan', link: '#' },
-                { id: 'win98', name: 'WINDOWS 98', role: 'NOSTALGIA SECTOR', img: '/pic2.jpg', color: 'purple', link: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-                { id: 'matrix', name: 'THE MATRIX', role: 'DEEP DIVE', img: '/pic2.jpg', color: 'green', link: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+                { id: 'cybercore', name: 'CYBERCORE OS', role: 'CURRENT REALITY', img: '/cyber_core.jpg', color: 'cyan', link: 'https://v4.kanp9.io.vn/' },
+                { id: 'crystal', name: 'CRYSTAL CARBON', role: 'DEEP DIVE', img: '/cyan_carbon.jpg', color: 'blue', link: 'https://kanp9.io.vn/' },
+                { id: 'matrix', name: 'THE MATRIX', role: 'NOSTALGIA SECTOR', img: '/the_matrix.jpg', color: 'green', link: 'https://v3.kanp9.io.vn/' }
               ].map((theme, i) => (
                 <motion.a
                   key={theme.id}
