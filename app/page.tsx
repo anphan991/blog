@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
@@ -8,7 +8,7 @@ import { Bug, Zap, Mail, Github, Twitter, Gamepad2 } from 'lucide-react';
 import HackerText from '@/components/HackerText';
 import TiltCard from '@/components/TiltCard';
 import MagneticWrapper from '@/components/MagneticWrapper';
-import CyberChat from '@/components/CyberChat';
+
 import NetworkParticles from '@/components/NetworkParticles';
 import ParallaxWireframes from '@/components/ParallaxWireframes';
 
@@ -31,6 +31,41 @@ export default function Home() {
   const [clickCount, setClickCount] = useState(0);
   const [bsodState, setBsodState] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+
+  const [clockFormat, setClockFormat] = useState<'dec' | 'bin' | 'hex'>('bin');
+  const [timeStr, setTimeStr] = useState('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes();
+      const s = now.getSeconds();
+      
+      if (clockFormat === 'bin') {
+        setTimeStr(`${h.toString(2).padStart(5,'0')}:${m.toString(2).padStart(6,'0')}:${s.toString(2).padStart(6,'0')}`);
+      } else if (clockFormat === 'hex') {
+        setTimeStr(`${h.toString(16).padStart(2,'0')}:${m.toString(16).padStart(2,'0')}:${s.toString(16).padStart(2,'0')}`.toUpperCase());
+      } else {
+        setTimeStr(`${h.toString(10).padStart(2,'0')}:${m.toString(10).padStart(2,'0')}:${s.toString(10).padStart(2,'0')}`);
+      }
+    };
+    const t = setInterval(updateTime, 1000);
+    updateTime();
+    return () => clearInterval(t);
+  }, [clockFormat]);
+
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [isDestructing, setIsDestructing] = useState(false);
+
+  useEffect(() => {
+    if (isDestructing) {
+      const timer = setTimeout(() => {
+        window.location.href = "/free-cookie?auto=1";
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [isDestructing]);
   const [typedTitle, setTypedTitle] = useState({ line1: '', line2: '', cursorLine: 1 });
 
   useEffect(() => {
@@ -279,10 +314,11 @@ export default function Home() {
                 {navOpen && (
                   <div className="absolute top-full right-0 mt-4 bg-[#111111] border border-[#333330] p-4 flex flex-col gap-4 text-[11px] uppercase tracking-widest text-green-600 font-mono min-w-[160px] shadow-2xl z-50">
                     <button onClick={() => { document.getElementById('sec-manifesto')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[01] MANIFESTO" /></button>
-                    <button onClick={() => { document.getElementById('sec-archive')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[02] ARCHIVE" /></button>
-                    <button onClick={() => { document.getElementById('sec-works')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[03] WORKS" /></button>
-                    <button onClick={() => { document.getElementById('sec-topic')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[04] TOPICS" /></button>
-                      <button onClick={() => { document.getElementById('sec-connect')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[05] CONNECT" /></button>
+                    <button onClick={() => { document.getElementById('sec-theme')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[02] THEMES" /></button>
+                      <button onClick={() => { document.getElementById('sec-archive')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[03] ARCHIVE" /></button>
+                    <button onClick={() => { document.getElementById('sec-works')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[04] WORKS" /></button>
+                    <button onClick={() => { document.getElementById('sec-topic')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[05] TOPICS" /></button>
+                      <button onClick={() => { document.getElementById('sec-connect')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[06] CONNECT" /></button>
                   </div>
                 )}
               </div>
@@ -347,12 +383,90 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-8 md:px-16 lg:px-24" style={{ paddingBottom: '160px' }}>
           
           {/* ══ MANIFESTO ════════════════════════════════ */}
-          <section id="sec-manifesto" className="ms-section">
+          {/* THEME SELECTION SECTION */}
+            <section id="sec-theme" className="ms-section">
+              <div className="section-label">Realities</div>
+              
+              <button 
+                onClick={() => setIsThemeOpen(!isThemeOpen)}
+                className="flex flex-col mb-8 text-left w-full hover:opacity-80 transition-opacity cursor-pointer border-none bg-transparent outline-none"
+              >
+                <h2 className="font-mono text-2xl md:text-3xl text-white uppercase tracking-widest mb-2 flex items-center gap-4">
+                  <HackerText text="Select_Environment" /> 
+                  <span className="text-[#4ade80] text-sm">{isThemeOpen ? '[-]' : '[+]'}</span>
+                </h2>
+                <p className="font-mono text-[10px] md:text-xs text-[#A9A9A2] opacity-70 tracking-[0.2em] uppercase">
+                  &gt; CLICK TO DEPLOY THEME_SELECTION_MODULE
+                </p>
+              </button>
+
+              <AnimatePresence>
+                {isThemeOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="flex flex-wrap gap-8 md:gap-12 w-full justify-center items-center overflow-hidden py-8"
+                  >
+                    {[
+                      { id: 'matrix', name: 'THE MATRIX', role: 'CURRENT REALITY', img: '/pic2.jpg', color: '#4ade80', link: '#' },
+                      { id: 'cyber', name: 'CYBERCORE', role: 'DEEP DIVE', img: '/pic2.jpg', color: '#22d3ee', link: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+                      { id: 'win98', name: 'WINDOWS 98', role: 'NOSTALGIA SECTOR', img: '/pic2.jpg', color: '#a855f7', link: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+                    ].map((theme, i) => (
+                      <motion.a
+                        key={theme.id}
+                        href={theme.link}
+                        initial={{ opacity: 0, y: 50, rotateY: 30, borderColor: "#333330", boxShadow: "0 0 0px rgba(0,0,0,0)" }}
+                        whileInView={{ opacity: 1, y: 0, rotateY: 0, borderColor: "#333330", boxShadow: "0 0 0px rgba(0,0,0,0)" }}
+                        viewport={{ once: false, amount: 0.1 }}
+                        transition={{ delay: 0.01 + i * 0.15, type: "spring", stiffness: 700, damping: 20 }}
+                        whileHover={{ 
+                          scale: 1.05, 
+                          y: -15, 
+                          boxShadow: `0 0 30px ${theme.color}40`,
+                          borderColor: theme.color
+                        }}
+                        className="relative group bg-[#0A0A0A] border border-[#333330] p-6 w-48 md:w-56 flex flex-col items-center transition-all duration-50 no-underline cursor-pointer"
+                        style={{
+                          transformStyle: 'preserve-3d',
+                          perspective: '1000px'
+                        }}
+                      >
+                        {/* Image Container */}
+                        <div className="w-24 h-24 md:w-28 md:h-28 overflow-hidden mb-6 border border-[#333330] group-hover:border-transparent transition-colors relative bg-[#050505]">
+                          <div className="absolute inset-0 bg-black/60 group-hover:bg-transparent transition-colors z-10"></div>
+                          <img src={theme.img} alt={theme.name} className="w-full h-full object-cover grayscale opacity-50 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-500" />
+                        </div>
+                        
+                        {/* Text Info */}
+                        <h3 
+                          className="font-mono text-xl tracking-widest text-center transition-colors uppercase group-hover:text-white"
+                          style={{ color: '#A9A9A2' }}
+                        >
+                          {theme.name}
+                        </h3>
+                        <p className="font-mono text-[9px] text-[#A9A9A2] opacity-50 tracking-[0.2em] text-center mt-2 group-hover:opacity-100 transition-colors uppercase">
+                          {theme.role}
+                        </p>
+
+                        {theme.id === 'matrix' && (
+                          <div className="absolute -top-3 right-4 bg-[#A9A9A2] text-black text-[8px] font-bold px-2 py-1 uppercase tracking-widest">
+                            Active
+                          </div>
+                        )}
+                      </motion.a>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </section>
+
+            <section id="sec-manifesto" className="ms-section">
             <div className="section-label">Manifesto</div>
             <div className="grid grid-cols-1 md:grid-cols-12 gap-16 items-start">
               
               <motion.div 
-                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}
+                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}
                 className="md:col-span-3 flex flex-col gap-10"
               >
                 <div className="flex flex-col gap-4 items-start">
@@ -389,7 +503,7 @@ export default function Home() {
               </motion.div>
               
               <motion.div 
-                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.15 }}
+                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.15 }}
                 className="md:col-span-9 relative"
               >
                 {/* Khung nhãn góc trên bên phải */}
@@ -434,17 +548,21 @@ export default function Home() {
           </section>
 
           {/* ══ VISUAL ARCHIVE (MEME GRID) ═══════════════ */}
-          <section id="sec-archive" className="ms-section">
+          
+            
+
+
+            <section id="sec-archive" className="ms-section">
             <div className="section-label">Visual Archive</div>
             <div className="flex flex-col md:flex-row gap-6 items-stretch justify-center h-[75vh]">
-              <motion.div initial={{ opacity: 0, x: -60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }} className="flex-1 h-full w-full min-w-0 min-h-0 flex items-center justify-center">
+              <motion.div initial={{ opacity: 0, x: -60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }} className="flex-1 h-full w-full min-w-0 min-h-0 flex items-center justify-center">
                 <img src="/p1.jpg" alt="Portrait Meme" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" />
               </motion.div>
-              <motion.div initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.2 }} className="flex-1 flex flex-col gap-6 h-full w-full min-w-0 min-h-0">
+              <motion.div initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.2 }} className="flex-1 flex flex-col gap-6 h-full w-full min-w-0 min-h-0">
                 <div className="flex-1 w-full min-h-0 flex items-center justify-center"><img src="/meme3.jpg" alt="Landscape Meme 1" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" /></div>
                 <div className="flex-1 w-full min-h-0 flex items-center justify-center"><img src="/meme4.jpg" alt="Landscape Meme 2" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" /></div>
               </motion.div>
-             <motion.div initial={{ opacity: 0, x: 60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.4 }} className="flex-1 h-full w-full min-w-0 min-h-0 flex items-center justify-center">
+             <motion.div initial={{ opacity: 0, x: 60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.4 }} className="flex-1 h-full w-full min-w-0 min-h-0 flex items-center justify-center">
                 <img src="/p2.jpg" alt="Portrait Meme" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" />
               </motion.div>
 
@@ -456,7 +574,7 @@ export default function Home() {
             <div className="section-label">Selected Works</div>
             <div className="flex flex-col">
 
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
+              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}>
                 <TiltCard><Link href="/info-sec" className="service-item">
                   <div className="service-item__body">
                     <h3 className="service-item__title scroll-reveal-line" data-reveal-delay="0">InfoSec Notes</h3>
@@ -466,7 +584,7 @@ export default function Home() {
                 </Link></TiltCard>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
+              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}>
                 <TiltCard><Link href="/blog" className="service-item">
                   <div className="service-item__body">
                     <h3 className="service-item__title scroll-reveal-line" data-reveal-delay="0">CTF Training</h3>
@@ -476,7 +594,7 @@ export default function Home() {
                 </Link></TiltCard>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
+              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}>
                 <TiltCard><Link href="/projects/rfid" className="service-item">
                   <div className="service-item__body">
                     <h3 className="service-item__title scroll-reveal-line" data-reveal-delay="0">IoT RFID Vault</h3>
@@ -486,7 +604,7 @@ export default function Home() {
                 </Link></TiltCard>
               </motion.div>
               
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}>
+              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}>
                 <TiltCard><a href="/free-cookie" target="_blank" rel="noopener noreferrer" className="service-item">
                   <div className="service-item__body">
                     <h3 className="service-item__title scroll-reveal-line">Free Cookie {chaosMode ? '☢️' : '🍪'}</h3>
@@ -504,7 +622,7 @@ export default function Home() {
               
               {/* Left Info */}
               <motion.div 
-                initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease: "easeOut" }}
+                initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.8, ease: "easeOut" }}
                 className="lg:col-span-4 flex flex-col gap-6"
               >
                 <h3 className="font-serif text-[clamp(2.5rem,4vw,3.8rem)] leading-[1.1] font-light text-white scroll-reveal-line">
@@ -539,7 +657,7 @@ export default function Home() {
 
               {/* Right Terminal List */}
               <motion.div 
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
                 className="lg:col-span-8 bg-[#050505] border border-[#333330] flex flex-col font-mono text-sm h-[65vh] max-h-[600px]"
               >
                 {/* Terminal Header */}
@@ -589,7 +707,7 @@ export default function Home() {
               
               {/* Connect part */}
               <motion.div 
-                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT }}
+                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}
                 className="lg:col-span-7"
               >
                 <h2 className="split-lines scroll-reveal-line font-serif text-[clamp(2.5rem,5vw,6.5rem)] leading-[1.5] text-white font-light mb-12 pb-6"
@@ -622,7 +740,7 @@ export default function Home() {
 
               {/* ASCII Companion (Smaller) */}
               <motion.div 
-                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.15 }}
+                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.15 }}
                 className="lg:col-span-5 flex flex-col items-center"
               >
                 <div 
@@ -689,21 +807,65 @@ export default function Home() {
         {/* ══ FOOTER ═══════════════════════════════════ */}
         <footer className="py-16 px-6 md:px-10 border-t border-[#333330]">
           <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-            <div>
-              <span className="font-serif text-xl text-[#F5F5F0] block">||||||||||</span>
-              <span className="font-mono text-[9px] text-[#A9A9A2] uppercase tracking-widest mt-1 block">© 2026 — All rights reserved.</span>
+            <div className="flex flex-col gap-1 cursor-pointer group" onClick={() => setClockFormat(prev => prev === 'bin' ? 'hex' : prev === 'hex' ? 'dec' : 'bin')}>
+                <span className="font-mono text-xl text-[#F5F5F0] block group-hover:text-[#4ade80] transition-colors">{timeStr || '00:00:00'}</span>
+                <span className="font-mono text-[9px] text-[#A9A9A2] uppercase tracking-widest block">
+                  SYS_TIME [{clockFormat.toUpperCase()}] - CLICK TO CYCLE FORMAT
+                </span>
+              </div>
+            
+          
+              <button
+                onClick={() => setIsDestructing(true)}
+                className="flex items-center gap-3 px-5 py-2.5 border border-[#333330] text-[10px] font-mono uppercase tracking-widest text-[#A9A9A2] hover:text-red-500 hover:border-red-500 hover:bg-red-950/30 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all group"
+              >
+                <span className="text-red-500 group-hover:animate-pulse">?</span>
+                execute(wipe_data.sh)
+              </button>
             </div>
-            <button
-              onClick={() => setChaosMode(!chaosMode)}
-              className="flex items-center gap-3 px-5 py-2.5 border border-[#333330] text-[10px] font-mono uppercase tracking-widest text-[#A9A9A2] hover:text-[#F5F5F0] hover:border-[#D8D8D1] transition-all"
-            >
-              {chaosMode ? <Bug size={14} /> : <Zap size={14} />}
-              {chaosMode ? 'Deactivate Chaos' : 'Optimize Code ×10'}
-            </button>
-          </div>
         </footer>
 
-        <CyberChat />
+        
+      
+        {/* SELF DESTRUCT OVERLAY */}
+        <AnimatePresence>
+          {isDestructing && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.1 }}
+              className="fixed inset-0 z-[999999] bg-red-950 flex flex-col items-center justify-center pointer-events-auto overflow-hidden"
+            >
+              {/* Scanlines and intense noise */}
+              <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-50 mix-blend-overlay"></div>
+              <div className="absolute inset-0 pointer-events-none" style={{ background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,0,0,0.3) 2px, rgba(255,0,0,0.3) 4px)' }}></div>
+              
+              <motion.h1 
+                animate={{ x: [-10, 10, -10, 10, 0], y: [-5, 5, -5, 5, 0] }}
+                transition={{ repeat: Infinity, duration: 0.2 }}
+                className="text-5xl md:text-8xl font-['VT323',_monospace] text-white tracking-widest uppercase drop-shadow-[0_0_20px_rgba(255,0,0,1)] mix-blend-difference"
+              >
+                SYSTEM_FAILURE
+              </motion.h1>
+              <motion.p 
+                animate={{ opacity: [1, 0, 1] }}
+                transition={{ repeat: Infinity, duration: 0.5 }}
+                className="text-red-400 mt-4 font-mono text-sm md:text-xl tracking-[0.3em] uppercase bg-black/50 px-4 py-2"
+              >
+                Initiating Critical Wipe...
+              </motion.p>
+              
+              <div className="absolute bottom-10 left-10 text-red-500 font-mono text-xs opacity-50 flex flex-col gap-1">
+                {[...Array(15)].map((_, i) => (
+                  <motion.div key={i} animate={{ opacity: [0, 1, 0] }} transition={{ delay: i * 0.1, duration: 0.2, repeat: Infinity }}>
+                    &gt; Deleting sector 0x00{i}F{i * 2}A...
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </main>
     </>
   );

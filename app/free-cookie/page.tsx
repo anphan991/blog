@@ -1,8 +1,13 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function FreeCookiePage() {
   const [activated, setActivated] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('auto=1')) {
+      setActivated(true);
+    }
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-black flex items-center justify-center font-mono overflow-hidden z-[9999]">

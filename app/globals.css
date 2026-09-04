@@ -112,15 +112,8 @@ body {
   --ease-khz: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-.khz-cursor, .khz-cursor-ring {
-  pointer-events: none;
-  position: fixed;
-  top: 0; left: 0;
-  z-index: 9999;
-  border-radius: 50%;
-  will-change: transform;
-}
-.khz-cursor { width: 8px; height: 8px; background: #fff; margin: -4px 0 0 -4px; transition: width 0.2s, height 0.2s, margin 0.2s; }
+.khz-cursor, .khz-cursor-ring { position: fixed; top: 0; left: 0; width: 36px; height: 36px; border: 1px solid var(--khz-primary, #A9A9A2); border-radius: 50%; pointer-events: none; z-index: 999998 !important; transform: translate(-50%, -50%); transition: width 0.2s, height 0.2s; }
+.khz-cursor { position: fixed; top: 0; left: 0; width: 6px; height: 6px; background-color: var(--khz-primary, #A9A9A2); border-radius: 50%; pointer-events: none; z-index: 999999 !important; transform: translate(-50%, -50%); }
 .khz-cursor.is-hover { width: 12px; height: 12px; margin: -6px 0 0 -6px; }
 .khz-cursor-ring { width: 40px; height: 40px; border: 1px solid rgba(245,245,240,0.22); margin: -20px 0 0 -20px; transition: width 0.3s, height 0.3s, margin 0.3s; z-index: 9998; }
 .khz-cursor-ring.is-hover { width: 58px; height: 58px; margin: -29px 0 0 -29px; border-color: rgba(245,245,240,0.4); }
