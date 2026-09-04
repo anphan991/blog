@@ -60,7 +60,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
 
           {/* Nội dung bài viết */}
           <div 
-            className="prose prose-invert prose-blue max-w-none 
+            className="prose prose-invert prose-cyan prose-headings:font-[\'VT323\',_monospace] prose-headings:text-cyan-400 prose-headings:tracking-widest prose-a:text-cyan-400 hover:prose-a:text-cyan-300 prose-code:text-cyan-300 prose-p:font-[\'Share_Tech_Mono\',_monospace] max-w-none 
                        prose-headings:font-bold prose-h2:text-blue-400 
                        prose-table:border-collapse prose-th:border prose-th:border-white/20 prose-th:p-2 
                        prose-td:border prose-td:border-white/20 prose-td:p-2
