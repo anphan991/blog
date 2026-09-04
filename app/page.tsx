@@ -409,9 +409,9 @@ export default function Home() {
                     className="flex flex-wrap gap-8 md:gap-12 w-full justify-center items-center overflow-hidden py-8"
                   >
                     {[
-                      { id: 'matrix', name: 'THE MATRIX', role: 'CURRENT REALITY', img: '/pic2.jpg', color: '#4ade80', link: '#' },
-                      { id: 'cyber', name: 'CYBERCORE', role: 'DEEP DIVE', img: '/pic2.jpg', color: '#22d3ee', link: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-                      { id: 'win98', name: 'WINDOWS 98', role: 'NOSTALGIA SECTOR', img: '/pic2.jpg', color: '#a855f7', link: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+                      { id: 'matrix', name: 'THE MATRIX', role: 'CURRENT REALITY', img: '/the_matrix.jpg', color: '#4ade80', link: 'https://v3.kanp9.io.vn/' },
+                      { id: 'crystal', name: 'CRYSTAL CARBON', role: 'DEEP DIVE', img: '/cyan_carbon.jpg', color: '#3B82F6', link: 'https://kanp9.io.vn/' },
+                      { id: 'cybercore', name: 'CYBERCORE OS', role: 'NOSTALGIA SECTOR', img: '/cyber_core.jpg', color: '#a855f7', link: 'https://v4.kanp9.io.vn/' }
                     ].map((theme, i) => (
                       <motion.a
                         key={theme.id}
