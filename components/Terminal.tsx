@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,26 +26,26 @@ export default function InteractiveTerminal() {
     switch (cmd) {
       case 'help':
         resp = (
-          <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-blue-400 text-sm md:text-base font-mono">
-            <span>&gt; help</span><span className="text-slate-500">Hiện bảng lệnh này</span>
-            <span>&gt; stats</span><span className="text-slate-500">Hiệu năng thực tế</span>
-            <span>&gt; scan</span><span className="text-slate-500">Giả lập quẹt thẻ</span>
+          <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-blue-400 text-sm md:text-base font-['Share_Tech_Mono',_monospace]">
+            <span>&gt; help</span><span className="text-slate-500">Hiá»‡n báº£ng lá»‡nh nÃ y</span>
+            <span>&gt; stats</span><span className="text-slate-500">Hiá»‡u nÄƒng thá»±c táº¿</span>
+            <span>&gt; scan</span><span className="text-slate-500">Giáº£ láº­p quáº¹t tháº»</span>
             <span>&gt; bocchi</span><span className="text-slate-500 text-red-500/50">PANIC MODE</span>
-            <span>&gt; ndhoc</span><span className="text-slate-500 text-amber-500/50">Tri ân anh lớn</span>
-            <span>&gt; clear</span><span className="text-slate-500">Xóa màn hình</span>
+            <span>&gt; ndhoc</span><span className="text-slate-500 text-amber-500/50">Tri Ã¢n anh lá»›n</span>
+            <span>&gt; clear</span><span className="text-slate-500">XÃ³a mÃ n hÃ¬nh</span>
           </div>
         );
         break;
       case 'ndhoc':
         resp = (
           <span className="text-amber-500 font-bold italic">
-            "Credit: Cảm ơn anh lớn Phú Yên!"
+            "Credit: Cáº£m Æ¡n anh lá»›n PhÃº YÃªn!"
           </span>
         );
         break;
       case 'bocchi':
         setIsBocchiPanic(true);
-        resp = <span className="text-red-500 font-black animate-pulse italic">⚠️ WARNING: BOCCHI IS PANICKING!</span>;
+        resp = <span className="text-red-500 font-black animate-pulse italic">âš ï¸ WARNING: BOCCHI IS PANICKING!</span>;
         setTimeout(() => setIsBocchiPanic(false), 3000);
         break;
       case 'stats':
@@ -63,7 +63,7 @@ export default function InteractiveTerminal() {
           <div className="text-green-500 border-l-2 border-green-500 pl-4 py-2">
             [RFID]: Detected UID [E2 4A 8B 1C] <br/>
             [SERVER]: Authenticating... <br/>
-            [AUTH]: Access Granted. Welcome, An Phan Khánh!
+            [AUTH]: Access Granted. Welcome, An Phan KhÃ¡nh!
           </div>
         );
         break;
@@ -87,7 +87,7 @@ export default function InteractiveTerminal() {
         );
         break;
       default:
-        resp = `Command not found: ${cmd}. Thử gõ "help" đi bradar.`;
+        resp = `Command not found: ${cmd}. Thá»­ gÃµ "help" Ä‘i bradar.`;
     }
 
     setHistory([...history, { cmd: input, resp }]);
@@ -112,7 +112,7 @@ export default function InteractiveTerminal() {
         </div>
 
         {/* Terminal Body */}
-        <div ref={scrollRef} className="h-[450px] overflow-y-auto p-12 font-mono text-base md:text-xl scrollbar-hide">
+        <div ref={scrollRef} className="h-full min-h-[300px] overflow-y-auto p-12 font-['Share_Tech_Mono',_monospace] text-base md:text-xl scrollbar-hide">
           <AnimatePresence>
             {history.map((item, i) => (
               <motion.div 
@@ -122,7 +122,7 @@ export default function InteractiveTerminal() {
                 className="mb-8"
               >
                 <div className="flex gap-5 items-center">
-                  <span className="text-lime-500 font-black text-2xl">➜</span>
+                  <span className="text-lime-500 font-black text-2xl">âžœ</span>
                   <span className="text-slate-300">~ <strong className="text-white">{item.cmd}</strong></span>
                 </div>
                 <div className="mt-4 pl-12 text-slate-500 leading-relaxed italic">
@@ -133,7 +133,7 @@ export default function InteractiveTerminal() {
           </AnimatePresence>
           
           <form onSubmit={handleCommand} className="flex gap-5 items-center mt-4">
-            <span className="text-lime-500 font-black text-2xl">➜</span>
+            <span className="text-lime-500 font-black text-2xl">âžœ</span>
             <span className="text-slate-300 italic">~</span>
             <input 
               type="text" 
@@ -149,3 +149,4 @@ export default function InteractiveTerminal() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-'use client'; 
+﻿'use client'; 
 
 import { Terminal, ShieldAlert, LogOut, PackageCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -20,32 +20,32 @@ const memeStatuses = [
 
 export default function IntelFeed() {
   const [latestPosts, setLatestPosts] = useState<string[]>(["Decrypting intel..."]);
-  const [randomStatus, setRandomStatus] = useState("● STATUS: CONNECTING...");
+  const [randomStatus, setRandomStatus] = useState("â— STATUS: CONNECTING...");
   const [isEscaped, setIsEscaped] = useState(false);
 
   useEffect(() => {
-    // Random status vui nhộn
-    setRandomStatus("● " + memeStatuses[Math.floor(Math.random() * memeStatuses.length)]);
+    // Random status vui nhá»™n
+    setRandomStatus("â— " + memeStatuses[Math.floor(Math.random() * memeStatuses.length)]);
     
-    // DANH SÁCH BÀI VIẾT 
+    // DANH SÃCH BÃ€I VIáº¾T 
     setLatestPosts([
       "InFoSec: Auth & Access Control Topic",
       "InFoSec: Malicious Software Topic",
       "InFoSec: Software Security Topic",
       "InFoSec: Cryptography Intro Topic",
-      "NEW_SECTOR: INFOSEC_OR_IN_SECURITY 💀",
-      "SCAN_OR_SCAM — RFID System Update Complete",
-      "Day 3: KERNEL_PANIC_AGAIN 💀 — Computer Architecture & OS | Memory Management",
-      "Day 2: JUST_ONE_MORE_REFRESH 💀 — Web Basics | How Web Works",
-      "Day 1: WHO_ATE_MY_PACKETS 🤡 — Intro networking | OSI & TCP/IP",
+      "NEW_SECTOR: INFOSEC_OR_IN_SECURITY ðŸ’€",
+      "SCAN_OR_SCAM â€” RFID System Update Complete",
+      "Day 3: KERNEL_PANIC_AGAIN ðŸ’€ â€” Computer Architecture & OS | Memory Management",
+      "Day 2: JUST_ONE_MORE_REFRESH ðŸ’€ â€” Web Basics | How Web Works",
+      "Day 1: WHO_ATE_MY_PACKETS ðŸ¤¡ â€” Intro networking | OSI & TCP/IP",
     ]);
   }, []);
 
   return (
-    <div className="h-full w-full flex flex-col border border-zinc-800 rounded-3xl font-mono text-xs bg-black/40 backdrop-blur-md shadow-2xl overflow-hidden transition-colors duration-500">
+    <div className="h-full min-h-[300px] w-full flex flex-col border border-[#22d3ee] rounded-3xl font-['Share_Tech_Mono',_monospace] text-xs bg-[#02020a] backdrop-blur-md shadow-2xl overflow-hidden transition-colors duration-500">
       
-      {/* === PHẦN 1: LOG HỆ THỐNG (PC: 65% | Mobile: 55%) === */}
-      <div className="lg:h-[65%] h-[55%] p-6 flex flex-col items-start gap-3 w-full border-b border-zinc-800">
+      {/* === PHáº¦N 1: LOG Há»† THá»NG (PC: 65% | Mobile: 55%) === */}
+      <div className="lg:h-[65%] h-[55%] p-6 flex flex-col items-start gap-3 w-full border-b border-[#22d3ee]">
         
         {/* Header Terminal */}
         <div className="flex items-center gap-2 text-zinc-500 mb-1 w-full pb-2 border-b border-zinc-900 shrink-0">
@@ -53,12 +53,12 @@ export default function IntelFeed() {
           <span>[SYSTEM_INTEL] v1.0.4</span>
         </div>
         
-        {/* Nhấp nháy Status */}
+        {/* Nháº¥p nhÃ¡y Status */}
         <div className="text-lime-400 animate-pulse font-semibold shrink-0">
           {randomStatus}
         </div>
         
-        {/* Khu vực danh sách bài viết - Tự động cuộn nếu quá dài */}
+        {/* Khu vá»±c danh sÃ¡ch bÃ i viáº¿t - Tá»± Ä‘á»™ng cuá»™n náº¿u quÃ¡ dÃ i */}
         <div className="flex flex-col w-full pt-1 min-h-0 flex-1 overflow-hidden">
           <div className="flex gap-2 mb-2 shrink-0">
             <span className="text-zinc-600">&gt;</span>
@@ -77,16 +77,16 @@ export default function IntelFeed() {
           </div>
         </div>
 
-        {/* Chân log cố định */}
+        {/* ChÃ¢n log cá»‘ Ä‘á»‹nh */}
         <div className="text-[10px] text-zinc-700 w-full text-center mt-auto border-t border-zinc-900 pt-2 shrink-0">
           ./get_social_battery.sh: Denied.
         </div>
       </div>
 
-      {/* === PHẦN 2: GÓC TRÚ ẨN (PC: 35% | Mobile: 45%) === */}
+      {/* === PHáº¦N 2: GÃ“C TRÃš áº¨N (PC: 35% | Mobile: 45%) === */}
       <div className="lg:h-[35%] h-[45%] bg-black/20 p-3 flex flex-col justify-center items-center relative w-full overflow-hidden">
         {!isEscaped ? (
-          /* Giao diện CHỜ */
+          /* Giao diá»‡n CHá»œ */
           <div className="flex flex-col items-center text-center gap-2">
             <ShieldAlert className="w-8 h-8 text-zinc-700 animate-pulse" />
             <p className="text-[10px] text-zinc-500 max-w-[200px] leading-tight font-medium">
@@ -104,11 +104,11 @@ export default function IntelFeed() {
             </button>
           </div>
         ) : (
-          /* Giao diện HIỆN GIF (Cân đối & Không bị cắt) */
+          /* Giao diá»‡n HIá»†N GIF (CÃ¢n Ä‘á»‘i & KhÃ´ng bá»‹ cáº¯t) */
           <div className="flex flex-col items-center justify-between w-full h-full animate-in fade-in zoom-in duration-300">
             
-            {/* Box chứa ảnh - object-contain là chìa khóa để hiện trọn vẹn GIF */}
-            <div className="relative w-full flex-1 rounded-xl overflow-hidden border border-zinc-800 bg-black mb-2 mt-1 shadow-inner flex items-center justify-center p-1">
+            {/* Box chá»©a áº£nh - object-contain lÃ  chÃ¬a khÃ³a Ä‘á»ƒ hiá»‡n trá»n váº¹n GIF */}
+            <div className="relative w-full flex-1 rounded-xl overflow-hidden border border-[#22d3ee] bg-black mb-2 mt-1 shadow-inner flex items-center justify-center p-1">
               <img 
                 src={BOCCHI_ESCAPE_GIF} 
                 alt="Anime Safe House Escape Mode" 
@@ -131,3 +131,4 @@ export default function IntelFeed() {
     </div>
   );
 }
+

@@ -74,7 +74,7 @@ export default function NetworkParticles() {
 
       draw() {
         if (!ctx) return;
-        ctx.fillStyle = 'rgba(74, 222, 128, 0.4)';
+        ctx.fillStyle = 'rgba(34, 211, 238, 0.4)';
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
@@ -98,7 +98,7 @@ export default function NetworkParticles() {
           const distance = Math.sqrt(dx * dx + dy * dy);
           if (distance < 130) { // Khoảng cách nối dây
             opacityValue = 1 - (distance / 130);
-            ctx!.strokeStyle = `rgba(74, 222, 128, ${opacityValue * 0.25})`;
+            ctx!.strokeStyle = `rgba(34, 211, 238, ${opacityValue * 0.2})`;
             ctx!.lineWidth = 0.8;
             ctx!.beginPath();
             ctx!.moveTo(particlesArray[a].x, particlesArray[a].y);
