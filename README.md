@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿
+<div align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=000000&height=200&section=header&text=My personal portfolio&fontSize=70&fontColor=ffffff&animation=fadeIn" alt="portfolio Banner" width="100%" />
+</div>
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
-First, run the development server:
+###  **[Enter the site here](https://v3.kanp9.io.vn)**
+<br />
+</div>
+
+>There are a few interactive features and Easter eggs hidden throughout the site, but I won't spoil them here. 
+
+>Feel free to fork, explore, or aggressively copy-paste the good parts. *Just don't @ me when it breaks your production!* <(') 
+
+---
+
+## 🛠️ The Tech Stack
+
+*The main focus of this project was to build something fast, clean, and highly interactive. Here is the stack running under the hood:*
+
+*   **Next.js 16 (App Router)** – For server-side rendering, fast page loads, and seamless routing.
+*   **Tailwind CSS v4** – Because utility-first styling keeps the codebase clean and responsive.
+*   **Framer Motion** – Handling all the UI physics. This is what makes the layouts transition smoothly and components bounce.
+*   **Markdown / SSG** – My posts are automatically rendered into static pages directly from markdown files.
+*   **Lucide React** – For crisp, lightweight icons.
+
+---
+
+## 🏃‍♂️ Running it Locally
+
+If you'd like to spin this up on your own machine:
 
 ```bash
+# Clone the repository
+git clone [https://github.com/anphan991/web.git](https://github.com/anphan991/web.git)
+
+# Enter the directory and install dependencies
+cd web
+npm install
+
+# Boot up the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
+Then navigate to http://localhost:3000 in your browser and watch the chaos unfold.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+<div align="center">
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Anyways, cya in the next chaos**
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+</div>
