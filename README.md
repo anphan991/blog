@@ -33,7 +33,7 @@ If you'd like to spin this up on your own machine:
 
 ```bash
 # Clone the repository
-git clone [https://github.com/anphan991/web.git](https://github.com/anphan991/web.git)
+git clone https://github.com/anphan991/blog.git
 
 # Enter the directory and install dependencies
 cd web
