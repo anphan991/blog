@@ -293,9 +293,9 @@ export default function Home() {
                     className="flex flex-wrap gap-8 md:gap-12 w-full justify-center items-center overflow-hidden py-8"
                   >
                     {[
-                      { id: 'crystal', name: 'CRYSTAL CARBON', role: 'CURRENT REALITY', img: '/cyan_carbon.jpg', color: '#3B82F6', link: 'https://kanp9.io.vn/' },
+                      { id: 'crystal', name: 'CRYSTAL CARBON', role: 'CURRENT REALITY', img: '/cyan_carbon.jpg', color: '#3B82F6', link: 'https://v3.kanp9.io.vn/' },
                       { id: 'cybercore', name: 'CYBERCORE OS', role: 'NOSTALGIA SECTOR', img: '/cyber_core.jpg', color: '#a855f7', link: 'https://v4.kanp9.io.vn/' },
-                      { id: 'matrix', name: 'THE MATRIX', role: 'DEEP DIVE', img: '/the_matrix.jpg', color: '#4ade80', link: 'https://v3.kanp9.io.vn/' }
+                      { id: 'matrix', name: 'THE MATRIX', role: 'DEEP DIVE', img: '/the_matrix.jpg', color: '#4ade80', link: 'https://kanp9.io.vn/' }
                     ].map((theme, i) => (
                       <motion.a
                         key={theme.id}
