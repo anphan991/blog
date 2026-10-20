@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
@@ -280,10 +280,90 @@ export default function Home() {
   return (
     <>
       <main className="min-h-[100dvh]">
-
+        <style>{`
+          .service-item:hover .service-item__title {
+            font-style: italic;
+            color: #3B82F6 !important;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.35) !important;
+          }
+          .service-item:hover .service-item__arrow {
+            transform: translate(4px, -4px);
+            color: #3B82F6 !important;
+          }
+          .scroll-reveal-line.is-bright.service-item__title {
+            color: #3B82F6 !important;
+          }
+          html.light-theme {
+            --light-bg: #D8D3C8;
+            --light-bg-2: #E2DDD3;
+            --light-bg-3: #CEC8BC;
+            --light-text: #1C1B18;
+            --light-text-2: #524F49;
+            --light-border: #BEB7AA;
+            --light-accent: #234E70;
+            background-color: var(--light-bg) !important;
+          }
+          html.light-theme .hero img {
+            filter: invert(1) contrast(1.08) !important;
+            mix-blend-mode: multiply !important;
+            opacity: 0.36 !important;
+          }
+          html.light-theme .hero .bg-gradient-to-t {
+            background: linear-gradient(
+              to top,
+              #D8D3C8 0%,
+              rgba(216, 211, 200, 0.25) 45%,
+              rgba(216, 211, 200, 0.45) 100%
+            ) !important;
+            mix-blend-mode: normal !important;
+          }
+          html.light-theme .hero__title {
+            color: #234E70 !important;
+            text-shadow: 0 8px 24px rgba(35, 78, 112, 0.14), 2px 2px 0 rgba(28, 27, 24, 0.06) !important;
+          }
+          html.light-theme .khz-nav:not(.is-scrolled) {
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border-bottom-color: transparent !important;
+          }
+          html.light-theme .khz-nav.is-scrolled {
+            background: rgba(216, 211, 200, 0.62) !important;
+            backdrop-filter: blur(16px) saturate(140%) !important;
+            -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+            border-bottom: 1px solid rgba(28, 27, 24, 0.12) !important;
+          }
+          html.light-theme .bg-\\[\\#070707\\],
+          html.light-theme .bg-\\[\\#0B0B0B\\],
+          html.light-theme .bg-\\[\\#080808\\] {
+            background-color: #CEC8BC !important;
+          }
+          html.light-theme .hover\\:bg-\\[\\#111111\\]:hover {
+            background-color: rgba(35, 78, 112, 0.1) !important;
+          }
+          html.light-theme .group:hover .group-hover\\:text-white {
+            color: #234E70 !important;
+          }
+          html.light-theme .border-\\[\\#222220\\],
+          html.light-theme .border-\\[\\#1A1A1A\\] {
+            border-color: #BEB7AA !important;
+          }
+          html.light-theme .text-\\[\\#3B82F6\\],
+          html.light-theme .text-blue-400,
+          html.light-theme .scroll-reveal-line.is-bright.service-item__title,
+          html.light-theme .service-item:hover .service-item__title {
+            color: #234E70 !important;
+          }
+          html.light-theme .ms-section > div:not(.section-label) {
+            background:
+              linear-gradient(#E2DDD3, #E2DDD3) padding-box,
+              conic-gradient(from var(--border-angle), #BEB7AA 20%, #2B5B84 50%, #BEB7AA 80%) border-box !important;
+            box-shadow: 0 18px 42px -15px rgba(28, 27, 24, 0.1), 0 1px 3px rgba(28, 27, 24, 0.06) !important;
+          }
+        `}</style>
         
         {/* Interactive network particles */}
-        <NetworkParticles />
+        <NetworkParticles key="blue-particles-v2" />
 
         {/* 3D Wireframes Parallax */}
         <ParallaxWireframes />
@@ -296,8 +376,8 @@ export default function Home() {
         {/* ══ NAVIGATION ══════════════════════════════ */}
         <nav className="khz-nav">
           <div className="flex flex-col leading-none">
-            <span className={`font-mono text-2xl tracking-wider uppercase transition-colors ${chaosMode ? 'text-red-400' : 'text-[#4ade80]'}`}>Ka</span>
-            <span className="text-[10px] uppercase tracking-[0.15em] text-green-500 font-mono mt-1">
+            <span className={`font-mono text-2xl tracking-wider uppercase transition-colors ${chaosMode ? 'text-red-400' : 'text-[#3B82F6]'}`}>Ka</span>
+            <span className="text-[10px] uppercase tracking-[0.15em] text-blue-400 font-mono mt-1">
               {chaosMode ? 'STATUS: COMPROMISED' : '@( * O * )@'}
             </span>
           </div>
@@ -306,25 +386,26 @@ export default function Home() {
               <div className="relative hidden md:block">
                 <button 
                   onClick={() => setNavOpen(!navOpen)} 
-                  className="text-[11px] uppercase tracking-widest text-green-600 font-mono hover:text-[#4ade80] transition-colors duration-300 flex items-center gap-2"
+                  className="text-[11px] uppercase tracking-widest text-blue-400 font-mono hover:text-[#3B82F6] transition-colors duration-300 flex items-center gap-2"
                 >
                   [ MENU ] <span className="text-[8px]">{navOpen ? '▲' : '▼'}</span>
                 </button>
                 
                 {navOpen && (
-                  <div className="absolute top-full right-0 mt-4 bg-[#111111] border border-[#333330] p-4 flex flex-col gap-4 text-[11px] uppercase tracking-widest text-green-600 font-mono min-w-[160px] shadow-2xl z-50">
-                    <button onClick={() => { document.getElementById('sec-manifesto')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[01] MANIFESTO" /></button>
-                    <button onClick={() => { document.getElementById('sec-theme')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[02] THEMES" /></button>
-                      <button onClick={() => { document.getElementById('sec-archive')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[03] ARCHIVE" /></button>
-                    <button onClick={() => { document.getElementById('sec-works')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[04] WORKS" /></button>
-                    <button onClick={() => { document.getElementById('sec-topic')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[05] TOPICS" /></button>
-                      <button onClick={() => { document.getElementById('sec-connect')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#4ade80] transition-colors duration-300"><HackerText text="[06] CONNECT" /></button>
+                  <div className="absolute top-full right-0 mt-4 bg-[#111111] border border-[#333330] p-4 flex flex-col gap-4 text-[11px] uppercase tracking-widest text-blue-400 font-mono min-w-[160px] shadow-2xl z-50">
+                    <button onClick={() => { document.getElementById('sec-manifesto')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[01] MANIFESTO" /></button>
+                    <button onClick={() => { document.getElementById('sec-theme')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[02] THEMES" /></button>
+                      <button onClick={() => { document.getElementById('sec-archive')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[03] ARCHIVE" /></button>
+                    <button onClick={() => { document.getElementById('sec-works')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[04] WORKS" /></button>
+                    <button onClick={() => { document.getElementById('sec-topic')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[05] SOC LAB" /></button>
+                    <button onClick={() => { document.getElementById('sec-fallguard')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[06] FALLGUARD" /></button>
+                    <button onClick={() => { document.getElementById('sec-connect')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[07] CONNECT" /></button>
                   </div>
                 )}
               </div>
               <button 
                 onClick={() => document.documentElement.classList.toggle('light-theme')}
-                className="w-8 h-8 flex items-center justify-center border border-[#333330] rounded-full text-[#A9A9A2] hover:text-[#4ade80] hover:border-[#4ade80] transition-all"
+                className="w-8 h-8 flex items-center justify-center border border-[#333330] rounded-full text-[#A9A9A2] hover:text-[#3B82F6] hover:border-[#3B82F6] transition-all"
                 title="Toggle Theme"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
@@ -342,7 +423,7 @@ export default function Home() {
           
           <div className="hero__content absolute bottom-12 md:bottom-24 left-8 md:left-16 lg:left-24 z-10 flex flex-col items-start text-left w-full">
             <motion.h1 
-              className="hero__title font-mono text-[#4ade80] [text-shadow:0_0_30px_rgba(74,222,128,0.4)] text-[clamp(4rem,12vw,12rem)] leading-[0.85] tracking-tight uppercase"
+              className="hero__title font-mono text-[#3B82F6] [text-shadow:0_0_30px_rgba(59,130,246,0.45)] text-[clamp(4rem,12vw,12rem)] leading-[0.85] tracking-tight uppercase"
             >
               <span className="hero__line block">
                 {typedTitle.line1}{typedTitle.cursorLine === 1 && <span className="animate-pulse">/</span>}
@@ -354,7 +435,7 @@ export default function Home() {
             
             <div className="mt-8 overflow-hidden">
               <motion.span 
-                className="block uppercase tracking-[0.2em] text-[11px] md:text-[13px] text-[#4ade80] font-mono"
+                className="block uppercase tracking-[0.2em] text-[11px] md:text-[13px] text-[#3B82F6] font-mono"
                 initial={{ y: "110%" }}
                 animate={{ y: "0%" }}
                 transition={{ duration: 1, ease: [0.19, 1, 0.22, 1], delay: 0.7 }}
@@ -366,16 +447,16 @@ export default function Home() {
 
           {/* Right vertical text */}
           <div className="absolute right-8 md:right-16 top-1/2 -translate-y-1/2 z-10 hidden md:block">
-            <div className="rotate-90 origin-right text-[10px] tracking-[0.25em] text-[#4ade80] whitespace-nowrap uppercase font-mono">
+            <div className="rotate-90 origin-right text-[10px] tracking-[0.25em] text-[#3B82F6] whitespace-nowrap uppercase font-mono">
               \\\\\
             </div>
           </div>
           
           {/* Scroll indicator */}
           <div className="absolute bottom-12 md:bottom-24 right-8 md:right-16 z-10 flex items-center gap-4">
-            <span className="text-[9px] uppercase tracking-[0.28em] text-[#4ade80] font-mono">Scroll</span>
-            <div className="w-16 h-[1px] bg-green-500/30 relative overflow-hidden">
-              <div className="absolute inset-0 bg-green-400 origin-left" style={{ animation: 'scanLineX 2s infinite' }}></div>
+            <span className="text-[9px] uppercase tracking-[0.28em] text-[#3B82F6] font-mono">Scroll</span>
+            <div className="w-16 h-[1px] bg-blue-500/30 relative overflow-hidden">
+              <div className="absolute inset-0 bg-blue-400 origin-left" style={{ animation: 'scanLineX 2s infinite' }}></div>
             </div>
           </div>
         </section>
@@ -393,7 +474,7 @@ export default function Home() {
               >
                 <h2 className="font-mono text-2xl md:text-3xl text-white uppercase tracking-widest mb-2 flex items-center gap-4">
                   <HackerText text="Select_Environment" /> 
-                  <span className="text-[#4ade80] text-sm">{isThemeOpen ? '[-]' : '[+]'}</span>
+                  <span className="text-[#3B82F6] text-sm">{isThemeOpen ? '[-]' : '[+]'}</span>
                 </h2>
                 <p className="font-mono text-[10px] md:text-xs text-[#A9A9A2] opacity-70 tracking-[0.2em] uppercase">
                   &gt; CLICK TO DEPLOY THEME_SELECTION_MODULE
@@ -478,7 +559,7 @@ export default function Home() {
                       className={`px-3 py-1 border text-[9px] uppercase tracking-widest font-mono transition-all duration-300 cursor-pointer ${bsodState ? 'bg-white text-black border-white' : 'border-[#333330] text-[#A9A9A2] hover:border-[#D8D8D1] hover:text-[#D8D8D1]'}`}
                       onClick={handleStatusClick}
                     >
-                      {bsodState ? 'ERROR: 418' : 'Professional Googler'}
+                      {bsodState ? 'ERROR: 418' : 'Yappin all day'}
                     </button>
                   </div>
                   
@@ -508,7 +589,7 @@ export default function Home() {
               >
                 {/* Khung nhãn góc trên bên phải */}
                 <div className="absolute top-0 right-0 hidden md:flex flex-col items-end gap-2 z-10">
-                  <span className="px-3 py-1 border border-[#333330] text-[9px] uppercase tracking-widest font-mono text-[#4ade80]">
+                  <span className="px-3 py-1 border border-[#333330] text-[9px] uppercase tracking-widest font-mono text-[#3B82F6]">
                     SYS.STATUS: ONLINE
                   </span>
                   <span className="px-3 py-1 border border-[#333330] text-[9px] uppercase tracking-widest font-mono text-[#A9A9A2]">
@@ -553,7 +634,7 @@ export default function Home() {
 
 
             <section id="sec-archive" className="ms-section">
-            <div className="section-label">Visual Archive</div>
+            <div className="section-label">RANDOM THINGS</div>
             <div className="flex flex-col md:flex-row gap-6 items-stretch justify-center h-[75vh]">
               <motion.div initial={{ opacity: 0, x: -60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }} className="flex-1 h-full w-full min-w-0 min-h-0 flex items-center justify-center">
                 <img src="/p1.jpg" alt="Portrait Meme" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" />
@@ -631,10 +712,10 @@ export default function Home() {
                 </h3>
                 <div className="flex gap-4 items-center mt-6">
                   <span className="relative flex h-4 w-4">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4ade80] opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-4 w-4 bg-[#4ade80]"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3B82F6] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-[#3B82F6]"></span>
                   </span>
-                  <span className="font-mono text-[13px] font-semibold text-[#4ade80] uppercase tracking-widest scroll-reveal-line" data-reveal-delay="2">
+                  <span className="font-mono text-[13px] font-semibold text-[#3B82F6] uppercase tracking-widest scroll-reveal-line" data-reveal-delay="2">
                     4 MODULES ONLINE
                   </span>
                 </div>
@@ -683,10 +764,10 @@ export default function Home() {
                   ].map((file, i) => (
                     <TiltCard key={i}><a href={`/soc-lab/${file.replace('.md', '')}`} className="flex justify-between items-center py-4 border-b border-[#111111] hover:bg-[#111111] transition-colors group cursor-pointer px-4">
                       <span className="flex gap-5 items-center">
-                        <span className="text-[#333330] group-hover:text-[#4ade80] text-sm">[{String(i+1).padStart(2, '0')}]</span>
+                        <span className="text-[#333330] group-hover:text-[#3B82F6] text-sm">[{String(i+1).padStart(2, '0')}]</span>
                         <span className="text-[#D8D8D1] group-hover:text-white transition-colors text-base">{file}</span>
                       </span>
-                      <span className="text-[#333330] group-hover:text-[#4ade80] transition-colors text-sm">
+                      <span className="text-[#333330] group-hover:text-[#3B82F6] transition-colors text-sm">
                         {10 + i * 2}.4kb
                       </span>
                     </a></TiltCard>
@@ -695,6 +776,131 @@ export default function Home() {
                     <span className="animate-pulse text-base">_</span>
                   </div>
                 </div>
+              </motion.div>
+              
+            </div>
+          </section>
+
+          {/* ══ PROJECT: FALLGUARD ════════════════════════════════════════ */}
+          <section id="sec-fallguard" className="ms-section">
+            <div className="section-label">Project: FallGuard</div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              {/* Left Info */}
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.8, ease: "easeOut" }}
+                className="lg:col-span-5 flex flex-col gap-5"
+              >
+                <h3 className="font-serif text-[clamp(2.5rem,4vw,3.8rem)] leading-[1.1] font-light text-white scroll-reveal-line">
+                  <span className="scroll-reveal-line" data-reveal-delay="0">FallGuard</span><br/>
+                  <span className="scroll-reveal-line" data-reveal-delay="1">SYSTEM.</span>
+                </h3>
+                <div className="flex gap-4 items-center mt-2">
+                  <span className="relative flex h-4 w-4">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3B82F6] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-[#3B82F6]"></span>
+                  </span>
+                  <span className="font-mono text-[13px] font-semibold text-[#3B82F6] uppercase tracking-widest scroll-reveal-line" data-reveal-delay="2">
+                    POSE AI + 24GHZ MMWAVE RADAR
+                  </span>
+                </div>
+                
+                <p className="text-[#A9A9A2] font-mono font-light text-base leading-relaxed mt-2 scroll-reveal-line" data-reveal-delay="3">
+                  Privacy-preserving fall detection and spatial monitoring system for elderly people living alone.
+                </p>
+                
+                <div className="mt-4 border-l-2 border-[#333330] pl-6 font-mono text-[13px] text-[#A9A9A2] uppercase tracking-[0.15em] flex flex-col gap-3">
+                  <p className="scroll-reveal-line" data-reveal-delay="4">› AI: YOLOv8m-Pose + BoT-SORT</p>
+                  <p className="scroll-reveal-line" data-reveal-delay="5">› Hardware: Dual ESP32 + LD2450</p>
+                  <p className="scroll-reveal-line" data-reveal-delay="5">› Access: Tailscale Mesh VPN</p>
+                </div>
+
+                <div className="mt-4">
+                  <MagneticWrapper>
+                    <Link href="/projects/fallguard" className="cta-link inline-block">
+                      <HackerText text="Enter Project →" />
+                    </Link>
+                  </MagneticWrapper>
+                </div>
+              </motion.div>
+
+              {/* Right Clickable Architecture Portal Card */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                className="lg:col-span-7"
+              >
+                <TiltCard>
+                  <Link
+                    href="/projects/fallguard"
+                    className="group block bg-[#050505] border border-[#333330] hover:border-[#3B82F6] transition-colors overflow-hidden font-mono"
+                  >
+                    {/* Portal Header */}
+                    <div className="flex justify-between items-center px-6 py-4 border-b border-[#333330] bg-[#0A0A0A] text-sm">
+                      <span className="text-[#A9A9A2] group-hover:text-white transition-colors">~/projects/fallguard</span>
+                      <span className="text-xs text-[#3B82F6] uppercase tracking-widest flex items-center gap-2">
+                        <span>OPEN DOSSIER</span>
+                        <span className="transform group-hover:translate-x-1 transition-transform">→</span>
+                      </span>
+                    </div>
+
+                    {/* 4-Stage Architecture Overview Grid */}
+                    <div className="p-6 md:p-8 space-y-6 bg-[#070707]">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {[
+                          {
+                            step: 'STAGE 01',
+                            title: 'Edge Sensing',
+                            spec: 'ESP32-CAM (:81) + LD2450 (256kbps)',
+                            desc: 'Streams MJPEG video and decodes 24GHz mmWave radar targets over UART2.',
+                          },
+                          {
+                            step: 'STAGE 02',
+                            title: 'AI Pose & Tracking',
+                            spec: 'YOLOv8m-Pose + BoT-SORT',
+                            desc: 'Evaluates spine inclination, bounding-box aspect ratio, and EMA-filtered keypoints.',
+                          },
+                          {
+                            step: 'STAGE 03',
+                            title: 'Pan/Tilt Kinematics',
+                            spec: 'ESP32 DevKit + 2x MG996R (5V)',
+                            desc: 'Computes azimuth/elevation angles and drives dual-axis servo tracking.',
+                          },
+                          {
+                            step: 'STAGE 04',
+                            title: 'Private Remote Access',
+                            spec: 'Next.js 16 + Tailscale ACL + Telegram',
+                            desc: 'Instant fall alerts and remote dashboard access without public port forwarding.',
+                          },
+                        ].map((item) => (
+                          <div
+                            key={item.step}
+                            className="border border-[#222220] group-hover:border-[#333330] bg-[#0B0B0B] p-4 transition-colors space-y-1.5"
+                          >
+                            <div className="flex items-center justify-between text-xs text-[#3B82F6]">
+                              <span>[{item.step}]</span>
+                              <span>● ONLINE</span>
+                            </div>
+                            <div className="text-base font-bold text-white">{item.title}</div>
+                            <div className="text-xs text-[#A9A9A2]">{item.spec}</div>
+                            <p className="text-xs text-[#D8D8D1] font-sans pt-1 leading-relaxed">
+                              {item.desc}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Bottom Command Bar inside Portal */}
+                      <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[#1A1A1A] text-xs md:text-sm">
+                        <span className="text-[#A9A9A2]">
+                          <span className="text-[#3B82F6] mr-2">$</span>./open_project.sh --interactive
+                        </span>
+                        <span className="text-[#3B82F6] font-semibold group-hover:underline">
+                          
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </TiltCard>
               </motion.div>
               
             </div>
@@ -713,16 +919,16 @@ export default function Home() {
                 <h2 className="split-lines scroll-reveal-line font-serif text-[clamp(2.5rem,5vw,6.5rem)] leading-[1.5] text-white font-light mb-12 pb-6"
                   style={{
                     textShadow: `
-                      1px 1px 0 rgba(74,222,128,0.4),
-                      2px 2px 0 rgba(74,222,128,0.35),
-                      3px 3px 0 rgba(74,222,128,0.3),
-                      4px 4px 0 rgba(74,222,128,0.25),
-                      5px 5px 0 rgba(74,222,128,0.2),
-                      6px 6px 0 rgba(74,222,128,0.15),
-                      7px 7px 0 rgba(74,222,128,0.1),
-                      8px 8px 0 rgba(74,222,128,0.08),
-                      0 0 60px rgba(74,222,128,0.15),
-                      0 0 120px rgba(74,222,128,0.08)
+                      1px 1px 0 rgba(59,130,246,0.4),
+                      2px 2px 0 rgba(59,130,246,0.35),
+                      3px 3px 0 rgba(59,130,246,0.3),
+                      4px 4px 0 rgba(59,130,246,0.25),
+                      5px 5px 0 rgba(59,130,246,0.2),
+                      6px 6px 0 rgba(59,130,246,0.15),
+                      7px 7px 0 rgba(59,130,246,0.1),
+                      8px 8px 0 rgba(59,130,246,0.08),
+                      0 0 60px rgba(59,130,246,0.15),
+                      0 0 120px rgba(59,130,246,0.08)
                     `,
                     transform: 'perspective(600px) rotateY(-4deg) rotateX(2deg)',
                     transformStyle: 'preserve-3d',
@@ -808,7 +1014,7 @@ export default function Home() {
         <footer className="py-16 px-6 md:px-10 border-t border-[#333330]">
           <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
             <div className="flex flex-col gap-1 cursor-pointer group" onClick={() => setClockFormat(prev => prev === 'bin' ? 'hex' : prev === 'hex' ? 'dec' : 'bin')}>
-                <span className="font-mono text-xl text-[#F5F5F0] block group-hover:text-[#4ade80] transition-colors">{timeStr || '00:00:00'}</span>
+                <span className="font-mono text-xl text-[#F5F5F0] block group-hover:text-[#3B82F6] transition-colors">{timeStr || '00:00:00'}</span>
                 <span className="font-mono text-[9px] text-[#A9A9A2] uppercase tracking-widest block">
                   SYS_TIME [{clockFormat.toUpperCase()}] - CLICK TO CYCLE FORMAT
                 </span>

@@ -74,7 +74,8 @@ export default function NetworkParticles() {
 
       draw() {
         if (!ctx) return;
-        ctx.fillStyle = 'rgba(74, 222, 128, 0.4)';
+        const isLight = document.documentElement.classList.contains('light-theme');
+        ctx.fillStyle = isLight ? 'rgba(37, 99, 235, 0.45)' : 'rgba(59, 130, 246, 0.55)';
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
@@ -91,6 +92,7 @@ export default function NetworkParticles() {
 
     const connect = () => {
       let opacityValue = 1;
+      const isLight = document.documentElement.classList.contains('light-theme');
       for (let a = 0; a < particlesArray.length; a++) {
         for (let b = a; b < particlesArray.length; b++) {
           const dx = particlesArray[a].x - particlesArray[b].x;
@@ -98,7 +100,9 @@ export default function NetworkParticles() {
           const distance = Math.sqrt(dx * dx + dy * dy);
           if (distance < 130) { // Khoảng cách nối dây
             opacityValue = 1 - (distance / 130);
-            ctx!.strokeStyle = `rgba(74, 222, 128, ${opacityValue * 0.25})`;
+            ctx!.strokeStyle = isLight
+              ? `rgba(37, 99, 235, ${opacityValue * 0.24})`
+              : `rgba(59, 130, 246, ${opacityValue * 0.32})`;
             ctx!.lineWidth = 0.8;
             ctx!.beginPath();
             ctx!.moveTo(particlesArray[a].x, particlesArray[a].y);

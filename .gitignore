@@ -40,3 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env.local
+
+# AI Agent & local documentation files
+/AGENTS.md
+/CLAUDE.md
+/RULES.md
+/design-system/
+/.agent/
+__pycache__/

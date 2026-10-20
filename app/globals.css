@@ -179,11 +179,11 @@ html.show-intro .intro-veil { opacity: 1; animation: khzIntroOut 1.6s var(--ease
 .service-item:last-child { border-bottom: 1px solid var(--border); }
 .service-item:hover { padding-left: 1.5rem; padding-right: 1.5rem; background: #1A1A1A; }
 .service-item__title { font-family: var(--serif); font-size: clamp(1.25rem, 2.5vw, 2rem); font-weight: 300; color: var(--fg); transition: font-style 0.35s var(--ease), color 0.35s var(--ease); }
-.service-item:hover .service-item__title { font-style: italic; color: #4ade80 !important; text-shadow: 0 0 10px rgba(74,222,128,0.3) !important; }
+.service-item:hover .service-item__title { font-style: italic; color: #3B82F6 !important; text-shadow: 0 0 10px rgba(59,130,246,0.35) !important; }
 .service-item:hover .service-item__meta { color: #F5F5F0 !important; }
 .service-item__meta { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-3); font-family: var(--sans); }
 .service-item__arrow { font-size: 1.25rem; color: var(--fg-3); transition: transform 0.4s var(--ease-khz), color 0.3s; }
-.service-item:hover .service-item__arrow { transform: translate(4px, -4px); color: #4ade80; }
+.service-item:hover .service-item__arrow { transform: translate(4px, -4px); color: #3B82F6; }
 
 .cta-row { display: flex; flex-wrap: wrap; gap: 1.25rem; margin-top: 3rem; }
 .cta-link { font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--fg-3); font-family: var(--sans); border: 1px solid var(--border); padding: 0.75rem 1.75rem; transition: all 0.3s var(--ease); }
@@ -244,13 +244,15 @@ html.snap-enabled footer { scroll-snap-align: end; }
 
 
 
-/* NATIVE LIGHT THEME OVERRIDES (NO FILTERS) */
+/* NATIVE LIGHT THEME OVERRIDES (LOW-GLARE WARM STONE & PRUSSIAN SLATE BLUE) */
 html.light-theme {
-  --light-bg: #EAE6DF; /* MÃ u giáº¥y cá»• Ã©p, cá»±c kÃ¬ dá»‹u máº¯t (Dusty Beige) */
-  --light-bg-2: #F3F0EA; /* MÃ u sÃ¡ng hÆ¡n 1 chÃºt cho cÃ¡c khung/panel Ä‘á»ƒ ná»•i khá»‘i 3D */
-  --light-text: #060606; /* Ä en xÃ¡m than, giáº£m Ä‘á»™ tÆ°Æ¡ng pháº£n gáº¯t */
-  --light-text-2: #161615; /* XÃ¡m khÃ³i cho cÃ¡c chá»¯ phá»¥ */
-  --light-border: #D6D2C9; /* ViÃªn mÃ u nÃ¢u Ä‘áº¥t nháº¡t */
+  --light-bg: #D8D3C8;
+  --light-bg-2: #E2DDD3;
+  --light-bg-3: #CEC8BC;
+  --light-text: #1C1B18;
+  --light-text-2: #524F49;
+  --light-border: #BEB7AA;
+  --light-accent: #234E70;
   background-color: var(--light-bg);
 }
 
@@ -270,6 +272,42 @@ html.light-theme .bg-black\/40 {
   background-color: var(--light-bg-2) !important;
 }
 
+html.light-theme .bg-\[\#070707\],
+html.light-theme .bg-\[\#0B0B0B\],
+html.light-theme .bg-\[\#080808\] {
+  background-color: var(--light-bg-3) !important;
+}
+
+html.light-theme .hover\:bg-\[\#111111\]:hover {
+  background-color: rgba(35, 78, 112, 0.1) !important;
+}
+
+html.light-theme .group:hover .group-hover\:text-white {
+  color: var(--light-accent) !important;
+}
+
+/* Hero Image & Gradient in Light Theme: Soft Charcoal ASCII Ink on Warm Stone */
+html.light-theme .hero img {
+  filter: invert(1) contrast(1.08);
+  mix-blend-mode: multiply;
+  opacity: 0.36 !important;
+}
+
+html.light-theme .hero .bg-gradient-to-t {
+  background: linear-gradient(
+    to top,
+    var(--light-bg) 0%,
+    rgba(216, 211, 200, 0.25) 45%,
+    rgba(216, 211, 200, 0.45) 100%
+  ) !important;
+  mix-blend-mode: normal !important;
+}
+
+html.light-theme .hero__title {
+  color: var(--light-accent) !important;
+  text-shadow: 0 8px 24px rgba(35, 78, 112, 0.14), 2px 2px 0 rgba(28, 27, 24, 0.06) !important;
+}
+
 /* Text */
 html.light-theme,
 html.light-theme .text-white,
@@ -286,8 +324,15 @@ html.light-theme .text-zinc-400 {
   color: var(--light-text-2) !important;
 }
 
+html.light-theme .text-\[\#3B82F6\],
+html.light-theme .text-blue-400 {
+  color: var(--light-accent) !important;
+}
+
 /* Borders */
 html.light-theme .border-\[\#333330\],
+html.light-theme .border-\[\#222220\],
+html.light-theme .border-\[\#1A1A1A\],
 html.light-theme .border-\[\#111111\],
 html.light-theme .border-white\/10,
 html.light-theme .border-white\/5 {
@@ -299,8 +344,8 @@ html.light-theme .prose-invert {
   --tw-prose-body: var(--light-text);
   --tw-prose-headings: var(--light-text);
   --tw-prose-p: var(--light-text);
-  --tw-prose-a: #16a34a; /* Darker green for links in light mode */
-  --tw-prose-code: #16a34a;
+  --tw-prose-a: var(--light-accent);
+  --tw-prose-code: var(--light-accent);
   --tw-prose-pre-bg: var(--light-bg-2);
   --tw-prose-pre-border: var(--light-border);
   --tw-prose-quotes: var(--light-text-2);
@@ -320,17 +365,24 @@ html.light-theme {
 html.light-theme .ms-section > div:not(.section-label) {
   background: var(--light-bg-2) !important;
   border-color: var(--light-border) !important;
-  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05) !important;
+  box-shadow: 0 18px 42px -15px rgba(28, 27, 24, 0.1), 0 1px 3px rgba(28, 27, 24, 0.06) !important;
 }
 
-html.light-theme .khz-nav,
+html.light-theme .khz-nav:not(.is-scrolled) {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border-bottom-color: transparent !important;
+}
+
 html.light-theme .khz-nav.is-scrolled {
-  background: var(--light-bg) !important;
-  border-bottom-color: var(--light-border) !important;
+  background: rgba(216, 211, 200, 0.62) !important;
+  backdrop-filter: blur(16px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+  border-bottom: 1px solid rgba(28, 27, 24, 0.12) !important;
 }
 
 html.light-theme .service-item:hover {
-  background: rgba(0, 0, 0, 0.05) !important;
+  background: rgba(35, 78, 112, 0.08) !important;
 }
 html.light-theme .service-item:hover .service-item__meta {
   color: var(--light-text) !important;
@@ -355,14 +407,14 @@ html, body, *, a, button, .cursor-pointer { cursor: none !important; }
   border: 1px solid transparent !important;
   background: 
     linear-gradient(#111111, #111111) padding-box,
-    conic-gradient(from var(--border-angle), transparent 25%, #4ade80 50%, transparent 75%) border-box !important;
+    conic-gradient(from var(--border-angle), transparent 25%, #3B82F6 50%, transparent 75%) border-box !important;
   animation: rotateBorder 4s linear infinite;
 }
 
 html.light-theme .ms-section > div:not(.section-label) {
   background: 
     linear-gradient(var(--light-bg-2), var(--light-bg-2)) padding-box,
-    conic-gradient(from var(--border-angle), transparent 25%, #4ade80 50%, transparent 75%) border-box !important;
+    conic-gradient(from var(--border-angle), var(--light-border) 20%, #2B5B84 50%, var(--light-border) 80%) border-box !important;
 }
 
 /* ═══ SECTION TRANSITION LINE ═══ */
@@ -382,7 +434,7 @@ html.light-theme .ms-section > div:not(.section-label) {
   left: 0;
   height: 100%;
   width: 100%;
-  background: #4ade80;
+  background: #3B82F6;
   transform: translateX(-100%);
   transition: transform 0.8s var(--ease-khz);
 }
@@ -404,8 +456,9 @@ html.light-theme .ms-section > div:not(.section-label) {
 }
 
 .scroll-reveal-line.is-bright[class*="text-green"],
+.scroll-reveal-line.is-bright[class*="text-blue"],
 .scroll-reveal-line.is-bright.service-item__title {
-  color: #4ade80 !important;
+  color: #3B82F6 !important;
 }
 
 html.light-theme .scroll-reveal-line {
@@ -414,6 +467,11 @@ html.light-theme .scroll-reveal-line {
 
 html.light-theme .scroll-reveal-line.is-bright {
   color: var(--light-text) !important;
+}
+
+html.light-theme .scroll-reveal-line.is-bright[class*="text-blue"],
+html.light-theme .scroll-reveal-line.is-bright.service-item__title {
+  color: var(--light-accent) !important;
 }
 
 /* Staggered delays based on attribute */
