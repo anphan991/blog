@@ -1,1339 +1,1310 @@
 'use client';
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Terminal, Cpu, Database, Globe, Zap, Bug,
-  ShieldAlert, Users, ExternalLink, PlayCircle, ArrowLeft, ChevronRight, 
-  ChevronDown, FileText, Folder, Activity,
-  Coffee, Lock ,AlertTriangle, BatteryWarning, BadgeCheck,
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import InteractiveTerminal from '@/components/Terminal'; // Hoặc '../../components/Terminal' tùy config alias
-import ViewCounter from '@/components/Terminal'; // Tui thấy ông có file này, nhớ gọi ra luôn cho xịn!
-import { Terminal as TerminalIcon, ShieldCheck,  } from 'lucide-react';
-import RFIDCard3D from '@/components/RFIDCard3D';
-import NodeGraph from '@/components/NodeGraph';
-import LandscapeEnforcer from '@/components/LandscapeEnforcer';
-import SelfDestructFooter from '@/components/SelfDestructFooter';
-
-
-// --- 1. DỮ LIỆU NHIỆM VỤ (MISSION DATA) ---
-const MissionData = [
-{
-  id: 'ch1',
-  title: 'PHASE 01: THE INFILTRATION (Tổng quan đề tài)',
-  content: (
-    <div className="space-y-10 font-mono text-base"> {/* Tăng base size lên text-base */}
-      
-      {/* 1.1 Đặt vấn đề: The Legacy Crisis */}
-      <section className="relative p-8 bg-red-950/5 border border-red-900/20 rounded-3xl">
-        <div className="absolute -top-4 left-8 px-3 py-1 bg-[#0a0a0a] text-red-500 font-black flex items-center gap-2 text-sm border border-red-900/30 rounded-lg">
-          <ShieldAlert size={18} /> 1.1_PROBLEM_DETECTION
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mt-4">
-          <div className="lg:col-span-3 space-y-4">
-            <p className="text-white text-lg font-black tracking-tighter uppercase underline decoration-red-500/50 underline-offset-4">
-              ⚠️ Tình trạng "Khủng hoảng chuyên cần":
-            </p>
-            <ul className="space-y-3 text-slate-300 text-sm md:text-base"> {/* Tăng từ text-xs lên text-base */}
-              <li className="flex gap-3">
-                <span className="text-red-500 font-bold shrink-0">[LOST]</span> 10-15 phút vàng ngọc mỗi tiết chỉ để gọi tên.
-              </li>
-              <li className="flex gap-3">
-                <span className="text-red-500 font-bold shrink-0">[VOID]</span> "Điểm danh hộ" - Ma thuật đen truyền kiếp của sinh viên.
-              </li>
-              <li className="flex gap-3">
-                <span className="text-red-500 font-bold shrink-0">[LAG]</span> Dữ liệu giấy có độ trễ cao hơn cả ping server Global.
-              </li>
-            </ul>
-          </div>
-          <div className="lg:col-span-2 bg-black/60 p-6 rounded-2xl border border-white/10 italic text-sm text-slate-400 flex flex-col justify-center leading-relaxed">
-            "Trong kỷ nguyên 4.0, giảng viên vẫn phải cầm sớ đọc tên? 
-            Đó không phải là giáo dục thông minh, đó là sự kiên nhẫn vô tận." 
-            <div className="mt-2 text-blue-400 font-bold not-italic">— Một Giáo sư nào đó ko nói như vậy</div>
-          </div>
-        </div>
-      </section>
-
-      {/* 1.2 Tình hình nghiên cứu: Global Intel Scan */}
-      <section className="space-y-6">
-        <h3 className="text-white text-xl font-black flex items-center gap-3 border-b border-white/10 pb-3">
-          <Globe size={22} className="text-blue-500" /> 1.2_GLOBAL_INTEL_SCAN
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Nội địa */}
-          <div className="p-6 bg-blue-500/5 border border-blue-500/10 rounded-2xl hover:bg-blue-500/10 transition-all">
-            <p className="text-blue-400 font-black mb-3 text-sm tracking-widest uppercase">🇻🇳 Local Systems</p>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              Vân tay (Snail speed), QR Code (Proxy King - screenshot là xong), Arduino (Toy-level, thiếu Web/DB xịn).
-            </p>
-          </div>
-          {/* Quốc tế */}
-          <div className="p-6 bg-purple-500/5 border border-purple-500/10 rounded-2xl hover:bg-purple-500/10 transition-all">
-            <p className="text-purple-400 font-black mb-3 text-sm tracking-widest uppercase">🌍 Foreign Systems</p>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              Face ID (GPU tốn kém), Long-range RFID (Nhiễu tín hiệu, giá 'chát' như trà sữa full topping).
-            </p>
-          </div>
-          {/* Giải pháp tối ưu */}
-          <div className="p-6 bg-lime-500/10 border border-lime-500/20 rounded-2xl hover:bg-lime-500/20 transition-all shadow-[0_0_20px_rgba(132,204,22,0.1)]">
-            <p className="text-lime-400 font-black mb-3 text-sm tracking-widest uppercase flex items-center gap-2">
-              💡 THE GOAT
-            </p>
-            <p className="text-sm text-slate-200 leading-relaxed font-medium">
-              RFID 13.56 MHz + Edge Caching + REST API. 
-              <br/>Phản hồi &lt; 0.1s. Phù hợp cho đỗ nghèo khỉ nhưng vẫn muốn hít hàng thơm.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 1.3 & 1.4: Reasons & Objectives */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Lý do chọn đề tài */}
-        <div className="space-y-6">
-          <h3 className="text-white text-xl font-black flex items-center gap-3">
-            <Zap size={22} className="text-yellow-500" /> 1.3_THE_CORE_WHY
-          </h3>
-          <div className="space-y-3">
-            <div className="p-4 border-l-4 border-yellow-500 bg-yellow-500/5 text-sm md:text-base">
-              <span className="text-yellow-500 font-black mr-2">#1:</span> RFID Balance - Rẻ, bền, tốc độ ánh sáng.
-            </div>
-            <div className="p-4 border-l-4 border-blue-500 bg-blue-500/5 text-sm md:text-base">
-              <span className="text-blue-500 font-black mr-2">#2:</span> Self-built Backend - Kiểm soát tuyệt đối.
-            </div>
-            <div className="p-4 border-l-4 border-purple-500 bg-purple-500/5 text-sm md:text-base">
-              <span className="text-purple-500 font-black mr-2">#3:</span> Mutex Lock - Chống "loạn nhịp đa luồng" a.k.a Race Condition.
-            </div>
-          </div>
-        </div>
-
-        {/* Mục tiêu & Phạm vi */}
-        <div className="space-y-6">
-          <h3 className="text-white text-xl font-black flex items-center gap-3">
-            <Activity size={22} className="text-green-500" /> 1.4_MISSION_SCOPE
-          </h3>
-          <div className="bg-white/5 rounded-3xl p-6 border border-white/10 space-y-4">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-400 font-bold uppercase tracking-tighter">Target Scale:</span>
-              <span className="text-green-400 font-black italic">50 - 100 Students</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-400 font-bold uppercase tracking-tighter">Protocol:</span>
-              <span className="text-green-400 font-black italic">Mifare Classic 1K</span>
-            </div>
-            <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
-              <motion.div 
-                initial={{ width: 0 }}
-                whileInView={{ width: '85%' }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                className="bg-green-500 h-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"
-              />
-            </div>
-            <p className="text-xs text-slate-500 italic leading-relaxed pt-5">
-              "Kiến trúc Module hóa. Sẵn sàng nâng cấp AI nhận diện khuôn mặt trong Season tiếp theo."
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* CHÈN BẢN ĐỒ VÀO ĐÂY */}
-      <NodeGraph />
-
-    </div>
-  )
-},
-
-{
-  id: 'ch2',
-  title: 'PHASE 02: THE HARDWARE LAB (Cơ sở lý thuyết)',
-  content: (
-    <div className="space-y-12 font-mono text-base">
-      
-      {/* 2.1 ESP32: The Beast with Two Hearts */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-          <Cpu size={24} className="text-purple-500" />
-          <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">2.1_THE_DUAL_CORE_BEAST</h3>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <p className="text-slate-300 leading-relaxed">
-              Trái tim của hệ thống là <span className="text-purple-400 font-bold">ESP32</span>. Không giống như mấy con chip 8-bit "cổ lỗ sĩ", con này có tận 2 lõi (Dual-core). 
-            </p>
-            
-            <div className="bg-black/40 rounded-3xl border border-white/5 overflow-hidden shadow-inner mt-4">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-purple-500/10 text-purple-400 font-black uppercase text-xs">
-                  <tr>
-                    <th className="p-4">Component</th>
-                    <th className="p-4">Specifications</th>
-                  </tr>
-                </thead>
-                <tbody className="text-slate-400">
-                  <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                    <td className="p-4 font-bold text-slate-200 uppercase">CPU</td>
-                    <td className="p-4 italic">Xtensa® Dual-core 32-bit LX6 (240MHz)</td>
-                  </tr>
-                  <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                    <td className="p-4 font-bold text-slate-200 uppercase">Wireless</td>
-                    <td className="p-4 italic">Wi-Fi 150Mbps + Bluetooth Dual-mode</td>
-                  </tr>
-                  <tr className="hover:bg-white/5 transition-colors">
-                    <td className="p-4 font-bold text-slate-200 uppercase">Security</td>
-                    <td className="p-4 italic">Hardware Encryption (AES, SHA, RSA)</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* RTOS Meme Box - ĐÃ FIX IN ĐẬM */}
-          <div className="bg-purple-950/5 border border-purple-500/20 rounded-3xl p-8 flex flex-col justify-center relative group">
-            <div className="absolute top-4 right-6 text-purple-900 group-hover:text-purple-500 transition-colors">
-              <Activity size={40} />
-            </div>
-            <p className="text-purple-400 font-black mb-4 flex items-center gap-2 italic">
-              <Zap size={18} /> OPERATING_SYSTEM: FreeRTOS
-            </p>
-            <p className="text-slate-400 leading-relaxed italic text-sm md:text-base">
-              "Lập trình nhúng thông thường giống như đi thang bộ. <strong className="text-white font-bold">FreeRTOS</strong> cho ông đi thang máy. Lõi 0 lo 'hóng hớt' Wifi, Lõi 1 lo 'quẹt thẻ'. Hai anh em làm việc riêng, không ai đụng hàng ai, triệt tiêu hoàn toàn tình trạng treo máy."
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 2.2 RFID: Wireless Magic */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-          <Activity size={24} className="text-blue-500" />
-          <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">2.2_WIRELESS_INTEL (13.56 MHz)</h3>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-3 p-8 bg-blue-500/5 border border-blue-500/10 rounded-3xl space-y-6">
-            <p className="text-white font-bold text-xl flex items-center gap-2">
-              <Zap size={20} className="text-blue-400" /> Định luật Faraday: "Năng lượng từ hư không"
-            </p>
-            <p className="text-slate-400 leading-relaxed text-sm md:text-base italic">
-              "Thẻ RFID không có pin, nhưng khi bước vào vùng phủ sóng của Reader, nó tự 'sống' dậy nhờ cảm ứng điện từ. Reader phát sóng, thẻ nhận năng lượng, 'hú' lại cái mã UID. Đơn giản như cách ông thấy crush rồi tim đập nhanh vậy."
-            </p>
-            <div className="bg-black/60 p-4 rounded-xl border border-white/5 text-[12px] text-blue-400/80 font-mono">
-               // Signal Protocol Detected... <br/>
-               // Frequency: 13.56 MHz | Data Rate: 106 kbps
-            </div>
-          </div>
-
-          {/* BIG MEMORY MAP - PHÓNG TO VÀ CHI TIẾT HƠN */}
-          <div className="lg:col-span-2 p-8 bg-zinc-900 border border-white/10 rounded-3xl flex flex-col justify-between group shadow-xl">
-             <div className="flex justify-between items-center mb-6">
-                <p className="text-sm text-slate-200 uppercase font-black tracking-widest italic">Memory_Map: Mifare_1K</p>
-                <Database size={16} className="text-blue-500 animate-pulse" />
-             </div>
-             
-             {/* Grid 4x4 đại diện cho 16 Sector */}
-             <div className="grid grid-cols-4 gap-3">
-               {[...Array(16)].map((_, i) => (
-                 <div 
-                   key={i} 
-                   className={`h-10 rounded-lg flex items-center justify-center text-[10px] font-bold transition-all duration-500 ${
-                     i === 0 
-                     ? 'bg-red-500/80 shadow-[0_0_15px_rgba(239,68,68,0.4)] text-white animate-pulse' 
-                     : 'bg-blue-600/20 border border-blue-500/20 text-blue-400/40 group-hover:bg-blue-600/40 group-hover:text-blue-200'
-                   }`}
-                   title={i === 0 ? "Sector 0: Manufacturer Data" : `Sector ${i}`}
-                 >
-                   S{i}
-                 </div>
-               ))}
-             </div>
-
-             <div className="mt-8 space-y-3">
-                <p className="text-[12px] text-slate-400 leading-tight italic border-l-2 border-red-500 pl-4">
-                  <strong className="text-red-400">Sector 0 (S0):</strong> Chứa UID "bất tử". Không thể sửa, không thể giả mạo. Linh hồn của sinh viên nằm ở đây.
-                </p>
-                <p className="text-[12px] text-slate-500 leading-tight italic border-l-2 border-blue-500/30 pl-4">
-                  <strong className="text-blue-400">S1 - S15:</strong> Vùng nhớ dữ liệu. Có thể ghi thêm nếu ông muốn lưu điểm số hay mã số bí mật.
-                </p>
-             </div>
-          </div>
-        </div>
-        
-      </section>
-
-      {/* 2.3 ACID & API: The Backend Contract */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-          <Database size={24} className="text-green-500" />
-          <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">2.3_THE_ETERNAL_LEDGER (ACID)</h3>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-2 p-8 bg-green-500/5 border border-green-500/10 rounded-3xl">
-            <h4 className="text-green-400 font-black text-sm tracking-widest italic mb-6 uppercase">The_ACID_Contract</h4>
-            <ul className="space-y-5 text-sm md:text-base text-slate-400">
-              <li><strong className="text-white font-bold">Atomicity:</strong> Điểm danh hoặc thành công, hoặc không có gì. Tuyệt đối không có chuyện 'quẹt nửa vời'.</li>
-              <li><strong className="text-white font-bold">Consistency:</strong> Database sạch như cách ông dọn dẹp folder sau khi nộp bài.</li>
-              <li><strong className="text-white font-bold">Isolation:</strong> 100 ông quẹt cùng lúc cũng không được 'chen lấn' dữ liệu.</li>
-            </ul>
-          </div>
-
-          {/* Race Condition Meme - ĐÃ FIX IN ĐẬM */}
-          <div className="lg:col-span-3 p-8 bg-red-950/10 border border-red-500/20 rounded-3xl relative overflow-hidden flex flex-col justify-center shadow-2xl">
-             <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12">
-               <ShieldAlert size={120} />
-             </div>
-             <h4 className="text-red-500 font-black text-2xl mb-4 flex items-center gap-2 italic tracking-tighter uppercase">
-               Race_Condition: Đua xe dữ liệu
-             </h4>
-             <p className="text-slate-300 leading-relaxed italic text-sm md:text-base">
-               "Hãy tưởng tượng 2 sinh viên cùng quẹt thẻ vào đúng 1 millisecond. Nếu không có <strong className="text-white font-bold">Mutex Lock</strong>, Database sẽ 'lú' và ghi nhận sai. Một ông đi học nhưng bị vắng, một ông ở nhà nhưng lại có mặt. Đó là lý do chúng ta cần khóa cửa khu vực găng!"
-             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer Chapter Note */}
-      <div className="pt-8 border-t border-white/5 flex justify-center">
-        <div className="flex items-center gap-3 text-sm text-slate-500 bg-zinc-900 px-8 py-4 rounded-full border border-white/10 shadow-2xl">
-          <Coffee size={16} className="text-amber-600" />
-          <span className="font-bold tracking-tight">Luôn check pin MISO/MOSI trước khi than vãn RFID không chạy.</span>
-        </div>
-      </div>
-    </div>
-  )
-},
-
-{
-  id: 'ch3',
-  title: 'PHASE 03: THE BLUEPRINT (Thiết kế hệ thống)',
-  content: (
-    <div className="space-y-12 font-mono text-base">
-      
-      {/* 3.1 Sơ đồ khối: Edge-to-Cloud */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-          <Zap size={24} className="text-blue-400" />
-          <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">3.1_ARCH_PIPELINE</h3>
-        </div>
-
-        <div className="p-8 bg-blue-500/5 border border-blue-500/10 rounded-3xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:rotate-12 transition-transform">
-            <Globe size={120} />
-          </div>
-          <p className="text-white font-bold text-lg mb-6 flex items-center gap-2 italic">
-            <Activity size={20} className="text-blue-400" /> Edge-to-Cloud Pipeline
-          </p>
-          
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-8">
-            <div className="px-6 py-4 bg-zinc-900 border border-purple-500/50 rounded-xl text-center shadow-lg shadow-purple-500/10">
-              <p className="text-xs text-purple-400 font-black mb-1 tracking-widest">EDGE NODE</p>
-              <p className="font-bold text-white text-lg">ESP32</p>
-              <p className="text-[10px] text-slate-500">RFID + Edge Caching</p>
-            </div>
-            <div className="h-0.5 w-8 bg-slate-800 hidden md:block"></div>
-            <div className="px-6 py-4 bg-zinc-900 border border-green-500/50 rounded-xl text-center shadow-lg shadow-green-500/10">
-              <p className="text-xs text-green-400 font-black mb-1 tracking-widest">LOGIC ENGINE</p>
-              <p className="font-bold text-white text-lg">FastAPI</p>
-              <p className="text-[10px] text-slate-500">Mutex Lock / JWT</p>
-            </div>
-            <div className="h-0.5 w-8 bg-slate-800 hidden md:block"></div>
-            <div className="px-6 py-4 bg-zinc-900 border border-blue-500/50 rounded-xl text-center shadow-lg shadow-blue-500/10">
-              <p className="text-xs text-blue-400 font-black mb-1 tracking-widest">THE VAULT</p>
-              <p className="font-bold text-white text-lg">Supabase</p>
-              <p className="text-[10px] text-slate-500">PostgreSQL (ACID)</p>
-            </div>
-          </div>
-          
-          <p className="text-base text-slate-400 italic leading-relaxed pt-6 border-t border-white/5">
-            <strong className="text-white font-bold">Smart Edge Caching:</strong> Vũ khí bí mật giúp phản hồi &lt; 0.5s. Thay vì hỏi Server mọi lúc, ESP32 tự "ghi nhớ" danh sách ca học vào RAM. Nhanh hơn cả cách ông bị đuổi khỏi group lớp vì gửi meme nhạy cảm.
-          </p>
-        </div>
-      </section>
-
-      {/* 3.2 Database: The Eternal Vault */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-          <Database size={24} className="text-green-500" />
-          <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">3.2_DATABASE_SCHEMA_INTEL</h3>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="p-6 bg-zinc-900/50 border border-white/10 rounded-3xl group hover:border-purple-500/30 transition-all">
-            <p className="text-purple-400 font-black text-xs tracking-widest mb-4">TABLE: admin_users</p>
-            <div className="space-y-3 text-sm font-mono">
-              <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-slate-500">admin_username</span> <span className="text-white">TEXT (PK)</span></div>
-              <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-slate-500">password_hash</span> <span className="text-white">TEXT (Bcrypt)</span></div>
-              <div className="flex justify-between pb-1"><span className="text-slate-500">ho_ten</span> <span className="text-white">TEXT</span></div>
-            </div>
-            <p className="mt-4 text-[11px] text-slate-500 italic">"Băm mật khẩu (Bcrypt) - No Plaintext No Cry."</p>
-          </div>
-
-          <div className="p-6 bg-zinc-900/50 border border-white/10 rounded-3xl group hover:border-blue-500/30 transition-all">
-            <p className="text-blue-400 font-black text-xs tracking-widest mb-4">TABLE: lop_hoc</p>
-            <div className="space-y-3 text-sm font-mono">
-              <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-slate-500">ma_lop</span> <span className="text-white">TEXT (PK)</span></div>
-              <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-slate-500">gio_bat_dau</span> <span className="text-white">TIME</span></div>
-              <div className="flex justify-between pb-1"><span className="text-slate-500">so_buoi_max</span> <span className="text-white">INT (15)</span></div>
-            </div>
-            <p className="mt-4 text-[11px] text-slate-500 italic">"Cấu hình ca học - Cẩn thận kẻo Set nhầm 07:30 thành 19:30."</p>
-          </div>
-
-          <div className="p-6 bg-red-950/5 border border-red-500/20 rounded-3xl group hover:shadow-[0_0_30px_rgba(239,68,68,0.15)] transition-all flex flex-col justify-between">
-            <div>
-              <p className="text-red-500 font-black text-xs tracking-widest mb-4 uppercase">Table: Status_Warning</p>
-              <div className="space-y-3 text-sm font-mono">
-                <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-slate-500">mssv</span> <span className="text-white font-bold">FK</span></div>
-                <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-slate-500">so_buoi_vang</span> <span className="text-white">INT</span></div>
-                <div className="flex justify-between pb-1"><span className="text-slate-500">trang_thai</span> <span className="text-red-400 font-black">INELIGIBLE?</span></div>
-              </div>
-            </div>
-            <p className="mt-4 text-[11px] text-red-500/70 italic font-bold uppercase tracking-tighter">
-              "System: Cấm thi tự động dựa trên vắng học."
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 3.3 Algorithms: Dual-Core Logic */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-          <Activity size={24} className="text-purple-500" />
-          <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">3.3_THE_GHOST_IN_THE_MACHINE</h3>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="p-8 bg-zinc-900/80 border border-white/5 rounded-3xl relative shadow-xl">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-4 h-4 rounded-full bg-red-500 animate-pulse"></div>
-              <p className="text-white font-black text-base italic">CORE_01: RFID_SENTRY (Thực địa)</p>
-            </div>
-            <ul className="space-y-4 text-sm md:text-base text-slate-400 italic">
-              <li className="flex gap-2 font-mono tracking-tighter"><span className="text-red-500">01_</span> Cấu hình MFRC522 qua giao thức SPI.</li>
-              <li className="flex gap-2 font-mono tracking-tighter"><span className="text-red-500">02_</span> Đợi thẻ bước vào vùng 13.56 MHz.</li>
-              <li className="flex gap-2 font-mono tracking-tighter"><span className="text-red-500">03_</span> Đối soát UID với <strong className="text-white">Edge Cache</strong> trong RAM.</li>
-              <li className="flex gap-2 font-mono tracking-tighter"><span className="text-red-500">04_</span> LCD Update + <strong className="text-white">Push to Queue</strong>.</li>
-            </ul>
-          </div>
-
-          <div className="p-8 bg-zinc-900/80 border border-white/5 rounded-3xl relative shadow-xl">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-              <p className="text-white font-black text-base italic">CORE_00: WIFI_MESSENGER (Upload nền)</p>
-            </div>
-            <ul className="space-y-4 text-sm md:text-base text-slate-400 italic">
-              <li className="flex gap-2 font-mono tracking-tighter"><span className="text-blue-500">01_</span> Ngủ gật (Sleep) cho đến khi Queue có dữ liệu.</li>
-              <li className="flex gap-2 font-mono tracking-tighter"><span className="text-blue-500">02_</span> "Hốt" dữ liệu quẹt thẻ từ Core 1.</li>
-              <li className="flex gap-2 font-mono tracking-tighter"><span className="text-blue-500">03_</span> POST về /api/attendance qua Wifi.</li>
-              <li className="flex gap-2 font-mono tracking-tighter"><span className="text-blue-500">04_</span> Reset Task & Quay lại bước 01.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* 3.4 API Endpoints */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-          <Globe size={24} className="text-lime-500" />
-          <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">3.4_API_HANDSHAKE_PROTOCOLS</h3>
-        </div>
-
-        <div className="overflow-x-auto rounded-3xl border border-white/10 bg-white/[0.02] shadow-2xl">
-          <table className="w-full text-base text-left border-collapse">
-            <thead>
-              <tr className="bg-lime-500/10 text-lime-400 uppercase text-xs tracking-widest font-black">
-                <th className="p-6">METHOD</th>
-                <th className="p-6">ENDPOINT</th>
-                <th className="p-6">ACTION_INTEL</th>
-              </tr>
-            </thead>
-            <tbody className="text-slate-300 divide-y divide-white/5">
-              <tr className="hover:bg-white/5 transition-colors">
-                <td className="p-6"><span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-lg font-black text-sm">GET</span></td>
-                <td className="p-6 font-mono text-sm">/api/students/&lcub;dev_id&rcub;</td>
-                <td className="p-6 italic">"Hốt" danh sách sinh viên về Edge Cache.</td>
-              </tr>
-              <tr className="hover:bg-white/5 transition-colors">
-                <td className="p-6"><span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-lg font-black text-sm">POST</span></td>
-                <td className="p-6 font-mono text-sm">/api/attendance</td>
-                <td className="p-6 italic text-blue-300">Ghi nhận quẹt thẻ. <strong className="text-white">Mutex Lock Active!</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* Footer Chapter Note */}
-      <div className="pt-10 border-t border-white/5 flex justify-center">
-        <div className="flex items-center gap-4 text-sm text-slate-500 bg-zinc-900 px-10 py-5 rounded-full border border-white/10 shadow-2xl">
-          <Bug size={20} className="text-red-500 animate-bounce" />
-        </div>
-      </div>
-    </div>
-  )
-},
-
-{
-  id: 'ch4',
-  title: 'PHASE 04: THE TACTICAL FORGE (Xây dựng & Mô phỏng)',
-  content: (
-    <div className="space-y-16 font-mono text-lg">
-      
-      {/* 4.1 Môi trường phát triển: THE FORGE */}
-      <section className="relative p-10 bg-blue-950/5 border border-blue-500/20 rounded-[40px] shadow-2xl">
-        <div className="absolute -top-5 left-10 px-6 py-2 bg-[#0a0a0a] text-blue-400 font-black flex items-center gap-3 text-base border border-blue-500/30 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-          <Cpu size={22} /> 4.1_THE_TACTICAL_FORGE
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-6">
-          <div className="space-y-6">
-            <p className="text-white text-2xl font-black italic tracking-tighter uppercase underline decoration-blue-500/30 underline-offset-8">
-              🐳 Docker: Lời nguyền "Máy em chạy..."
-            </p>
-            <p className="text-slate-300 leading-relaxed text-lg">
-              Để tiêu diệt triệt để thảm họa <strong className="text-white font-bold">"Máy em chạy bình thường mà máy thầy/server nó không chạy"</strong>, toàn bộ hệ thống được đóng gói vào Docker. 
-              <br/>Dù là Ubuntu, Kali hay Windows, chỉ cần một lệnh <code className="text-blue-400 bg-blue-950/30 px-2 rounded">up --build</code> là mọi thứ vào guồng.
-            </p>
-            <div className="bg-black/60 p-6 rounded-2xl border border-white/10 text-sm text-blue-300 shadow-inner">
-               // Launching Virtual Environment... <br/>
-               // Container 01: FastAPI_Engine [ACTIVE] <br/>
-               // Container 02: PostgreSQL_Vault [ACTIVE]
-            </div>
-          </div>
-          <div className="bg-gradient-to-br from-blue-900/10 to-zinc-900 border border-white/5 p-10 rounded-[35px] flex flex-col justify-center space-y-4">
-             <div className="flex items-center gap-4">
-               <div className="w-16 h-16 bg-yellow-500/10 rounded-2xl flex items-center justify-center text-3xl">🤗</div>
-               <div>
-                 <p className="text-xl font-black text-white italic">Hugging Face Spaces</p>
-                 <p className="text-sm text-slate-500">Căn cứ địa triển khai trực tuyến.</p>
-               </div>
-             </div>
-             <p className="text-sm text-slate-400 italic border-l-2 border-yellow-500/50 pl-4">
-               "Backend có thể hơi 'ngủ gật' (Cold Start) vì xài đồ free, nhưng khi đã tỉnh giấc thì quẹt thẻ nhanh như người yêu cũ trở mặt."
-             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 4.2 Firmware: DUAL-CORE OVERDRIVE */}
-      <section className="space-y-10">
-        <h3 className="text-white text-3xl font-black flex items-center gap-4 border-b border-white/10 pb-6 italic uppercase tracking-widest">
-          <Zap size={32} className="text-yellow-500" /> 4.2_FIRMWARE_OVERDRIVE
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div className="p-10 bg-zinc-900/50 border border-white/10 rounded-[40px] space-y-6 group hover:border-yellow-500/30 transition-all">
-            <p className="text-yellow-500 font-black text-xl flex items-center gap-3">
-              <Activity size={24} /> Core_01: The Grumpy Sentry
-            </p>
-            <p className="text-slate-300 leading-relaxed text-lg italic">
-              "Nhiệm vụ: Quét thẻ 24/7. Phản hồi LCD &lt; 0.1s. 
-              Sử dụng <strong className="text-white font-bold">uploadQueue</strong> để đẩy dữ liệu cho Core 0. 
-              Nếu Core 0 bận cãi nhau với Wifi, Core 1 vẫn thản nhiên quẹt thẻ tiếp. Không có chuyện đơ máy!"
-            </p>
-          </div>
-
-          <div className="p-10 bg-zinc-900/50 border border-white/10 rounded-[40px] space-y-6 group hover:border-blue-500/30 transition-all">
-            <p className="text-blue-500 font-black text-xl flex items-center gap-3">
-              <Globe size={24} /> Core_00: The Ninja Messenger
-            </p>
-            <p className="text-slate-300 leading-relaxed text-lg italic">
-              "Nhiệm vụ: Chạy ngầm. Canh chừng Queue. 
-              Thấy có dữ liệu là 'đóng gói' JSON rồi phi thẳng lên Backend. 
-              Vận hành bất đồng bộ, không gây phiền hà cho Core 1."
-            </p>
-          </div>
-        </div>
-        
-      </section>
-
-{/* 4.4 Frontend: THE GLASS HUD - BOCCHI EXPLOSIVE VERSION */}
-<section className="p-12 bg-purple-900/5 border border-purple-500/20 rounded-[60px] shadow-2xl relative overflow-hidden group">
-  {/* Background Decor */}
-  <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:rotate-12 group-hover:opacity-20 transition-all duration-700">
-    <Globe size={180} className="text-purple-500" />
-  </div>
-  
-  <div className="relative z-10 space-y-12">
-    <h3 className="text-white text-4xl font-black italic uppercase tracking-tighter border-l-[12px] border-purple-500 pl-8">
-      4.4_THE_GLASS_HUD <span className="text-slate-500 text-2xl font-normal">(Vanilla JS)</span>
-    </h3>
-    
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-      {/* Cột trái: Text mô tả (5/12) */}
-      <div className="lg:col-span-5 space-y-10">
-        <p className="text-3xl text-slate-200 font-bold leading-tight italic">
-          "Chúng ta không dùng React. Chúng ta dùng <strong className="text-purple-400 underline decoration-purple-500/30 underline-offset-8">Vanilla JS</strong> để tối ưu tốc độ bàn thờ."
-        </p>
-        <ul className="space-y-6 text-xl text-slate-400 italic">
-          <li className="flex gap-5 items-start">
-            <span className="text-purple-500 font-black text-2xl">●</span> 
-            <span><strong className="text-white">Glassmorphism</strong> </span>
-          </li>
-          <li className="flex gap-5 items-start">
-            <span className="text-purple-500 font-black text-2xl">●</span> 
-            <span><strong className="text-white">Dark Mode</strong></span>
-          </li>
-          <li className="flex gap-5 items-start">
-            <span className="text-purple-500 font-black text-2xl">●</span> 
-            <span><strong className="text-white">Toast Noti</strong> </span>
-          </li>
-        </ul>
-      </div>
-
-      {/* Cột phải: BOCCHI SHAKE CARD (7/12) - PHÓNG TO TOÀN DIỆN */}
-      <div className="lg:col-span-7 flex justify-center">
-        <div className="w-full max-w-2xl bg-black/60 p-10 rounded-[50px] border border-red-500/40 flex flex-col items-center text-center shadow-[0_0_60px_rgba(239,68,68,0.15)] relative group/bocchi overflow-hidden hover:border-red-500 transition-all duration-500">
-           
-           {/* Glitch Status Label */}
-           <div className="absolute top-6 left-8 flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-red-500 animate-ping"></div>
-              <span className="text-sm text-red-500 font-black tracking-widest uppercase italic">System_Status: BOCCHI_PANIC</span>
-           </div>
-           
-           {/* BIG GIF Container - Đã gỡ Grayscale và cho to hơn */}
-           <div className="relative w-full aspect-square max-w-[320px] mb-8 overflow-hidden rounded-[30px] border-4 border-white/5 shadow-2xl group-hover/bocchi:scale-105 group-hover/bocchi:rotate-2 transition-all duration-500">
-              <Image 
-                src="/images/bocchi-the-rock-bocchi.gif" 
-                alt="Bocchi Shaking"
-                fill
-                unoptimized 
-                className="object-cover" // ĐÃ GỠ GRAYSCALE
-              />
-           </div>
-
-           <div className="space-y-4 max-w-md">
-              <h4 className="text-red-500 font-black text-3xl italic uppercase tracking-widest">UX: SHAKE_ERROR</h4>
-              <p className="text-lg text-slate-300 italic leading-relaxed">
-                "Nhập sai Password? UI sẽ rung rinh như cái cách Bocchi tan biến khi phải giao tiếp xã hội."
-              </p>
-           </div>
-           
-           {/* BIG Anxiety Bar */}
-           <div className="w-full mt-10 space-y-3">
-              <div className="flex justify-between text-xs text-slate-500 font-black uppercase tracking-widest">
-                 <span>Anxiety Level</span>
-                 <span className="text-red-500 animate-pulse text-lg">999%</span>
-              </div>
-              <div className="w-full bg-zinc-800 h-3 rounded-full overflow-hidden border border-white/5">
-                 <motion.div 
-                   initial={{ width: 0 }}
-                   whileInView={{ width: '100%' }}
-                   transition={{ duration: 2, ease: "easeInOut" }}
-                   className="bg-gradient-to-r from-orange-600 via-red-500 to-red-600 h-full shadow-[0_0_20px_rgba(239,68,68,0.6)]"
-                 />
-              </div>
-           </div>
-
-           {/* Decorative Glitch lines */}
-           <div className="absolute -bottom-2 left-0 w-full h-1 bg-red-500/20 blur-sm"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-      {/* 4.5 & 4.6 War Games: Survival Tests */}
-      <section className="space-y-10">
-        <h3 className="text-white text-3xl font-black flex items-center gap-4 italic uppercase tracking-widest">
-          <Activity size={32} className="text-red-500" /> 4.5_WAR_ROOM_SCENARIOS
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          <div className="p-10 bg-red-950/10 border border-red-500/20 rounded-[40px] hover:shadow-[0_0_30px_rgba(239,68,68,0.2)] transition-all">
-            <p className="text-red-500 font-black text-lg mb-6 uppercase tracking-widest">Latency Test</p>
-            <p className="text-base text-slate-400 italic">
-              "Quét thẻ. Bíp. 0.1s. <br/>Tốc độ bàn thờ, triệt tiêu ùn tắc cửa lớp."
-            </p>
-          </div>
-          <div className="p-10 bg-orange-950/10 border border-orange-500/20 rounded-[40px] hover:shadow-[0_0_30px_rgba(249,115,22,0.2)] transition-all">
-            <p className="text-orange-500 font-black text-lg mb-6 uppercase tracking-widest">Stress Test</p>
-            <p className="text-base text-slate-400 italic">
-              "20 thẻ / 15 giây. <br/>Mutex Lock hoạt động hết công suất. Không một lỗi Race Condition."
-            </p>
-          </div>
-          <div className="p-10 bg-green-950/10 border border-green-500/20 rounded-[40px] hover:shadow-[0_0_30px_rgba(34,197,94,0.2)] transition-all">
-            <p className="text-green-500 font-black text-lg mb-6 uppercase tracking-widest">Offline Test</p>
-            <p className="text-base text-slate-400 italic">
-              "Rút Wifi. <br/>Edge Cache tự gánh team. Sinh viên vẫn điểm danh u như kĩ."
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer Chapter Note */}
-      <div className="pt-10 border-t border-white/5 flex justify-center">
-        <div className="flex items-center gap-4 text-base text-slate-500 bg-zinc-900 px-10 py-5 rounded-full border border-white/10 shadow-2xl group">
-          <Bug size={24} className="text-red-500 group-hover:animate-spin transition-all" />
-          <span className="font-black tracking-tight italic">
-            MANTRA: "Code không có Bug chỉ là code chưa được viết xong."
-          </span>
-        </div>
-      </div>
-    </div>
-  )
-},
-
-{
-  id: 'ch5',
-  title: 'PHASE 05: PHYSICAL BREACH (Triển khai & Sự cố)',
-  content: (
-    <div className="space-y-16 font-mono text-lg">
-      
-      {/* 5.1 Linh kiện & Sự hy sinh đầu tiên */}
-      <section className="relative p-10 bg-red-950/5 border border-red-500/20 rounded-[40px] shadow-2xl">
-        <div className="absolute -top-5 left-10 px-6 py-2 bg-[#0a0a0a] text-red-500 font-black flex items-center gap-3 text-base border border-red-500/30 rounded-xl shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-          <Zap size={22} /> 5.1_HARDWARE_INTEL
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 mt-6">
-          <div className="lg:col-span-3 space-y-6">
-            <p className="text-white text-2xl font-black italic tracking-tighter uppercase underline decoration-red-500/30 underline-offset-8">
-              💀 The First Casualty (Sự hy sinh đầu tiên)
-            </p>
-            <p className="text-slate-300 leading-relaxed text-lg">
-              Chiến dịch bắt đầu bằng một tổn thất đau đớn: <strong className="text-white">Con ESP32 đầu tiên đã tử trận</strong> do hỏng IC nguồn. Trạng thái: "Cắm không lên, nạp không vào". 
-              <br/>Nhưng không sao, AE xã đoàn đã lập tức "triệu hồi" một chiến binh ESP32 mới để duy trì mạch máu cho hệ thống.
-            </p>
-            <ul className="grid grid-cols-2 gap-4 text-sm text-slate-400 italic">
-              <li className="flex gap-2">● RC522 (13.56MHz)</li>
-              <li className="flex gap-2">● LCD 16x2 + I2C</li>
-              <li className="flex gap-2">● Active Buzzer (3 chân)</li>
-              <li className="flex gap-2">● Relay 5V Module</li>
-            </ul>
-          </div>
-        <div className="lg:col-span-2 bg-zinc-900 border-2 border-red-500/50 p-10 rounded-[40px] flex flex-col justify-center items-center text-center space-y-8 relative overflow-hidden shadow-[0_0_50px_rgba(239,68,68,0.15)] group/warn">
-          
-          {/* Hiệu ứng tia chớp nền cảnh báo */}
-          <div className="absolute inset-0 bg-red-500/5 animate-pulse group-hover/warn:bg-red-500/10 transition-colors"></div>
-          
-          {/* Emoji khói ma thuật */}
-          <div className="text-7xl filter drop-shadow-[0_0_20px_rgba(239,68,68,0.8)] animate-bounce">
-            💨
-          </div>
-
-          <div className="space-y-4 relative z-10">
-              <p className="text-red-500 font-black text-2xl tracking-[0.25em] uppercase italic">
-                WARNING: MAGIC_SMOKE_RELEASED
-              </p>
-              <div className="h-1 w-20 bg-red-500 mx-auto rounded-full"></div>
-              <p className="text-base text-slate-400 italic font-medium leading-relaxed max-w-xs mx-auto">
-                "Smoke out → device dead → wallet crying."
-              </p>
-          </div>
-
-          {/* Thêm một cái badge nhỏ ở góc */}
-          <div className="absolute bottom-6 bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-md uppercase tracking-tighter">
-            Killed In Action
-          </div>
-        </div>
-        </div>
-      </section>
-
-      {/* 5.2 Incremental Testing: THE BAUD RATE WAR */}
-      <section className="space-y-10">
-        <h3 className="text-white text-3xl font-black flex items-center gap-4 border-b border-white/10 pb-6 italic uppercase tracking-widest">
-          <Activity size={32} className="text-blue-500" /> 5.2_THE_BAUD_RATE_WAR
-        </h3>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          <div className="p-10 bg-zinc-900/50 border border-white/10 rounded-[40px] space-y-6">
-            <p className="text-blue-400 font-black text-xl flex items-center gap-3 italic">
-              <Terminal size={24} /> Serial Monitor Mojibake
-            </p>
-            <p className="text-slate-300 leading-relaxed text-lg">
-              Khi nạp code thực tế, Serial Monitor bỗng nhiên "nói tiếng ngoài hành tinh" (ký tự rác). 
-              <br/>Nguyên nhân: <strong className="text-white font-bold underline">Baud Rate Conflict</strong>. 
-              Mạch phát 115200, IDE nhận 9600. Sau khi đồng bộ, RC522 đã chịu "khai báo" UID thật.
-            </p>
-          </div>
-          
-          <div className="p-10 bg-blue-900/5 border border-blue-500/20 rounded-[40px] flex flex-col justify-center shadow-xl">
-             <p className="text-blue-400 font-black mb-4 italic text-xl uppercase tracking-tighter">Reality Check: SPI vs UART</p>
-             <p className="text-slate-400 leading-relaxed text-base italic">
-               "Trên Wokwi ông dùng UART cho khỏe, nhưng ngoài đời RC522 bắt buộc chơi hệ <strong className="text-white">SPI (Full-duplex)</strong>. Tốc độ bàn thờ, định danh trong chớp mắt!"
-             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 5.3 Troubleshooting: THE 400/500 CRISIS */}
-      <section className="p-12 bg-zinc-900 border border-white/10 rounded-[50px] shadow-2xl relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-10 transition-opacity">
-          <ShieldAlert size={150} className="text-red-500" />
-        </div>
-        
-        <div className="relative z-10 space-y-10">
-          <h3 className="text-white text-3xl font-black italic uppercase tracking-tighter border-l-8 border-red-500 pl-6">
-            5.3_TROUBLESHOOTING_LOGS
-          </h3>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Lỗi 400 - Time Travel */}
-            <div className="space-y-6 bg-red-950/10 p-8 rounded-[40px] border border-red-500/20">
-              <p className="text-red-500 font-black text-xl flex items-center gap-3 uppercase italic">
-                Error_400: Time Travel ESP32
-              </p>
-              <p className="text-slate-300 text-lg leading-relaxed italic">
-                "ESP32 quét thẻ khi Wifi chưa kịp lấy giờ NTP. Nó tưởng sinh viên đang đi học vào năm <strong className="text-white">1970</strong> (Epoch 0). Backend bảo: 'Lịch học 2026 chứ 1970 ai dạy?'.
-                <br/><strong className="text-green-500 font-bold">Fix:</strong> Ép vòng lặp Setup chờ NTP thành công mới cho quẹt!"
-              </p>
-            </div>
-
-            {/* Lỗi 500 - The Ghost Student */}
-            <div className="space-y-6 bg-orange-950/10 p-8 rounded-[40px] border border-orange-500/20">
-              <p className="text-orange-500 font-black text-xl flex items-center gap-3 uppercase italic">
-                Error_500: The Ghost Student
-              </p>
-              <p className="text-slate-300 text-lg leading-relaxed italic">
-                "Thẻ lạ quẹt vào làm Supabase nổ lỗi Foreign Key vì không biết ông này là ai. 
-                <br/><strong className="text-blue-500 font-bold">Solution:</strong> Tạo một 'Sinh viên Ma' (UNKNOWN) để lưu vết mọi thẻ lạ. Vừa giữ sạch DB, vừa giám sát được kẻ đột nhập!"
-              </p>
-              
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        <div className="space-y-6">
-          <p className="text-slate-300 text-lg leading-relaxed italic">
-            "Sản phẩm thực tế sử dụng thẻ <strong className="text-white">RFID Mifare 13.56MHz</strong>. 
-            Mỗi thẻ được định danh qua một UID duy nhất, được mã hóa và đối soát thông qua kiến trúc Edge-to-Cloud."
-          </p>
-        </div>
-        
-        {/* HIỂN THỊ THẺ 3D TẠI ĐÂY */}
-        <div className="flex justify-center items-center py-10">
-          <RFIDCard3D />
-        </div>
-      </div>
-
-      {/* Footer Chapter Note */}
-      <div className="pt-10 border-t border-white/5 flex justify-center">
-        <div className="flex items-center gap-4 text-base text-slate-500 bg-zinc-900 px-10 py-5 rounded-full border border-white/10 shadow-2xl group">
-          <Coffee size={24} className="text-amber-600" />
-          <span className="font-black tracking-tight italic">
-            "ASAP=amsatAP?"
-          </span>
-        </div>
-      </div>
-    </div>
-  )
-},
-
-{
-  id: 'ch6',
-  title: 'PHASE 06: THE PERFORMANCE AUDIT (Kết quả & Thực nghiệm)',
-  content: (
-    <div className="space-y-16 font-mono text-lg">
-      
-      {/* 6.1 Simulation Results: THE LAB REPORT */}
-      <section className="relative p-10 bg-blue-950/5 border border-blue-500/20 rounded-[40px] shadow-2xl">
-        <div className="absolute -top-5 left-10 px-6 py-2 bg-[#0a0a0a] text-blue-400 font-black flex items-center gap-3 text-base border border-blue-500/30 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-          <Activity size={22} /> 6.1_SIMULATION_STATS (WOKWI)
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-6">
-          <div className="space-y-6">
-            <h4 className="text-white text-xl font-black uppercase italic underline decoration-blue-500/30 underline-offset-8">
-              Kịch bản 01: Latency Benchmark
-            </h4>
-            <div className="bg-black/60 rounded-3xl border border-white/5 overflow-hidden">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-blue-500/10 text-blue-400 font-black uppercase text-xs">
-                  <tr>
-                    <th className="p-4">Metric</th>
-                    <th className="p-4">Sim Result</th>
-                    <th className="p-4">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="text-slate-300">
-                  <tr className="border-b border-white/5"><td className="p-4">Local Latency</td><td className="p-4 font-bold">0.8s</td><td className="p-4 text-green-500">INSTANT</td></tr>
-                  <tr className="border-b border-white/5"><td className="p-4">Cloud Latency</td><td className="p-4 font-bold">3.8s</td><td className="p-4 text-yellow-500">STABLE</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <p className="text-sm text-slate-400 italic">
-              "Trong môi trường Lab, <strong className="text-white">Smart Edge Caching</strong> gánh team cực mạnh. Phản hồi tại chỗ nhanh đến mức sinh viên chưa kịp chớp mắt đã thấy tên mình hiện lên LCD."
-            </p>
-          </div>
-
-          <div className="bg-gradient-to-br from-green-900/10 to-zinc-900 border border-green-500/20 p-10 rounded-[35px] space-y-6">
-             <div className="flex items-center justify-between">
-                <p className="text-green-500 font-black text-xl italic uppercase">Stress Test: 0% Packet Loss</p>
-                <Zap size={30} className="text-green-500 animate-pulse" />
-             </div>
-             <div className="relative h-4 bg-zinc-800 rounded-full overflow-hidden border border-white/5">
-                <motion.div 
-                   initial={{ width: 0 }}
-                   whileInView={{ width: '100%' }}
-                   className="bg-green-500 h-full shadow-[0_0_20px_rgba(34,197,94,0.6)]"
-                />
-             </div>
-             <p className="text-slate-300 text-base leading-relaxed italic">
-               "20 thẻ quét trong 15 giây. Kết quả: <strong className="text-white">20/20 bản ghi thành công</strong>. 
-               xQueue và Mutex Lock phối hợp nhịp nhàng như cách anh em mình phối hợp khi... làm đồ án đêm khuya."
-             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 6.2 Field Test: REALITY CHECK */}
-      <section className="space-y-10">
-        <div className="flex items-center gap-4 border-b border-white/10 pb-6">
-          <Globe size={32} className="text-purple-500" />
-          <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">6.2_REALITY_FIELD_REPORT</h3>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Latency Reality */}
-          <div className="p-10 bg-zinc-900/50 border border-white/10 rounded-[40px] space-y-6 relative overflow-hidden group">
-            <p className="text-purple-400 font-black text-xl uppercase italic">Reality Latency</p>
-            <div className="space-y-4">
-              <div className="flex justify-between items-end">
-                <span className="text-sm text-slate-500">Local (Edge)</span>
-                <span className="text-2xl font-black text-green-400">0.61s</span>
-              </div>
-              <div className="flex justify-between items-end">
-                <span className="text-sm text-slate-500">Cloud (Sync)</span>
-                <span className="text-2xl font-black text-red-400">4.53s</span>
-              </div>
-            </div>
-            <p className="text-sm text-slate-500 italic pt-4 border-t border-white/5">
-              "Tại thực địa, chip ESP32 thật quẩy còn gắt hơn mô phỏng (0.61s vs 0.8s). Dù Wifi đôi khi 'hơi lag' làm Cloud trễ lên 4.5s, nhưng vẫn cứ là mướt mườn mượt."
-            </p>
-          </div>
-
-          {/* Accuracy Milestone */}
-          <div className="p-10 bg-purple-900/10 border border-purple-500/30 rounded-[40px] flex flex-col justify-between shadow-2xl">
-             <div className="space-y-2">
-                <p className="text-purple-400 font-black text-xs tracking-widest uppercase">Accuracy_Metric</p>
-                <p className="text-4xl font-black text-white tracking-tighter italic underline decoration-purple-500 underline-offset-8">100.00%</p>
-             </div>
-             <p className="text-base text-slate-400 leading-relaxed italic mt-6">
-               "Thử nghiệm với 30 thẻ sinh viên thực tế. Không một ai bị bỏ lại phía sau. <strong className="text-white">Task Failed Successfully?</strong> Không, ở đây chúng tôi chỉ có <strong className="text-white">Task Succeeded</strong>."
-             </p>
-          </div>
-
-          {/* Business Continuity */}
-          <div className="p-10 bg-zinc-900 border border-white/10 rounded-[40px] relative group overflow-hidden">
-             <div className="absolute top-4 right-6 opacity-10 group-hover:opacity-50 transition-opacity">
-               <Zap size={50} className="text-yellow-500" />
-             </div>
-             <p className="text-yellow-500 font-black text-xl mb-6 uppercase italic">Offline Resilience</p>
-             <div className="space-y-4 text-sm text-slate-300">
-                <p className="flex gap-2">● <span className="text-white font-bold">Mất mạng:</span> Phản hồi &lt; 0.1s (RAM)</p>
-                <p className="flex gap-2">● <span className="text-white font-bold">Có mạng:</span> Tự động đẩy 15 bản ghi tồn đọng</p>
-             </div>
-             <div className="mt-8 pt-4 border-t border-white/5">
-                <p className="text-[10px] text-slate-500 font-black uppercase">Auto_Sync_Active</p>
-             </div>
-          </div>
-        </div>
-        
-      </section>
-
-      {/* Footer Chapter Note */}
-      <div className="pt-10 border-t border-white/5 flex justify-center">
-        <div className="flex items-center gap-4 text-base text-slate-500 bg-zinc-900 px-10 py-5 rounded-full border border-white/10 shadow-2xl group">
-          <Bug size={24} className="text-green-500 group-hover:rotate-180 transition-all duration-500" />
-          <span className="font-black tracking-tight italic">
-          </span>
-        </div>
-      </div>
-    </div>
-  )
-},
-
-{
-  id: 'ch7',
-  title: 'PHASE 07: MISSION DEBRIEF (Kết luận & Mở rộng)',
-  content: (
-    <div className="space-y-16 font-mono text-lg">
-      
-      {/* 7.1 Tổng kết chiến dịch: MISSION ACCOMPLISHED */}
-      <section className="relative p-12 bg-lime-950/5 border border-lime-500/20 rounded-[50px] shadow-2xl overflow-hidden group">
-        <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
-          <Zap size={180} className="text-lime-500" />
-        </div>
-
-        <div className="relative z-10 space-y-10">
-          <div className="flex items-center gap-4">
-             <div className="p-3 bg-lime-500 rounded-xl text-black">
-                <ShieldAlert size={32} />
-             </div>
-             <h3 className="text-4xl font-black text-white uppercase italic tracking-tighter">
-               7.1_MISSION_ACCOMPLISHED
-             </h3>
-          </div>
-
-          <p className="text-2xl text-slate-200 font-bold leading-tight italic border-l-8 border-lime-500 pl-8">
-            "Hệ thống đã vận hành. Sinh viên đã bị khuất phục. <br/>
-            Dữ liệu đã nằm gọn trong Vault (Supabase)."
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { label: 'Local Speed', val: '0.8s', color: 'text-blue-400', desc: 'Edge Caching gánh team.' },
-              { label: 'Packet Loss', val: '0%', color: 'text-green-500', desc: 'Mutex Lock dẹp loạn.' },
-              { label: 'Architecture', val: 'E2C', color: 'text-purple-400', desc: 'Edge-to-Cloud vô đối.' },
-              { label: 'Reporting', val: 'Excel', color: 'text-yellow-500', desc: 'Trích xuất trong 1 nốt nhạc.' }
-            ].map((stat, i) => (
-              <div key={i} className="p-6 bg-black/40 border border-white/10 rounded-3xl text-center">
-                <p className="text-[10px] text-slate-500 uppercase font-black mb-1">{stat.label}</p>
-                <p className={`text-3xl font-black ${stat.color} mb-2 tracking-tighter`}>{stat.val}</p>
-                <p className="text-[11px] text-slate-400 italic">{stat.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-lg text-slate-400 leading-relaxed max-w-4xl">
-            Trải qua những pha cháy chip "khét lẹt" và những đêm debug quên ăn quên ngủ, hệ thống đã đạt độ chín muồi về kỹ thuật. 
-            Việc làm chủ <strong className="text-white font-bold">FastAPI</strong> và <strong className="text-white font-bold">Smart Edge Caching</strong> không chỉ giúp điểm danh nhanh mà còn bảo vệ lòng tự trọng của một lập trình viên: <span className="italic">"Nó chạy được, và nó chạy cực mượt!"</span>.
-          </p>
-        </div>
-      </section>
-
-      {/* 7.2 Hướng phát triển: NEXT SEASON PREVIEW */}
-      <section className="space-y-10">
-        <h3 className="text-white text-3xl font-black flex items-center gap-4 italic uppercase tracking-widest border-b border-white/10 pb-6">
-          <Activity size={32} className="text-blue-500" /> 7.2_THE_NEXT_GEN_LEVEL_UP
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* AI Face ID - DLC Pack */}
-          <div className="p-10 bg-zinc-900 border-2 border-purple-500/30 rounded-[40px] relative overflow-hidden group/card shadow-2xl">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl group-hover/card:bg-purple-500/20 transition-all"></div>
-            <p className="text-purple-400 font-black text-2xl mb-6 flex items-center gap-3 italic uppercase">
-              <Users size={28} /> AI_FACE_ID_PATCH
-            </p>
-            <p className="text-slate-300 leading-relaxed text-lg">
-              Sắp tới, chúng ta sẽ tung ra bản cập nhật <strong className="text-white font-bold">"Anti-Cheat 2.0"</strong>. 
-              Tích hợp nhận diện khuôn mặt song song với RFID. Quẹt thẻ giùm? <br/>
-              <span className="text-red-500 font-black animate-pulse">SYSTEM SAYS: NO!</span>
-            </p>
-          </div>
-
-          {/* Industrial PCB - The Final Boss */}
-          <div className="p-10 bg-zinc-900 border-2 border-blue-500/30 rounded-[40px] relative overflow-hidden group/card shadow-2xl">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl group-hover/card:bg-blue-500/20 transition-all"></div>
-            <p className="text-blue-400 font-black text-2xl mb-6 flex items-center gap-3 italic uppercase">
-              <Cpu size={28} /> PCB_INDUSTRIAL_BUILD
-            </p>
-            <p className="text-slate-300 leading-relaxed text-lg">
-              Tạm biệt dây cắm lằng nhằng (Breadboard vibes), chúng ta sẽ tiến tới <strong className="text-white font-bold">Thiết kế mạch in PCB</strong> chuyên dụng. 
-              Đưa hệ thống lên tầm cao công nghiệp, bền bỉ chấp mọi loại độ ẩm và nhiệt độ phòng học.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 🛑 FINAL BOSS WARNING: THE LIMITATIONS */}
-      <section className="p-10 bg-red-950/10 border border-red-500/20 rounded-[40px] flex items-center gap-8 shadow-xl">
-        <div className="shrink-0 w-20 h-20 bg-red-500/20 rounded-2xl flex items-center justify-center text-red-500 text-4xl font-black">!</div>
-        <div className="space-y-2">
-           <p className="text-red-500 font-black text-xl uppercase tracking-widest italic">Remaining_Weakness: Power_Stability</p>
-           <p className="text-base text-slate-400 italic">
-             "Dù code có xịn đến đâu, hệ thống vẫn 'quỳ gối' trước một pha mất điện bất ngờ. UPS/Battery Pack sẽ là món vũ khí tiếp theo cần được trang bị."
-           </p>
-        </div>
-      </section>
-
-      {/* The Final Farewell Note */}
-      <div className="pt-20 border-t border-white/5 text-center space-y-8">
-        <div className="inline-flex items-center gap-6 text-xl text-slate-500 bg-zinc-900 px-12 py-6 rounded-full border border-white/10 shadow-[0_0_50px_rgba(112,26,117,0.2)] group cursor-wait">
-          <Bug size={32} className="text-purple-500 group-hover:rotate-[360deg] transition-all duration-1000" />
-          <span className="font-black tracking-tighter italic text-slate-300">
-            FINAL_STATUS: <span className="text-green-500">MISSION_SUCCESSFUL_V2.5.0</span>
-          </span>
-        </div>
-        <p className="text-sm text-slate-600 font-mono tracking-widest uppercase">
-           
-        </p>
-      </div>
-    </div>
-  )
-},
-
+import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
+import {
+  ArrowLeft,
+  Cpu,
+  Database,
+  Globe,
+  Zap,
+  ShieldAlert,
+  ExternalLink,
+  Activity,
+  Lock,
+  Unlock,
+  Wifi,
+  WifiOff,
+  Radio,
+  Copy,
+  Check,
+  AlertTriangle,
+  KeyRound,
+  Layers,
+  Clock,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
+import HackerText from '@/components/HackerText';
+
+type SmartCardId = 'student_pass' | 'VIP_lab' | 'unregistered_ghost' | 'cloned_sector';
+
+interface SmartCardProfile {
+  id: SmartCardId;
+  badge: string;
+  name: string;
+  holder: string;
+  mssv: string;
+  uid: string;
+  sak: string;
+  atqa: string;
+  sector0Hex: string;
+  sector1Hex: string;
+  isRegistered: boolean;
+  defaultStatus: 'GRANTED' | 'GHOST_LOGGED' | 'DENIED';
+  accentHex: string;
+  spiBits: number[];
+}
+
+const SMART_CARDS: SmartCardProfile[] = [
+  {
+    id: 'student_pass',
+    badge: 'PASS_01 // STANDARD',
+    name: 'Thẻ Sinh Viên Chính Quy',
+    holder: 'PHAN KHANH AN',
+    mssv: '21110XXX',
+    uid: 'E2 : 4A : 8B : 1C',
+    sak: '0x08 (Mifare 1K)',
+    atqa: '0x0004',
+    sector0Hex: 'E2 4A 8B 1C 9D 08 04 00 62 63 64 65 66 67 68 69',
+    sector1Hex: '32 31 31 31 30 58 58 58 49 4F 54 33 30 32 5F 53',
+    isRegistered: true,
+    defaultStatus: 'GRANTED',
+    accentHex: '#F59E0B',
+    spiBits: [1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1],
+  },
+  {
+    id: 'VIP_lab',
+    badge: 'PASS_02 // LAB_ADMIN',
+    name: 'Thẻ Giảng Viên / Quản Trị Lab',
+    holder: 'LEDANGHOANGANH',
+    mssv: 'GV_IOT_01',
+    uid: 'A4 : 91 : 0C : 77',
+    sak: '0x08 (Mifare 1K)',
+    atqa: '0x0004',
+    sector0Hex: 'A4 91 0C 77 4E 08 04 00 41 44 4D 49 4E 5F 4B 45',
+    sector1Hex: '47 56 5F 49 4F 54 5F 30 31 5F 46 55 4C 4C 5F 41',
+    isRegistered: true,
+    defaultStatus: 'GRANTED',
+    accentHex: '#10B981',
+    spiBits: [1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+  },
+  {
+    id: 'unregistered_ghost',
+    badge: 'PASS_03 // UNKNOWN_UID',
+    name: 'Thẻ Lạ Chưa Đăng Ký (Ghost Test)',
+    holder: 'UNREGISTERED_VISITOR',
+    mssv: 'UNKNOWN',
+    uid: '9F : 00 : DE : AD',
+    sak: '0x08 (Mifare 1K)',
+    atqa: '0x0004',
+    sector0Hex: '9F 00 DE AD C2 08 04 00 00 00 00 00 00 00 00 00',
+    sector1Hex: '00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00',
+    isRegistered: false,
+    defaultStatus: 'GHOST_LOGGED',
+    accentHex: '#EF4444',
+    spiBits: [1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0],
+  },
 ];
 
-// --- 2. COMPONENT PHỤ (NỘI DUNG CHI TIẾT) ---
-function ProjectContent() {
-  const [openSection, setOpenSection] = useState('ch1');
+type BusFilter = 'all' | 'spi' | 'i2c' | 'power' | 'actuator';
+
+const PCB_TRACES = [
+  {
+    id: 'spi' as const,
+    label: 'BUS SPI (10MHz Full-Duplex)',
+    color: '#F59E0B',
+    pins: 'MOSI(23) | MISO(19) | SCK(18) | SS(5) | RST(22)',
+    desc: 'Truyền nhận khung lệnh ISO/IEC 14443A tốc độ cao giữa ESP32 Core 1 và chip thu phát MFRC522.',
+  },
+  {
+    id: 'i2c' as const,
+    label: 'BUS I2C (Địa chỉ 0x27)',
+    color: '#38BDF8',
+    pins: 'SDA(GPIO 21) | SCL(GPIO 22)',
+    desc: 'Điều khiển màn hình LCD 16x2 thông qua IC mở rộng chân PCF8574 chỉ với 2 dây tín hiệu.',
+  },
+  {
+    id: 'power' as const,
+    label: 'RAIL NGUỒN (3.3V & 5V Tách Biệt)',
+    color: '#EF4444',
+    pins: 'MFRC522 -> 3.3V | LCD & Relay -> 5V VIN | Common GND',
+    desc: 'Cô lập đường 3.3V của MFRC522 khỏi tải dòng cao 5V của Relay và đèn nền LCD để bảo vệ IC ổn áp AMS1117.',
+  },
+  {
+    id: 'actuator' as const,
+    label: 'NGÕ RA CƠ CẤU CHẤP HÀNH',
+    color: '#10B981',
+    pins: 'Active Buzzer(GPIO 4) | Relay Chốt Cửa(GPIO 2)',
+    desc: 'Kích âm báo phản hồi tức thời (< 0.1s) và đóng cắt chốt từ cửa phòng học.',
+  },
+];
+
+const AUTOPSY_CASES = [
+  {
+    id: 'case-burnout',
+    code: 'AUTOPSY #01',
+    title: 'Cháy IC ổn áp nguồn AMS1117 trên board ESP32 đầu tiên',
+    symptom: 'Board ESP32 nóng rực, mất nguồn 3.3V, cắm cáp USB máy tính không nhận cổng COM.',
+    oscilloscope: '3.3V_RAIL: 3.32V -> 1.45V (BROWNOUT) -> 0.00V (REGULATOR_SHORT)',
+    cause:
+      'Kéo dòng quá tải trực tiếp từ chân 3.3V khi kích đồng thời cuộn hút Relay 5V và đèn nền LCD, cộng thêm xung ngược khi đóng ngắt tải cảm kháng.',
+    patch:
+      'Tách riêng đường cấp nguồn 5V (VIN) cho LCD I2C và Relay; chỉ cấp duy nhất 3.3V chuẩn cho module MFRC522 và nối chung GND toàn mạch.',
+  },
+  {
+    id: 'case-epoch',
+    code: 'AUTOPSY #02',
+    title: 'Lỗi HTTP 400: Sinh viên điểm danh vào năm 1970 (Epoch 0)',
+    symptom: 'Những lượt quẹt thẻ đầu tiên ngay sau khi cấp nguồn đều bị FastAPI từ chối với mã lỗi HTTP 400 Invalid Timestamp.',
+    oscilloscope: 'RTC_TIME: 1970-01-01T00:00:03Z != SHIFT_WINDOW(2026)',
+    cause:
+      'Tiến trình quét thẻ trên Core 1 khởi chạy ngay lập tức trong khi kết nối Wi-Fi và đồng bộ thời gian thực qua máy chủ NTP (pool.ntp.org) chưa hoàn tất.',
+    patch:
+      'Thêm vòng lặp chốt chặn đồng bộ NTP trong hàm setup(): bắt buộc hệ thống lấy được mốc thời gian thực (năm >= 2026) mới khởi tạo TaskRFIDScan trên Core 1.',
+  },
+  {
+    id: 'case-fk',
+    code: 'AUTOPSY #03',
+    title: 'Lỗi HTTP 500: Sập giao dịch PostgreSQL khi quẹt thẻ lạ',
+    symptom: 'Quẹt thử thẻ giữ xe hoặc thẻ ngân hàng NFC vào đầu đọc làm nổ lỗi 500 Internal Server Error trên Backend.',
+    oscilloscope: 'POSTGRES_ERR: insert or update on table "diem_danh" violates foreign key constraint',
+    cause:
+      'UID của thẻ lạ không tồn tại trong bảng sinh_vien, dẫn đến vi phạm ràng buộc khóa ngoại (Foreign Key) khi chèn bản ghi điểm danh mới.',
+    patch:
+      'Xây dựng cơ chế Ghost Student Fallback: tự động quy chiếu mọi UID chưa định danh về hồ sơ đặc biệt "UNKNOWN" để lưu nhật ký cảnh báo an ninh mà vẫn giữ nguyên tính toàn vẹn ACID.',
+  },
+  {
+    id: 'case-baud',
+    code: 'AUTOPSY #04',
+    title: 'Ký tự rác (Mojibake) trên UART & Khác biệt Wokwi vs Phần cứng thật',
+    symptom: 'Serial Monitor hiển thị toàn ký tự lạ "⸮⸮⸮" và đầu đọc MFRC522 không phản hồi khi bê nguyên sơ đồ từ Wokwi ra mạch thật.',
+    oscilloscope: 'UART_TX: 115200 BAUD vs RX_TERMINAL: 9600 BAUD (CLOCK_DESYNC)',
+    cause:
+      'Lệch tốc độ Baud giữa code và Serial Monitor, đồng thời mô phỏng Wokwi dùng cấu hình giả lập đơn giản trong khi MFRC522 thực tế yêu cầu bus VSPI phần cứng chuẩn.',
+    patch:
+      'Đồng bộ toàn bộ hệ thống về 115200 baud và định tuyến cứng bộ chân VSPI (SCK=18, MISO=19, MOSI=23, SS=5, RST=22) trên ESP32.',
+  },
+];
+
+export default function RFIDVaultWorkbenchPage() {
+  const [selectedCardId, setSelectedCardId] = useState<SmartCardId>('student_pass');
+  const [wifiOnline, setWifiOnline] = useState<boolean>(true);
+  const [shiftActive, setShiftActive] = useState<boolean>(true);
+  const [mutexEnabled, setMutexEnabled] = useState<boolean>(true);
+
+  const [isTapping, setIsTapping] = useState<boolean>(false);
+  const [tapCount, setTapCount] = useState<number>(1);
+  const [relayUnlocked, setRelayUnlocked] = useState<boolean>(true);
+  const [ramQueue, setRamQueue] = useState<
+    { id: number; uid: string; holder: string; status: string; synced: boolean }[]
+  >([
+    { id: 1, uid: 'E2:4A:8B:1C', holder: 'PHAN KHANH AN', status: 'VERIFIED', synced: true },
+  ]);
+
+  const [activeBus, setActiveBus] = useState<BusFilter>('all');
+  const [selectedAutopsy, setSelectedAutopsy] = useState<string>('case-burnout');
+  const [raceSimRunning, setRaceSimRunning] = useState<boolean>(false);
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
+
+  useEffect(() => {
+    const wasLight = document.documentElement.classList.contains('light-theme');
+    if (wasLight) {
+      document.documentElement.classList.remove('light-theme');
+    }
+    return () => {
+      if (wasLight) {
+        document.documentElement.classList.add('light-theme');
+      }
+    };
+  }, []);
+
+  const currentCard = SMART_CARDS.find((c) => c.id === selectedCardId) || SMART_CARDS[0];
+  const currentAutopsy = AUTOPSY_CASES.find((a) => a.id === selectedAutopsy) || AUTOPSY_CASES[0];
+
+  // Xử lý sự kiện quẹt thẻ vật lý lên cuộn cảm 13.56 MHz
+  const triggerCardTap = (card: SmartCardProfile = currentCard) => {
+    setIsTapping(true);
+    const nextId = tapCount + 1;
+    setTapCount(nextId);
+
+    const canUnlock = card.isRegistered && shiftActive;
+    setRelayUnlocked(canUnlock);
+
+    const statusTag = !shiftActive
+      ? 'SHIFT_LOCKED_403'
+      : !card.isRegistered
+      ? 'GHOST_UID_LOGGED'
+      : wifiOnline
+      ? 'VERIFIED_SYNCED'
+      : 'CACHED_IN_RAM';
+
+    setRamQueue((prev) => [
+      {
+        id: nextId,
+        uid: card.uid.replace(/\s/g, ''),
+        holder: card.holder,
+        status: statusTag,
+        synced: wifiOnline && shiftActive,
+      },
+      ...prev.slice(0, 5),
+    ]);
+
+    setTimeout(() => setIsTapping(false), 650);
+  };
+
+  // Khi bật lại Wi-Fi -> tự động đồng bộ toàn bộ hàng đợi RAM lên Supabase
+  const handleToggleWifi = () => {
+    const nextState = !wifiOnline;
+    setWifiOnline(nextState);
+    if (nextState) {
+      setRamQueue((prev) =>
+        prev.map((item) => ({
+          ...item,
+          synced: true,
+          status: item.status === 'CACHED_IN_RAM' ? 'FLUSHED_TO_CLOUD' : item.status,
+        }))
+      );
+    }
+  };
+
+  const pendingRamCount = ramQueue.filter((i) => !i.synced).length;
+
+  // Tính nội dung hiển thị trên màn hình LCD 16x2
+  const lcdDisplay = (() => {
+    if (!shiftActive) {
+      return {
+        line1: 'ERR: SHIFT LOCK!',
+        line2: '07:30-11:00 ONLY',
+        backlight: 'border-amber-500/50 bg-[#191206] text-amber-400',
+      };
+    }
+    if (!currentCard.isRegistered) {
+      return {
+        line1: 'ACCESS DENIED!  ',
+        line2: 'GHOST UID LOGGED',
+        backlight: 'border-red-500/50 bg-[#1A0808] text-red-400',
+      };
+    }
+    if (!wifiOnline) {
+      return {
+        line1: `RAM OK: ${currentCard.mssv}`,
+        line2: `QUEUED (#${pendingRamCount + 1} HOLD)`,
+        backlight: 'border-amber-400/50 bg-[#141407] text-amber-300',
+      };
+    }
+    return {
+      line1: `OK: ${currentCard.mssv.padEnd(12, ' ')}`,
+      line2: currentCard.holder.slice(0, 16).padEnd(16, ' '),
+      backlight: 'border-emerald-500/40 bg-[#061810] text-emerald-400',
+    };
+  })();
 
   return (
-    <section className="max-w-6xl mx-auto mb-20 px-4">
-      {/* Tiêu đề chính lớn hơn */}
-      <div className="flex items-center gap-4 mb-10">
-        <FileText className="text-purple-500 w-8 h-8" />
-        <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter italic">
+    <div className="min-h-screen bg-[#060605] text-[#F5F5F0] font-sans selection:bg-amber-400 selection:text-black pb-32 relative overflow-x-hidden">
+      {/* Thanh tiến trình đồng thau / hổ phách */}
+      <motion.div
+        style={{ scaleX }}
+        className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-amber-500 via-orange-400 to-emerald-400 origin-left z-50 shadow-[0_0_15px_#f59e0b]"
+      />
 
-        </h2>
-      </div>
+      {/* Họa tiết nền bảng mạch in PCB (Copper Grid & Crosshairs) */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0 opacity-[0.07]"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, #f59e0b 1px, transparent 1px),
+            linear-gradient(to bottom, #f59e0b 1px, transparent 1px)
+          `,
+          backgroundSize: '64px 64px',
+        }}
+      />
 
-      <div className="space-y-4">
-        {MissionData.map((item) => (
-          <div key={item.id} className="border border-white/10 rounded-3xl overflow-hidden bg-white/[0.02] hover:bg-white/[0.05] transition-all">
-            <button 
-              onClick={() => setOpenSection(openSection === item.id ? '' : item.id)}
-              className="w-full flex items-center justify-between p-6 text-left transition-colors"
-            >
-              <div className="flex items-center gap-5">
-                {/* Icon Folder lớn hơn */}
-                <Folder className={`w-6 h-6 ${openSection === item.id ? 'text-purple-400' : 'text-slate-600'}`} />
-                {/* Title Phase to hơn: text-lg */}
-                <span className={`text-lg md:text-xl font-bold tracking-tight ${openSection === item.id ? 'text-white' : 'text-slate-400'}`}>
-                  {item.title}
-                </span>
+      {/* Top Workbench Bar */}
+      <nav className="border-b border-[#333330] bg-[#0A0A09]/90 backdrop-blur-md px-6 md:px-12 py-4 flex items-center justify-between sticky top-0 z-40">
+        <Link
+          href="/#sec-works"
+          className="font-mono text-sm uppercase tracking-widest text-[#D8D8D1] hover:text-amber-400 transition-colors flex items-center gap-2.5"
+        >
+          <ArrowLeft size={16} />
+          <HackerText text="EXIT_WORKBENCH" />
+        </Link>
+
+        <div className="flex items-center gap-3">
+          <a
+            href="https://wokwi.com/projects/454856473504871425"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono text-xs uppercase tracking-widest text-[#D8D8D1] hover:text-amber-400 border border-[#333330] hover:border-amber-400 px-3.5 py-2 transition-colors hidden sm:flex items-center gap-2"
+          >
+            <span>WOKWI_CIRCUIT</span>
+            <ExternalLink size={13} />
+          </a>
+          <a
+            href="https://danganhle0623-iot.hf.space"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono text-xs uppercase tracking-widest text-black bg-amber-400 hover:bg-amber-300 px-3.5 py-2 transition-colors font-bold flex items-center gap-2"
+          >
+            <span>LIVE_CLOUD_HUD</span>
+            <ExternalLink size={13} />
+          </a>
+        </div>
+      </nav>
+
+      <main className="max-w-[1380px] mx-auto px-6 md:px-12 pt-10 space-y-24 relative z-10">
+        {/* ═══════════════════════════════════════════════════════════════════════════
+            ACT I: THE INTERACTIVE RFID VAULT WORKBENCH (HERO + PHYSICAL TEST BENCH)
+        ═══════════════════════════════════════════════════════════════════════════ */}
+        <section className="space-y-8">
+          {/* Compact Editorial Title Strip */}
+          <div className="border-b border-[#333330] pb-8 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2.5 font-mono text-xs uppercase tracking-[0.22em] text-amber-400 bg-amber-500/10 border border-amber-500/30 px-3.5 py-1.5">
+                <Radio size={14} className="animate-pulse" />
+                <span>HARDWARE TESTBENCH // 13.56 MHZ ISO/IEC 14443A + ESP32 FREERTOS</span>
               </div>
-              {openSection === item.id ? <ChevronDown size={24} /> : <ChevronRight size={24} />}
+              <h1 className="font-serif text-4xl sm:text-6xl font-light text-white tracking-tight leading-[1.06]">
+                IoT RFID Vault: <span className="italic text-amber-400">Tactile Hardware Lab</span>
+              </h1>
+            </div>
+            <p className="text-[#A9A9A2] text-base md:text-lg max-w-xl leading-relaxed font-light">
+              {' '}
+              <span className="font-mono text-white">13.56 MHz</span>{' '}
+              <span className="font-mono text-white">Mutex</span> 
+            </p>
+          </div>
+
+          {/* Hardware Fault & Environment Toggle Bar */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
+            {/* Switch 1: Wi-Fi Link */}
+            <button
+              onClick={handleToggleWifi}
+              className={`p-4 border text-left transition-all cursor-pointer flex items-center justify-between ${
+                wifiOnline
+                  ? 'border-emerald-500/40 bg-[#08120D] text-emerald-300'
+                  : 'border-amber-500 bg-amber-500/10 text-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.15)]'
+              }`}
+            >
+              <div className="space-y-1">
+                <div className="text-[10px] text-[#A9A9A2] uppercase">SW_01 // KẾT NỐI WI-FI (CORE 0)</div>
+                <div className="text-sm font-bold flex items-center gap-2">
+                  {wifiOnline ? <Wifi size={15} /> : <WifiOff size={15} />}
+                  <span>{wifiOnline ? 'ONLINE (ĐỒNG BỘ TỨC THỜI)' : 'OFFLINE (LƯU ĐỆM VÀO RAM)'}</span>
+                </div>
+              </div>
+              <span className="px-2 py-1 border border-current text-[10px] font-bold">BẬT</span>
             </button>
-            
-            <AnimatePresence>
-              {openSection === item.id && (
-                <motion.div 
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="px-6 pb-6 pt-0 border-t border-white/5 overflow-hidden"
+
+            {/* Switch 2: Shift Window Lock */}
+            <button
+              onClick={() => setShiftActive(!shiftActive)}
+              className={`p-4 border text-left transition-all cursor-pointer flex items-center justify-between ${
+                shiftActive
+                  ? 'border-[#333330] bg-[#0D0D0C] text-white hover:border-amber-400/50'
+                  : 'border-red-500 bg-red-500/10 text-red-300 shadow-[0_0_20px_rgba(239,68,68,0.15)]'
+              }`}
+            >
+              <div className="space-y-1">
+                <div className="text-[10px] text-[#A9A9A2] uppercase">SW_02 // KHUNG GIỜ CA HỌC (SHIFT LOCK)</div>
+                <div className="text-sm font-bold flex items-center gap-2">
+                  <Clock size={15} className={shiftActive ? 'text-amber-400' : 'text-red-400'} />
+                  <span>{shiftActive ? 'TRONG CA (07:30 - 11:00)' : 'NGOÀI GIỜ (CHẶN API 403)'}</span>
+                </div>
+              </div>
+              <span className="px-2 py-1 border border-current text-[10px] font-bold">BẬT</span>
+            </button>
+
+            {/* Switch 3: FastAPI Mutex Lock */}
+            <button
+              onClick={() => setMutexEnabled(!mutexEnabled)}
+              className={`p-4 border text-left transition-all cursor-pointer flex items-center justify-between ${
+                mutexEnabled
+                  ? 'border-[#333330] bg-[#0D0D0C] text-white hover:border-amber-400/50'
+                  : 'border-red-500 bg-red-500/10 text-red-300 shadow-[0_0_20px_rgba(239,68,68,0.15)]'
+              }`}
+            >
+              <div className="space-y-1">
+                <div className="text-[10px] text-[#A9A9A2] uppercase">SW_03 // MUTEX</div>
+                <div className="text-sm font-bold flex items-center gap-2">
+                  {mutexEnabled ? (
+                    <Lock size={15} className="text-emerald-400" />
+                  ) : (
+                    <Unlock size={15} className="text-red-400" />
+                  )}
+                  <span>{mutexEnabled ? 'MUTEX: ON (AN TOÀN ACID)' : 'MUTEX: OFF (LỖI RACE CONDITION)'}</span>
+                </div>
+              </div>
+              <span className="px-2 py-1 border border-current text-[10px] font-bold">BẬT</span>
+            </button>
+          </div>
+
+          {/* Main Workbench Deck: Left = Physical Card & Copper Coil Reader | Right = Dual-Core Silicon Die & Logic Analyzer */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-[#0B0B0A] border border-[#333330] p-6 md:p-8">
+            {/* LEFT BENCH (5 cols): Physical Smart Card Wallet + Copper Antenna Coil + LCD/Solenoid */}
+            <div className="lg:col-span-5 flex flex-col justify-between space-y-6 border border-[#2A2A26] bg-[#060605] p-5">
+              {/* 1. Card Selector Tabs */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between font-mono text-xs text-[#A9A9A2] border-b border-[#262624] pb-2.5">
+                  <span className="text-white font-bold">BƯỚC 1: CHỌN THẺ MIFARE 1K TRÊN TAY</span>
+                  <span className="text-amber-400">ISO-14443A</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 font-mono text-xs">
+                  {SMART_CARDS.map((card, idx) => {
+                    const active = card.id === selectedCardId;
+                    return (
+                      <button
+                        key={card.id}
+                        onClick={() => {
+                          setSelectedCardId(card.id);
+                          triggerCardTap(card);
+                        }}
+                        className={`p-2.5 border text-left transition-all cursor-pointer ${
+                          active
+                            ? 'border-amber-400 bg-amber-500/10 text-white font-bold'
+                            : 'border-[#262624] bg-[#0D0D0C] text-[#A9A9A2] hover:border-[#555550]'
+                        }`}
+                      >
+                        <div className="text-[10px] text-amber-400">THẺ 0{idx + 1}</div>
+                        <div className="truncate text-[11px] mt-0.5">{card.holder.split(' ').slice(-2).join(' ')}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 2. Interactive Translucent PCB Smart Card + Copper Induction Coil */}
+              <div className="relative border border-[#2A2A26] bg-[#090908] p-5 overflow-hidden">
+                {/* Copper Antenna Trace Rings in Background */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-25">
+                  {[90, 140, 190, 240].map((size, i) => (
+                    <motion.div
+                      key={size}
+                      animate={
+                        isTapping
+                          ? { scale: [1, 1.18, 1], opacity: [0.3, 0.9, 0.3] }
+                          : { scale: 1, opacity: 0.25 }
+                      }
+                      transition={{ duration: 0.5, delay: i * 0.06 }}
+                      style={{ width: size, height: size, borderColor: currentCard.accentHex }}
+                      className="absolute border border-dashed rounded-sm"
+                    />
+                  ))}
+                </div>
+
+                {/* Physical NFC Smart Card */}
+                <motion.div
+                  key={currentCard.id}
+                  animate={isTapping ? { y: [0, 10, 0], scale: [1, 0.97, 1] } : { y: 0, scale: 1 }}
+                  transition={{ duration: 0.35 }}
+                  onClick={() => triggerCardTap(currentCard)}
+                  className="relative z-10 border border-amber-500/40 bg-gradient-to-br from-[#161512] via-[#0D0D0B] to-[#1A160E] p-5 cursor-pointer shadow-[0_16px_40px_rgba(0,0,0,0.85)] hover:border-amber-400 transition-colors select-none"
                 >
-                  {/* Tăng size chữ nội dung bên trong */}
-                  <div className="pt-6 text-base leading-relaxed">
-                    {item.content}
+                  <div className="flex items-start justify-between gap-4 mb-5">
+                    {/* Gold Contact Pad / Inductive Coil Chip */}
+                    <div className="w-12 h-10 rounded-xs bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 p-1.5 border border-amber-200/50 grid grid-cols-2 gap-1 shadow-inner">
+                      <div className="border border-black/40" />
+                      <div className="border border-black/40" />
+                      <div className="border border-black/40" />
+                      <div className="border border-black/40" />
+                    </div>
+                    <div className="text-right font-mono">
+                      <div className="text-[10px] text-amber-400 font-bold tracking-widest">
+                        {currentCard.badge}
+                      </div>
+                      <div className="text-[11px] text-[#A9A9A2] mt-0.5">{currentCard.sak}</div>
+                    </div>
+                  </div>
+
+                  <div className="font-mono space-y-1">
+                    <div className="text-[10px] text-[#A9A9A2] uppercase tracking-widest">
+                      UID HEX (SECTOR 0 // BLOCK 0)
+                    </div>
+                    <div className="text-lg md:text-xl font-bold text-white tracking-wider">
+                      {currentCard.uid}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between font-mono text-xs">
+                    <div>
+                      <span className="text-[#A9A9A2] text-[10px] block">CHỦ THẺ</span>
+                      <span className="text-white font-semibold">{currentCard.holder}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[#A9A9A2] text-[10px] block">MÃ ĐỊNH DANH</span>
+                      <span className="text-amber-400 font-bold">{currentCard.mssv}</span>
+                    </div>
                   </div>
                 </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
 
-// --- 3. COMPONENT CHÍNH (TRANG DỰ ÁN) ---
-
-
-
-export default function RFIDProject() {
-  const contributors = [
-    { name: 'Nguyễn Đức Học', role: 'System Architect', alias: 'hoc0g', img: '/images/team/hoc0g.jpg' },
-    { name: 'Lê Đặng Hoàng Anh', role: 'Backend Lead', alias: 'HAgudboi', img: '/images/team/hagudboi.jpg' },
-    { name: 'Trần Công Khánh', role: 'UI/UX', alias: 'NCK', img: '/images/team/nck.jpg' },
-    { name: 'Nguyễn Bá Nam', role: 'Database', alias: 'xepNam', img: '/images/team/xepnam.jpg' },
-    { name: 'Phan Khánh An', role: 'Hardware & Integration', alias: 'ap991', img: '/images/team/ap991.jpg' },
-  ];
-
-  return (
-    <div className="h-screen w-full overflow-x-hidden overflow-y-auto bg-[#0a0a0a] text-slate-300 font-mono p-4 md:p-8 lg:p-12 selection:bg-purple-500/30">
-
-      {/* 🛑 ĐẶT COMPONENT ÉP XOAY MÀN HÌNH Ở NGAY ĐÂY */}
-      <LandscapeEnforcer />
-
-      {/* 🔙 NÚT BACK */}
-      <nav className="max-w-6xl mx-auto mb-8">
-        <Link 
-          href="/" 
-          className="group flex items-center gap-2 text-slate-500 hover:text-lime-400 transition-colors w-fit"
-        >
-          <span className="text-lime-500 opacity-0 group-hover:opacity-100 transition-opacity">
-            <ArrowLeft size={16} />
-          </span>
-          <span className="font-bold tracking-tighter">
-            [ <span className="group-hover:text-white transition-colors">cd ..</span> ]
-          </span>
-        </Link>
-      </nav>
-      
-      {/* 🟢 HEADER: MISSION BRIEFING */}
-      <header className="max-w-6xl mx-auto mb-16 relative">
-        <div className="flex items-center gap-2 text-lime-500 mb-4 animate-pulse">
-          <Terminal size={18} />
-          <span className="text-xs tracking-widest uppercase font-bold">Project_Status: [RELEASED_V2.5.0]</span>
-        </div>
-        
-        <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tighter italic uppercase leading-none">
-          Smart <span className="text-purple-500">IoT</span> Attendance <br /> 
-          <span className="inline-block pr-6 pb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
-            SYSTEM
-          </span>
-        </h1>
-
-        <p className="max-w-2xl text-slate-400 leading-relaxed border-l-2 border-purple-500 pl-6 py-2 italic">
-          "Một hệ thống giúp giảng viên bớt cực, sinh viên bớt 'fake' và quan trọng nhất là... nó chạy được mà không nổ ESP32."
-        </p>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-4 mt-8">
-          <Link href="https://danganhle0623-iot.hf.space" target="_blank" className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-full font-bold hover:bg-purple-700 transition-all hover:scale-105 shadow-lg shadow-purple-500/20">
-            <Globe size={18} /> Access Portal
-          </Link>
-          <Link href="https://wokwi.com/projects/454856473504871425" target="_blank" className="flex items-center gap-2 px-6 py-3 bg-zinc-800 text-white border border-white/10 rounded-full font-bold hover:bg-zinc-700 transition-all">
-            <Cpu size={18} /> Wokwi Simulation
-          </Link>
-        </div>
-      </header>
-
-      {/* 🚀 TECH STACK: THE ARSENAL */}
-      <section className="max-w-6xl mx-auto mb-20">
-        <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 bg-white/5 border border-white/10 rounded-3xl group hover:border-blue-500/50 transition-all">
-            <Cpu className="text-blue-400 mb-4 group-hover:rotate-12 transition-transform" size={32} />
-            <h3 className="text-lg font-bold text-white mb-2">Hardware Unit</h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              ESP32 DevKit V1 + RFID-RC522. Chạy giả lập trên Wokwi vì không có tiền mua linh kiện thật (đùa thôi, để debug cho sướng).
-            </p>
-          </div>
-          <div className="p-6 bg-white/5 border border-white/10 rounded-3xl group hover:border-green-500/50 transition-all">
-            <Zap className="text-green-400 mb-4 group-hover:scale-110 transition-transform" size={32} />
-            <h3 className="text-lg font-bold text-white mb-2">Backend Engine</h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              FastAPI (Python). Deploy trên Hugging Face Spaces. Warning: Backend hay ngủ gật (Cold Start), cần kiên nhẫn như khi chờ crush rep tin nhắn.
-            </p>
-          </div>
-          <div className="p-6 bg-white/5 border border-white/10 rounded-3xl group hover:border-purple-500/50 transition-all">
-            <Database className="text-purple-400 mb-4 group-hover:translate-y-1 transition-transform" size={32} />
-            <h3 className="text-lg font-bold text-white mb-2">Hybrid Database</h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Sự kết hợp giữa Firebase (Real-time trigger) và Supabase (Relational data). SQL và NoSQL nắm tay nhau đi vào lòng đất.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ⚠️ SPECIAL NOTES: DANGER ZONE */}
-      <section className="max-w-6xl mx-auto mb-20 p-8 bg-red-950/10 border border-red-500/20 rounded-3xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-          <ShieldAlert size={120} />
-        </div>
-        <h2 className="text-xl font-bold text-red-400 mb-8 flex items-center gap-2 uppercase tracking-widest border-b border-red-500/10 pb-4">
-          <ShieldAlert size={20} /> Dev Logs & Security Warnings
-        </h2>
-        <div className="space-y-6 text-sm text-slate-400">
-          {[
-            { tag: '[!]', label: 'Attendance Warnings:', color: 'text-red-500', desc: 'Hệ thống tự động gán nhãn "Ineligible" (Cấm thi) nếu vắng quá buổi. Đừng trách AI.' },
-            { tag: '[*]', label: 'Shift Lock:', color: 'text-blue-500', desc: 'API chỉ mở vào ca học (07:30-11:00 & 12:45-17:00). Ngoài giờ này DB "tàng hình".' },
-            { tag: '[?]', label: 'Cold Start:', color: 'text-yellow-500', desc: 'Hugging Face đang pha cafe. Đợi tí, đừng F5 liên tục tội em nó.' }
-          ].map((item, idx) => (
-            <div key={idx} className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-2 md:gap-6 items-start group">
-              <div className="flex gap-2 shrink-0">
-                <span className={`${item.color} font-bold font-mono`}>{item.tag}</span>
-                <span className={`${item.color} font-bold whitespace-nowrap`}>{item.label}</span>
+                <button
+                  onClick={() => triggerCardTap(currentCard)}
+                  className="mt-4 w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-bold uppercase tracking-widest transition-colors cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Zap size={14} />
+                  <span>CHẠM THẺ VÀO CUỘN CẢM MFRC522 (TAP CARD)</span>
+                </button>
               </div>
-              <p className="leading-relaxed group-hover:text-slate-200 transition-colors">
-                {item.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      {/* 👥 THE OPERATORS: STRIKE TEAM */}
-      <section className="max-w-6xl mx-auto mb-20">
-        <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
-          <Users size={24} className="text-blue-500" /> 
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 [perspective:1000px] relative z-0">
-          {contributors.map((member, i) => (
-            <motion.div 
-              key={i} 
-              whileHover={{ scale: 1.05, y: -15, zIndex: 50 }}
-              transition={{ type: "spring", stiffness: 250, damping: 25 }}
-              className="group relative flex flex-col p-6 bg-black border border-white/5 rounded-3xl text-center hover:bg-purple-950/30 hover:border-purple-500/30 hover:shadow-[0_20px_60px_-15px_rgba(112,26,117,0.4)] transition-all duration-300 transform-gpu cursor-crosshair z-10"
-            >
-              <div className="relative w-20 h-20 mx-auto mb-5 group-hover:scale-110 transition-transform duration-300">
-                <div className="absolute inset-0 bg-purple-500 rounded-2xl blur-md opacity-0 group-hover:opacity-60 transition-opacity"></div>
-                <div className="relative w-full h-full rounded-2xl overflow-hidden border-2 border-zinc-800 group-hover:border-purple-500 transition-colors bg-zinc-900 z-10">
-                  <Image 
-                    src={member.img} alt={member.name} fill sizes="80px" priority={i < 5}
-                    className="object-cover transition-all duration-500"
-                  />
+              {/* 3. Live 16x2 I2C LCD + Solenoid Door Relay Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 font-mono">
+                <div className={`sm:col-span-8 border p-3.5 ${lcdDisplay.backlight}`}>
+                  <div className="flex items-center justify-between text-[10px] opacity-75 mb-1">
+                    <span>LCD 1602 I2C (0x27)</span>
+                    <span>RESPONSE: 0.08s</span>
+                  </div>
+                  <div className="text-sm md:text-base font-bold tracking-[0.16em] uppercase leading-snug">
+                    <div>{lcdDisplay.line1}</div>
+                    <div>{lcdDisplay.line2}</div>
+                  </div>
                 </div>
-                {member.alias === 'ap991' && (
-                  <div className="absolute -bottom-1.5 -right-1.5 bg-purple-600 text-[10px] p-1 rounded-md border border-[#0a0a0a] z-20">🐧</div>
+
+                <div
+                  className={`sm:col-span-4 border p-3.5 flex flex-col justify-between ${
+                    relayUnlocked && shiftActive && currentCard.isRegistered
+                      ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300'
+                      : 'border-red-500/40 bg-red-950/20 text-red-300'
+                  }`}
+                >
+                  <div className="text-[10px] opacity-75">RELAY GPIO 2</div>
+                  <div className="text-xs font-bold flex items-center gap-1.5 mt-1">
+                    {relayUnlocked && shiftActive && currentCard.isRegistered ? (
+                      <>
+                        <Unlock size={15} />
+                        <span>CHỐT CỬA: MỞ</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={15} />
+                        <span>CHỐT CỬA: KHÓA</span>
+                      </>
+                    )}
+                  </div>
+                  <div className="text-[10px] opacity-75 mt-1">BUZZER: {currentCard.isRegistered && shiftActive ? '1x BEEP' : '3x ALARM'}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT BENCH (7 cols): ESP32 Dual-Core Silicon Die + SPI Logic Analyzer + xQueue Ring Buffer */}
+            <div className="lg:col-span-7 flex flex-col justify-between space-y-5">
+              {/* 1. SPI Digital Logic Analyzer Waveform */}
+              <div className="border border-[#2A2A26] bg-[#060605] p-5 space-y-3 font-mono">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#222220] pb-2.5 text-xs">
+                  <span className="text-white font-bold flex items-center gap-2">
+                    <Activity size={15} className="text-amber-400" />
+                    LOGIC ANALYZER // BUS VSPI 10MHZ (MFRC522 -&gt; ESP32 CORE 1)
+                  </span>
+                  <span className="text-amber-400">FRAME: {currentCard.uid}</span>
+                </div>
+
+                {/* Digital Waveform Channels: SCK & MOSI/MISO */}
+                <div className="space-y-2 text-[10px]">
+                  <div className="flex items-center gap-3">
+                    <span className="w-16 text-[#A9A9A2] shrink-0">MOSI/MISO</span>
+                    <div className="flex-1 grid grid-cols-24 h-7 bg-[#0B0B09] border border-[#1F1F1C] p-1 items-end">
+                      {currentCard.spiBits.map((bit, i) => (
+                        <motion.div
+                          key={`${currentCard.id}-${tapCount}-${i}`}
+                          initial={{ scaleY: 0.2, opacity: 0.3 }}
+                          animate={{ scaleY: 1, opacity: 1 }}
+                          transition={{ delay: i * 0.015 }}
+                          className={`h-full border-r border-[#1F1F1C]/60 ${
+                            bit === 1
+                              ? 'border-t-2 border-t-amber-400 bg-amber-400/15'
+                              : 'border-b-2 border-b-emerald-400 bg-transparent'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[#A9A9A2] pt-1">
+                    <span>SECTOR 0 HEX: {currentCard.sector0Hex.slice(0, 23)}...</span>
+                    <span className="text-emerald-400">CRC_A: VALID (106 kbps)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. ESP32 Dual-Core Silicon Die Architecture & xQueue Ring Buffer */}
+              <div className="border border-[#2A2A26] bg-[#060605] p-5 space-y-4 font-mono">
+                <div className="flex items-center justify-between border-b border-[#222220] pb-2.5 text-xs">
+                  <span className="text-white font-bold">
+                    ESP32 DUAL-CORE XTENSA LX6 // PHÂN TÁCH TIẾN TRÌNH FREERTOS
+                  </span>
+                  <span className="text-emerald-400">520KB SRAM</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+                  {/* Core 1 Box */}
+                  <div className="md:col-span-5 border border-amber-500/40 bg-[#100D07] p-4 space-y-2">
+                    <div className="flex items-center justify-between text-xs text-amber-400 font-bold">
+                      <span>APP_CPU // CORE 01</span>
+                      <span>PRIORITY 2</span>
+                    </div>
+                    <div className="text-white text-sm font-bold">Task: RFID_Sentry</div>
+                    <p className="text-xs text-[#D8D8D1] font-sans leading-relaxed">
+                      Đọc SPI liên tục, đối chiếu UID trực tiếp trong mảng <strong>RAM Edge Cache</strong>. Không bao giờ chờ mạng Wi-Fi.
+                    </p>
+                    <div className="pt-2 border-t border-amber-500/20 text-[11px] text-emerald-400">
+                      ● Phản hồi tại chỗ: 0.08 giây
+                    </div>
+                  </div>
+
+                  {/* xQueue Bridge */}
+                  <div className="md:col-span-2 flex flex-col items-center justify-center border border-[#2A2A26] bg-[#0C0C0A] p-3 text-center">
+                    <div className="text-[10px] text-[#A9A9A2] mb-1">IPC BUFFER</div>
+                    <div className="text-xs font-bold text-amber-400">xQueue</div>
+                    <div className="text-[11px] text-white mt-1">
+                      {pendingRamCount > 0 ? `${pendingRamCount} HOLD` : 'SYNCED'}
+                    </div>
+                  </div>
+
+                  {/* Core 0 Box */}
+                  <div
+                    className={`md:col-span-5 border p-4 space-y-2 ${
+                      wifiOnline
+                        ? 'border-emerald-500/40 bg-[#07110C]'
+                        : 'border-red-500/40 bg-[#160909]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className={wifiOnline ? 'text-emerald-400' : 'text-red-400'}>
+                        PRO_CPU // CORE 00
+                      </span>
+                      <span>PRIORITY 1</span>
+                    </div>
+                    <div className="text-white text-sm font-bold">Task: WiFi_Messenger</div>
+                    <p className="text-xs text-[#D8D8D1] font-sans leading-relaxed">
+                      {wifiOnline
+                        ? 'Lấy bản ghi từ xQueue và đẩy bất đồng bộ qua HTTP POST lên FastAPI & Supabase.'
+                        : 'Đang mất Wi-Fi! Tự động giữ toàn bộ lượt quẹt thẻ trong RAM chờ có mạng lại.'}
+                    </p>
+                    <div className="pt-2 border-t border-white/10 text-[11px] text-amber-400">
+                      ● {wifiOnline ? 'Cloud RTT: 0.61s' : `Đang giữ ${pendingRamCount} bản ghi trong RAM`}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live RAM Queue Ledger */}
+                <div className="border-t border-[#222220] pt-3 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] text-[#A9A9A2]">
+                    <span>NHẬT KÝ HÀNG ĐỢI TRONG RAM (RECENT XQUEUE RECORDS)</span>
+                    <span>
+                      {wifiOnline
+                        ? 'TRẠNG THÁI: ĐÃ ĐỒNG BỘ SUPABASE'
+                        : 'TRẠNG THÁI: ĐANG NÉN TRONG SRAM (BẤM BẬT WI-FI ĐỂ XẢ)'}
+                    </span>
+                  </div>
+                  <div className="space-y-1.5 max-h-[135px] overflow-y-auto pr-1">
+                    {ramQueue.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between bg-[#0E0E0C] border border-[#242420] px-3 py-1.5 text-xs"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-amber-400 font-bold">#{item.id}</span>
+                          <span className="text-white">{item.uid}</span>
+                          <span className="text-[#A9A9A2] hidden sm:inline">({item.holder})</span>
+                        </div>
+                        <span
+                          className={`text-[10px] px-2 py-0.5 border font-bold ${
+                            item.status.includes('LOCKED') || item.status.includes('GHOST')
+                              ? 'border-red-500/40 text-red-400 bg-red-500/10'
+                              : item.synced
+                              ? 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10'
+                              : 'border-amber-500/40 text-amber-300 bg-amber-500/10'
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════════════════
+            ACT II: INTERACTIVE CONCURRENCY LAB (MUTEX LOCK VS RACE CONDITION TIMELINE)
+        ═══════════════════════════════════════════════════════════════════════════ */}
+        <section className="space-y-6">
+          <div className="border-b border-[#333330] pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-amber-400 mb-1.5">
+                CONCURRENCY CONTROL // FASTAPI ASYNCIO.LOCK() &amp; ACID TRANSACTION
+              </p>
+              <h2 className="font-serif text-3xl sm:text-4xl font-light text-white">
+              Race Condition khi nhiều sinh viên quẹt thẻ cùng lúc
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <button
+                onClick={() => {
+                  setMutexEnabled(true);
+                  setRaceSimRunning(true);
+                  setTimeout(() => setRaceSimRunning(false), 600);
+                }}
+                className={`px-4 py-2.5 border cursor-pointer font-bold transition-all ${
+                  mutexEnabled
+                    ? 'border-emerald-400 bg-emerald-400 text-black'
+                    : 'border-[#333330] bg-[#111111] text-[#D8D8D1]'
+                }`}
+              >
+                BẬT MUTEX LOCK (ACID SAFE)
+              </button>
+              <button
+                onClick={() => {
+                  setMutexEnabled(false);
+                  setRaceSimRunning(true);
+                  setTimeout(() => setRaceSimRunning(false), 600);
+                }}
+                className={`px-4 py-2.5 border cursor-pointer font-bold transition-all ${
+                  !mutexEnabled
+                    ? 'border-red-500 bg-red-500 text-white'
+                    : 'border-[#333330] bg-[#111111] text-[#D8D8D1]'
+                }`}
+              >
+                TẮT MUTEX (XEM LỖI GHI ĐÈ)
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-[#0B0B0A] border border-[#333330] p-6 md:p-8 font-mono text-xs">
+            {/* Timeline Visualizer (7 cols) */}
+            <div className="lg:col-span-7 border border-[#2A2A26] bg-[#060605] p-5 space-y-5">
+              <div className="flex items-center justify-between border-b border-[#222220] pb-3">
+                <span className="text-white font-bold">
+                  BIỂU ĐỒ THỜI GIAN THỰC THI 2 REQUEST ĐỒNG THỜI (T = 0ms)
+                </span>
+                <span className={mutexEnabled ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>
+                  {mutexEnabled ? '● SERIALIZED (TUẦN TỰ HÓA)' : '● GHI ĐÈ DỮ LIỆU'}
+                </span>
+              </div>
+
+              {/* Thread A */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[#D8D8D1]">
+                  <span>Worker_Thread_A (Request #01 - 07:30:00.002)</span>
+                  <span className="text-emerald-400">COMMIT OK</span>
+                </div>
+                <div className="grid grid-cols-12 gap-1 h-9 bg-[#0E0E0C] p-1 border border-[#242420]">
+                  <div className="col-span-3 bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-amber-300">
+                    LOCK &amp; READ (vắng=2)
+                  </div>
+                  <div className="col-span-3 bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center text-emerald-300">
+                    WRITE (vắng=1)
+                  </div>
+                  <div className="col-span-2 bg-white/10 flex items-center justify-center text-white">
+                    UNLOCK
+                  </div>
+                </div>
+              </div>
+
+              {/* Thread B */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[#D8D8D1]">
+                  <span>Worker_Thread_B (Request #02 - 07:30:00.002)</span>
+                  <span className={mutexEnabled ? 'text-emerald-400' : 'text-red-400 font-bold'}>
+                    {mutexEnabled ? 'WAITED 4ms -> COMMIT OK' : 'RACE COLLISION -> DATA LOST!'}
+                  </span>
+                </div>
+                {mutexEnabled ? (
+                  <div className="grid grid-cols-12 gap-1 h-9 bg-[#0E0E0C] p-1 border border-[#242420]">
+                    <div className="col-span-6 bg-zinc-800/70 border border-dashed border-zinc-600 flex items-center justify-center text-[#A9A9A2]">
+                      WAITING FOR MUTEX LOCK (3.8ms)...
+                    </div>
+                    <div className="col-span-3 bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-amber-300">
+                      READ (vắng=1)
+                    </div>
+                    <div className="col-span-3 bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center text-emerald-300">
+                      WRITE (vắng=0)
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-12 gap-1 h-9 bg-[#1A0808] p-1 border border-red-500/50">
+                    <div className="col-span-3 bg-red-500/30 border border-red-400 flex items-center justify-center text-red-200">
+                      READ CŨ (vắng=2)
+                    </div>
+                    <div className="col-span-4 bg-red-600/40 border border-red-400 flex items-center justify-center text-white font-bold">
+                      GHI ĐÈ LÊN THREAD A (vắng=1)!
+                    </div>
+                    <div className="col-span-5 flex items-center justify-center text-red-400">
+                      MẤT 1 LƯỢT ĐIỂM DANH!
+                    </div>
+                  </div>
                 )}
               </div>
-              <p className="text-[10px] text-purple-400 font-mono mb-1 tracking-tighter group-hover:text-purple-200">{member.alias}</p>
-              <p className="text-sm font-bold text-white truncate transition-colors leading-tight">{member.name}</p>
-              <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-widest transition-colors flex-grow flex items-end justify-center">{member.role}</p>
-            </motion.div>
-          ))}
+            </div>
+
+            {/* Code & Explanation Box (5 cols) */}
+            <div className="lg:col-span-5 border border-[#2A2A26] bg-[#060605] p-5 flex flex-col justify-between space-y-4">
+              <div className="space-y-2">
+                <div className="text-amber-400 font-bold uppercase tracking-wider">
+                  CƠ CHẾ KHÓA VÙNG GĂNG TRÊN FASTAPI
+                </div>
+                <p className="text-sm text-[#D8D8D1] font-sans leading-relaxed">
+                  {mutexEnabled
+                    ? 'Khi bật asyncio.Lock(), mỗi thời điểm chỉ có duy nhất 1 tiến trình được phép đọc và cập nhật số buổi vắng của sinh viên trong Supabase. Kết quả thử nghiệm thực tế 20 thẻ quẹt liên tiếp trong 15 giây đạt tỷ lệ thành công 20/20 (0% mất gói).'
+                    : 'Nếu không có Mutex Lock, 2 request đến cùng lúc sẽ cùng đọc giá trị cũ trước khi luồng kia kịp lưu, dẫn đến ghi đè kết quả (Lost Update) và làm sai lệch trạng thái cấm thi của sinh viên.'}
+                </p>
+              </div>
+
+              <pre className="bg-[#0B0B09] border border-[#222220] p-3.5 text-[11px] text-[#D8D8D1] overflow-x-auto leading-relaxed">
+{`attendance_mutex = asyncio.Lock()
+
+@app.post("/api/attendance")
+async def record_attendance(payload: SwipePayload):
+    async with attendance_mutex:  # Khóa vùng găng ACID
+        student = await db.fetch_student(payload.uid)
+        await db.commit_attendance_atomic(student)`}
+              </pre>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════════════════
+            ACT III: INTERACTIVE PCB SCHEMATIC & HARDWARE AUTOPSY LAB
+        ═══════════════════════════════════════════════════════════════════════════ */}
+        <section className="space-y-6">
+          <div className="border-b border-[#333330] pb-4">
+            <p className="font-mono text-xs md:text-sm uppercase tracking-[0.2em] text-amber-400 mb-1.5">
+              PCB SCHEMATIC &amp; HARDWARE POST-MORTEM // SƠ ĐỒ MẠCH IN &amp; HỒ SƠ XỬ LÝ SỰ CỐ
+            </p>
+            <h2 className="font-serif text-3xl sm:text-5xl font-light text-white">
+              SPI / I2C / Power và các lỗi phần cứng thường gặp
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            {/* Left (7 cols): Interactive Copper PCB Schematic Canvas */}
+            <div className="lg:col-span-7 border border-[#333330] bg-[#0B0B0A] p-6 md:p-7 flex flex-col justify-between space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3 font-mono text-xs md:text-sm">
+                <span className="text-white font-bold">BẤM CHỌN ĐƯỜNG TÍN HIỆU TRÊN MẠCH IN:</span>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { id: 'all' as const, label: 'TẤT CẢ' },
+                    { id: 'spi' as const, label: 'SPI (MFRC522)' },
+                    { id: 'i2c' as const, label: 'I2C (LCD 0x27)' },
+                    { id: 'power' as const, label: 'NGUỒN 3.3V/5V' },
+                    { id: 'actuator' as const, label: 'RELAY & BUZZER' },
+                  ].map((b) => (
+                    <button
+                      key={b.id}
+                      onClick={() => setActiveBus(b.id)}
+                      className={`px-3 py-1.5 border cursor-pointer transition-colors ${
+                        activeBus === b.id
+                          ? 'border-amber-400 bg-amber-400 text-black font-bold'
+                          : 'border-[#333330] bg-[#060605] text-[#D8D8D1] hover:text-white'
+                      }`}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Interactive SVG PCB Board Layout */}
+              <div className="border border-[#262622] bg-[#060D09] p-4 md:p-5 relative overflow-hidden">
+                <svg viewBox="0 0 620 300" className="w-full h-auto block font-mono">
+                  {/* PCB Mounting Holes */}
+                  {[
+                    [16, 16],
+                    [604, 16],
+                    [16, 284],
+                    [604, 284],
+                  ].map(([cx, cy], idx) => (
+                    <g key={idx}>
+                      <circle cx={cx} cy={cy} r={7} fill="#060D09" stroke="#F59E0B" strokeWidth="2" />
+                      <circle cx={cx} cy={cy} r={3} fill="#000" />
+                    </g>
+                  ))}
+
+                  {/* MCU Center: ESP32 DevKit V1 */}
+                  <rect
+                    x={220}
+                    y={50}
+                    width={180}
+                    height={200}
+                    fill="#0D1511"
+                    stroke="#F5F5F0"
+                    strokeWidth="2"
+                  />
+                  <rect x={250} y={70} width={120} height={72} fill="#181816" stroke="#555" />
+                  <text x={262} y={104} fill="#F5F5F0" fontSize="13" fontWeight="bold">
+                    ESP32-WROOM
+                  </text>
+                  <text x={258} y={124} fill="#F59E0B" fontSize="10.5">
+                    240MHz Dual-Core
+                  </text>
+                  <text x={238} y={172} fill="#D8D8D1" fontSize="10.5">
+                    VSPI: GPIO 5/18/19/23
+                  </text>
+                  <text x={238} y={194} fill="#D8D8D1" fontSize="10.5">
+                    I2C: GPIO 21 / 22
+                  </text>
+                  <text x={238} y={216} fill="#D8D8D1" fontSize="10.5">
+                    IO: GPIO 2 / GPIO 4
+                  </text>
+
+                  {/* Left Module: MFRC522 13.56MHz */}
+                  <rect
+                    x={24}
+                    y={60}
+                    width={136}
+                    height={180}
+                    fill="#0A1922"
+                    stroke="#F59E0B"
+                    strokeWidth="1.8"
+                  />
+                  <text x={36} y={88} fill="#F59E0B" fontSize="12.5" fontWeight="bold">
+                    RFID MFRC522
+                  </text>
+                  <text x={36} y={106} fill="#D8D8D1" fontSize="10.5">
+                    13.56 MHz SPI
+                  </text>
+                  <rect
+                    x={40}
+                    y={124}
+                    width={104}
+                    height={92}
+                    fill="none"
+                    stroke="#F59E0B"
+                    strokeWidth="1"
+                    strokeDasharray="3 2"
+                  />
+                  <text x={48} y={174} fill="#F59E0B" fontSize="10.5" fontWeight="bold">
+                    ANTENNA COIL
+                  </text>
+
+                  {/* Right Top Module: LCD 1602 I2C */}
+                  <rect
+                    x={456}
+                    y={50}
+                    width={142}
+                    height={88}
+                    fill="#081C14"
+                    stroke="#38BDF8"
+                    strokeWidth="1.8"
+                  />
+                  <text x={468} y={78} fill="#38BDF8" fontSize="12.5" fontWeight="bold">
+                    LCD 16x2 I2C
+                  </text>
+                  <text x={468} y={98} fill="#4ade80" fontSize="10.5">
+                    ADDR: 0x27 (5V)
+                  </text>
+                  <text x={468} y={118} fill="#D8D8D1" fontSize="10">
+                    PCF8574 Backpack
+                  </text>
+
+                  {/* Right Bottom Module: Relay + Active Buzzer */}
+                  <rect
+                    x={456}
+                    y={162}
+                    width={142}
+                    height={88}
+                    fill="#14110A"
+                    stroke="#10B981"
+                    strokeWidth="1.8"
+                  />
+                  <text x={468} y={190} fill="#10B981" fontSize="12.5" fontWeight="bold">
+                    RELAY &amp; BUZZER
+                  </text>
+                  <text x={468} y={210} fill="#D8D8D1" fontSize="10.5">
+                    GPIO 2 (Solenoid)
+                  </text>
+                  <text x={468} y={230} fill="#D8D8D1" fontSize="10.5">
+                    GPIO 4 (Buzzer)
+                  </text>
+
+                  {/* SPI Traces (Amber) */}
+                  <g opacity={activeBus === 'all' || activeBus === 'spi' ? 1 : 0.15}>
+                    <line x1={160} y1={115} x2={220} y2={115} stroke="#F59E0B" strokeWidth="2.5" />
+                    <line x1={160} y1={135} x2={220} y2={135} stroke="#F59E0B" strokeWidth="2.5" />
+                    <line x1={160} y1={155} x2={220} y2={155} stroke="#F59E0B" strokeWidth="2.5" />
+                    <text x={163} y={107} fill="#F59E0B" fontSize="9.5" fontWeight="bold">
+                      VSPI 10MHz
+                    </text>
+                  </g>
+
+                  {/* I2C Traces (Cyan) */}
+                  <g opacity={activeBus === 'all' || activeBus === 'i2c' ? 1 : 0.15}>
+                    <line x1={400} y1={90} x2={456} y2={90} stroke="#38BDF8" strokeWidth="2.5" />
+                    <line x1={400} y1={110} x2={456} y2={110} stroke="#38BDF8" strokeWidth="2.5" />
+                    <text x={404} y={82} fill="#38BDF8" fontSize="9.5" fontWeight="bold">
+                      SDA/SCL
+                    </text>
+                  </g>
+
+                  {/* Power Rails (Red) */}
+                  <g opacity={activeBus === 'all' || activeBus === 'power' ? 1 : 0.15}>
+                    <line
+                      x1={160}
+                      y1={205}
+                      x2={220}
+                      y2={205}
+                      stroke="#EF4444"
+                      strokeWidth="2.5"
+                      strokeDasharray="4 2"
+                    />
+                    <line
+                      x1={400}
+                      y1={68}
+                      x2={456}
+                      y2={68}
+                      stroke="#EF4444"
+                      strokeWidth="2.5"
+                      strokeDasharray="4 2"
+                    />
+                    <text x={162} y={197} fill="#EF4444" fontSize="9.5" fontWeight="bold">
+                      3.3V ONLY!
+                    </text>
+                    <text x={405} y={60} fill="#EF4444" fontSize="9.5" fontWeight="bold">
+                      5V VIN
+                    </text>
+                  </g>
+
+                  {/* Actuator Traces (Green) */}
+                  <g opacity={activeBus === 'all' || activeBus === 'actuator' ? 1 : 0.15}>
+                    <line x1={400} y1={195} x2={456} y2={195} stroke="#10B981" strokeWidth="2.5" />
+                    <line x1={400} y1={215} x2={456} y2={215} stroke="#10B981" strokeWidth="2.5" />
+                    <text x={403} y={187} fill="#10B981" fontSize="9.5" fontWeight="bold">
+                      GPIO 2 / 4
+                    </text>
+                  </g>
+                </svg>
+              </div>
+
+              {/* Bus Details Strip */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 font-mono">
+                {PCB_TRACES.map((trace) => (
+                  <div
+                    key={trace.id}
+                    onClick={() => setActiveBus(trace.id)}
+                    className={`p-4 border cursor-pointer transition-colors ${
+                      activeBus === trace.id
+                        ? 'border-amber-400 bg-[#14120B]'
+                        : 'border-[#262622] bg-[#060605] hover:border-[#444]'
+                    }`}
+                  >
+                    <div className="text-sm md:text-base font-bold text-white flex items-center justify-between">
+                      <span>{trace.label}</span>
+                      <span style={{ color: trace.color }}>●</span>
+                    </div>
+                    <div className="text-xs md:text-sm text-amber-400 mt-1.5 font-semibold">
+                      {trace.pins}
+                    </div>
+                    <p className="text-sm text-[#D8D8D1] font-sans mt-2 leading-relaxed">
+                      {trace.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right (5 cols): Hardware Autopsy & Post-Mortem Dossier */}
+            <div className="lg:col-span-5 border border-[#333330] bg-[#0B0B0A] p-6 md:p-7 flex flex-col justify-between font-mono">
+              <div className="space-y-5 h-full flex flex-col">
+                <div className="text-sm md:text-base text-amber-400 font-bold uppercase tracking-widest border-b border-[#262622] pb-3.5 flex items-center justify-between">
+                  <span>4 CASES THƯỜNG GẶP</span>
+                  <AlertTriangle size={18} />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {AUTOPSY_CASES.map((c) => {
+                    const active = c.id === selectedAutopsy;
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => setSelectedAutopsy(c.id)}
+                        className={`p-3.5 md:p-4 border text-left cursor-pointer transition-all ${
+                          active
+                            ? 'border-amber-400 bg-amber-500/10 text-white font-bold shadow-[0_0_20px_rgba(245,158,11,0.12)]'
+                            : 'border-[#262622] bg-[#060605] text-[#A9A9A2] hover:border-[#555] hover:text-white'
+                        }`}
+                      >
+                        <div className="text-xs text-amber-400 font-bold">{c.code}</div>
+                        <div className="line-clamp-2 text-sm font-sans mt-1 leading-snug">
+                          {c.title}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <motion.div
+                  key={currentAutopsy.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="border border-[#2A2A26] bg-[#060605] p-6 space-y-5 flex-1 flex flex-col justify-between"
+                >
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-xs md:text-sm text-red-400 font-bold uppercase tracking-wider">
+                        {currentAutopsy.code} // POST-MORTEM REPORT
+                      </div>
+                      <h3 className="text-lg md:text-2xl font-bold text-white font-sans mt-1.5 leading-snug">
+                        {currentAutopsy.title}
+                      </h3>
+                    </div>
+
+                    <div className="bg-[#120808] border border-red-500/30 p-4 text-xs md:text-sm text-red-300 leading-relaxed">
+                      <div className="text-xs text-red-400 font-bold mb-1">TELEMETRY TRACE:</div>
+                      {currentAutopsy.oscilloscope}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3.5 font-sans text-base leading-relaxed pt-2">
+                    <p className="text-[#E5E5DF]">
+                      <strong className="text-white font-mono text-xs md:text-sm uppercase mr-2">
+                        Hiện tượng:
+                      </strong>
+                      {currentAutopsy.symptom}
+                    </p>
+                    <p className="text-[#C8C8C0]">
+                      <strong className="text-amber-400 font-mono text-xs md:text-sm uppercase mr-2">
+                        Nguyên nhân gốc:
+                      </strong>
+                      {currentAutopsy.cause}
+                    </p>
+                    <p className="text-emerald-300 pt-3 border-t border-[#222220]">
+                      <strong className="text-emerald-400 font-mono text-xs md:text-sm uppercase mr-2">
+                        Khắc phục:
+                      </strong>
+                      {currentAutopsy.patch}
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════════════════
+            ACT IV: FIELD BENCHMARK TELEMETRY & LIVE SANDBOX PORTALS
+        ═══════════════════════════════════════════════════════════════════════════ */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-[#0B0B0A] border border-[#333330] p-6 md:p-8 font-mono">
+          <div className="lg:col-span-7 space-y-6">
+            <div className="border-b border-[#262622] pb-3.5">
+              <div className="text-xs md:text-sm text-amber-400 uppercase tracking-widest mb-1.5">
+                FIELD AUDIT // ĐỐI CHIẾU THỰC NGHIỆM (30 THẺ MIFARE 1K &amp; 20 LƯỢT QUẸT DỒN DẬP)
+              </div>
+              <h3 className="font-serif text-2xl sm:text-4xl text-white font-light">
+                So sánh độ trễ phản hồi: Phần cứng ESP32 thật vs Mô phỏng Wokwi
+              </h3>
+            </div>
+
+            <div className="space-y-5 text-xs md:text-sm">
+              <div className="space-y-2">
+                <div className="flex justify-between gap-4">
+                  <span className="text-white font-bold">
+                    1. Phản hồi tại chỗ qua RAM Edge Cache (ESP32 Thật)
+                  </span>
+                  <span className="text-emerald-400 font-bold shrink-0">
+                    0.08s - 0.61s (Tức thời)
+                  </span>
+                </div>
+                <div className="w-full h-3.5 bg-[#161614] border border-[#262622] overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    whileInView={{ width: '14%' }}
+                    viewport={{ once: false, amount: 0.4 }}
+                    transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
+                    className="h-full bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.6)]"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between gap-4">
+                  <span className="text-white font-bold">
+                    2. Phản hồi mô phỏng trên Wokwi Simulator
+                  </span>
+                  <span className="text-amber-400 font-bold shrink-0">0.80s (Ổn định)</span>
+                </div>
+                <div className="w-full h-3.5 bg-[#161614] border border-[#262622] overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    whileInView={{ width: '22%' }}
+                    viewport={{ once: false, amount: 0.4 }}
+                    transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+                    className="h-full bg-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.6)]"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between gap-4">
+                  <span className="text-white font-bold">
+                    3. Đồng bộ ngầm Cloud RTT (Hugging Face Cold-Start -&gt; Supabase)
+                  </span>
+                  <span className="text-[#38BDF8] font-bold shrink-0">
+                    3.80s - 4.53s (Chạy ngầm trên Core 0)
+                  </span>
+                </div>
+                <div className="w-full h-3.5 bg-[#161614] border border-[#262622] overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    whileInView={{ width: '78%' }}
+                    viewport={{ once: false, amount: 0.4 }}
+                    transition={{ duration: 1.25, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
+                    className="h-full bg-[#38BDF8] shadow-[0_0_14px_rgba(56,189,248,0.6)]"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-5 border border-[#2A2A26] bg-[#060605] p-6 flex flex-col justify-between space-y-5">
+            <div className="space-y-2.5">
+              <div className="text-xs md:text-sm text-emerald-400 font-bold uppercase tracking-widest">
+                TRẢI NGHIỆM HỆ THỐNG TRỰC TUYẾN
+              </div>
+              <p className="text-sm md:text-base text-[#D8D8D1] font-sans leading-relaxed">
+                Truy cập trực tiếp bảng điều khiển quản trị điểm danh trên Hugging Face Spaces hoặc chạy thử mạch phần cứng ESP32 + MFRC522 trên trình mô phỏng Wokwi:
+              </p>
+            </div>
+
+            <div className="space-y-3 text-xs md:text-sm">
+              <a
+                href="https://danganhle0623-iot.hf.space"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full p-4 border border-amber-400 bg-amber-400 text-black hover:bg-amber-300 transition-colors font-bold uppercase tracking-widest flex items-center justify-between"
+              >
+                <span>MỞ CỔNG QUẢN TRỊ LIVE PORTAL</span>
+                <ExternalLink size={16} />
+              </a>
+              <a
+                href="https://wokwi.com/projects/454856473504871425"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full p-4 border border-[#333330] bg-[#111111] text-white hover:border-amber-400 hover:text-amber-400 transition-colors font-bold uppercase tracking-widest flex items-center justify-between"
+              >
+                <span>CHẠY MÔ PHỎNG MẠCH WOKWI</span>
+                <Cpu size={16} />
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* Bottom Return Bar */}
+        <div className="pt-8 border-t border-[#333330] space-y-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-sm">
+            <Link
+              href="/#sec-works"
+              className="uppercase tracking-widest text-[#D8D8D1] hover:text-amber-400 transition-colors inline-flex items-center gap-2.5 border border-[#333330] hover:border-amber-400 px-6 py-3"
+            >
+              <ArrowLeft size={16} />
+              <span>[ RETURN TO MAIN TERMINAL ]</span>
+            </Link>
+            <span className="text-xs text-[#A9A9A2] uppercase tracking-widest">
+              ESP32 FREERTOS // MIFARE 13.56MHZ // ACID VAULT
+            </span>
+          </div>
+
+        <div className="pt-6 flex items-center justify-center font-mono text-xs text-[#A9A9A2]">
+          <p className="font-serif italic text-xl sm:text-2xl text-white tracking-wide text-center">
+            <span className="text-amber-400 not-italic font-mono animate-pulse">_</span>
+            Anyways, cya in the next chaos<span className="text-amber-400 not-italic font-mono animate-pulse">_</span>
+          </p>
         </div>
-      </section>
-
-      {/* 🚀 MISSION LOGS (CHI TIẾT) */}
-      <ProjectContent />
-
-      {/* 🖥️ THE INTERACTIVE CONSOLE - ĐIỂM NHẤN CUỐI CÙNG */}
-      <section className="max-w-6xl mx-auto mt-40 mb-32 px-4 relative">
-        {/* Decor line */}
-        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-px h-20 bg-gradient-to-b from-transparent to-lime-500/50"></div>
-        
-        <div className="mb-12 text-center space-y-4">
-           <div className="inline-flex items-center gap-3 px-6 py-2 bg-lime-500/10 border border-lime-500/20 rounded-full text-lime-500 text-sm font-black tracking-widest uppercase">
-              <ShieldCheck size={16} /> Encrypted Connection Established
-           </div>
-           <h2 className="text-4xl md:text-6xl font-black text-white italic uppercase tracking-tighter">
-             [ SYSTEM_CONSOLE ]
-           </h2>
-           <p className="text-slate-500 text-lg md:text-xl italic max-w-2xl mx-auto">
-             "Bản ghi logs chỉ là bề nổi. Sử dụng Terminal để truy xuất các chỉ lệnh tối mật."
-           </p>
         </div>
-
-        {/* Gọi Component từ file Terminal.tsx */}
-        <InteractiveTerminal />
-      </section>
-
-      {/* 🔗 FOOTER */}
-
-      {/* CHÈN QUẢ BOM TỰ HỦY Ở ĐÂY */}
-      <SelfDestructFooter />
-
-{/* FOOTER: THE "NO WARRANTY" EDITION */}
-      <footer className="max-w-6xl mx-auto border-t border-dashed border-zinc-800/50 pt-8 pb-12 mt-20 flex flex-col items-center justify-center gap-5 opacity-40 hover:opacity-100 transition-opacity duration-500">
-        
-        {/* Nhãn cảnh báo siêu bựa */}
-        <div className="flex items-center gap-2 px-4 py-1.5 bg-red-500/5 border border-red-500/20 text-red-500/80 rounded-full text-[10px] font-mono uppercase tracking-widest cursor-default hover:bg-red-500/10 transition-colors">
-          <AlertTriangle size={12} className="animate-pulse" />
-          Mất bảo hành nếu soi Source Code
-        </div>
-
-        {/* Các chỉ số sinh tồn của team */}
-        <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 text-[10px] font-mono text-zinc-500">
-          <span className="flex items-center gap-1.5" title="Sắp trầm cảm đến nơi rùi...">
-            <BatteryWarning size={14} className="text-pink-500 animate-pulse" />
-            Group 09 Sanity Level: 67%
-          </span>
-          
-          <span className="text-zinc-800 hidden md:inline">|</span>
-          
-          <span className="flex items-center gap-1.5" title="Code chạy được là do tổ tiên phù hộ">
-            <BadgeCheck size={14} className="text-lime-600" />
-            Certified "Works on my machine"
-          </span>
-
-          <span className="text-zinc-800 hidden md:inline">|</span>
-          
-          <span className="flex items-center gap-1.5" title="Cháy mạch bao nhiêu lần rồi?">
-            <Cpu size={14} className="text-amber-600" />
-            0 ESP32s were harmed (Lie)
-          </span>
-        </div>
-
-        <p className="text-[9px] text-zinc-600 mt-2 font-mono uppercase tracking-[0.2em] flex items-center justify-center">
-          Deployed with 
-          <Coffee size={10} className="mx-1.5 text-amber-700" /> 
-          & Bocchi Magic @ HCMUTE
-        </p>
-      </footer>
-    </div> // Thẻ đóng cuối cùng của trang
+      </main>
+    </div>
   );
 }
-

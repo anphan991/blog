@@ -14,11 +14,6 @@ import ParallaxWireframes from '@/components/ParallaxWireframes';
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as [number, number, number, number];
 
-
-
-
-
-
 // MAIN PAGE
 // ==========================================
 export default function Home() {
@@ -57,6 +52,72 @@ export default function Home() {
 
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isDestructing, setIsDestructing] = useState(false);
+  const [activeBulletinIdx, setActiveBulletinIdx] = useState(3);
+  const [isTimelineOpen, setIsTimelineOpen] = useState(true);
+
+  const RELEASES = [
+    {
+      id: 'works',
+      short: 'Selected Works',
+      title: 'Archive',
+      date: 'MAR-15',
+      isLatest: false,
+      summary: 'Just yapping btw',
+      targetId: 'sec-works',
+      href: '/info-sec',
+      updates: [
+        { date: 'MAY-21', note: 'Auth & Access Control' },
+        { date: 'MAY-14', note: 'Malware 101' },
+        { date: 'MAY-10', note: 'Software Security 101' },
+        { date: 'MAY-06', note: 'Cryptography 101' },
+        { date: 'MAR-29', note: 'CTF Day 3' },
+        { date: 'MAR-22', note: 'CTF Day 2' },
+        { date: 'MAR-15', note: 'CTF Day 1' },
+      ],
+    },
+    {
+      id: 'rfid',
+      short: 'IoT RFID Vault',
+      title: 'IoT RFID Vault',
+      date: '10-20',
+      isLatest: false,
+      summary: 'An automated IoT Attendance System using ESP32, RFID, and FastAPI.',
+      targetId: 'sec-rfid',
+      href: '/projects/rfid',
+      updates: [
+        { date: 'OCT-10', note: 'Rebuilt this section' },
+        { date: 'FEB-28', note: 'Initial section' },
+      ],
+    },
+    {
+      id: 'soc',
+      short: 'WAZUH',
+      title: 'WAZUH',
+      date: 'AUG-18',
+      isLatest: false,
+      summary: 'Playing ground with Wazuh',
+      targetId: 'sec-topic',
+      href: '/soc-lab/01-deploy-wazuh-server',
+      updates: [
+        { date: 'AUG-18', note: 'Initial' },
+      ],
+    },
+    {
+      id: 'embedded',
+      short: 'Embedded System',
+      title: 'Embedded System: FallGuard',
+      date: 'OCT-09',
+      isLatest: true,
+      summary: 'Private monitoring for older adults living alone',
+      targetId: 'sec-fallguard',
+      href: '/projects/fallguard',
+      updates: [
+        { date: 'OCT-09', note: 'New section released' },
+      ],
+    },
+  ];
+  const activeRelease = RELEASES[activeBulletinIdx] || RELEASES[RELEASES.length - 1];
+  const jumpToSection = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 
   useEffect(() => {
     if (isDestructing) {
@@ -395,11 +456,13 @@ export default function Home() {
                   <div className="absolute top-full right-0 mt-4 bg-[#111111] border border-[#333330] p-4 flex flex-col gap-4 text-[11px] uppercase tracking-widest text-blue-400 font-mono min-w-[160px] shadow-2xl z-50">
                     <button onClick={() => { document.getElementById('sec-manifesto')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[01] MANIFESTO" /></button>
                     <button onClick={() => { document.getElementById('sec-theme')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[02] THEMES" /></button>
-                      <button onClick={() => { document.getElementById('sec-archive')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[03] ARCHIVE" /></button>
-                    <button onClick={() => { document.getElementById('sec-works')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[04] WORKS" /></button>
-                    <button onClick={() => { document.getElementById('sec-topic')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[05] SOC LAB" /></button>
-                    <button onClick={() => { document.getElementById('sec-fallguard')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[06] FALLGUARD" /></button>
-                    <button onClick={() => { document.getElementById('sec-connect')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[07] CONNECT" /></button>
+                    <button onClick={() => { document.getElementById('sec-archive')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[03] ARCHIVE" /></button>
+                    <button onClick={() => { document.getElementById('sec-bulletin')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[04] BULLETIN" /></button>
+                    <button onClick={() => { document.getElementById('sec-works')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[05] WORKS" /></button>
+                    <button onClick={() => { document.getElementById('sec-topic')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[06] WAZUH" /></button>
+                    <button onClick={() => { document.getElementById('sec-rfid')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[07] RFID VAULT" /></button>
+                    <button onClick={() => { document.getElementById('sec-fallguard')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[08] FALLGUARD" /></button>
+                    <button onClick={() => { document.getElementById('sec-connect')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[09] CONNECT" /></button>
                   </div>
                 )}
               </div>
@@ -440,7 +503,7 @@ export default function Home() {
                 animate={{ y: "0%" }}
                 transition={{ duration: 1, ease: [0.19, 1, 0.22, 1], delay: 0.7 }}
               >
-                {chaosMode ? 'SECURITY BREACH DETECTED' : 'THE WORLD BEGINS IN THE SPACE WE LEAVE.'}
+                {chaosMode ? 'SECURITY BREACH DETECTED' : 'YAPPING ALL DAY LONG'}
               </motion.span>
             </div>
           </div>
@@ -559,7 +622,7 @@ export default function Home() {
                       className={`px-3 py-1 border text-[9px] uppercase tracking-widest font-mono transition-all duration-300 cursor-pointer ${bsodState ? 'bg-white text-black border-white' : 'border-[#333330] text-[#A9A9A2] hover:border-[#D8D8D1] hover:text-[#D8D8D1]'}`}
                       onClick={handleStatusClick}
                     >
-                      {bsodState ? 'ERROR: 418' : 'Yappin all day'}
+                      {bsodState ? 'ERROR: 418' : 'nonchaloir'}
                     </button>
                   </div>
                   
@@ -610,19 +673,36 @@ export default function Home() {
                 )}
                 
                 <h2 className="split-lines scroll-reveal-line font-serif text-[clamp(2rem,4vw,3.5rem)] leading-[1.4] text-white font-light mb-12">
-                  <span className="scroll-reveal-line" data-reveal-delay="0">InfoSec Student &amp; </span><br/>
-                  <span className="scroll-reveal-line" data-reveal-delay="1">Break-stuff Enthusiast.</span><br/>
-                  <span className="scroll-reveal-line italic text-[#A9A9A2] text-[0.65em] inline-block pt-1" data-reveal-delay="2">Please excuse me for being antisocial.</span>
+                  <span className="scroll-reveal-line" data-reveal-delay="0">InfoSec Student </span><br/>
+                  <span className="scroll-reveal-line italic text-[#A9A9A2] text-[0.65em] inline-block pt-1" data-reveal-delay="2">Please excuse me for being weirdo.</span>
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-start">
+                  {/* === CỘT TRÁI: Chứa toàn bộ chữ === */}
                   <p className="scroll-reveal-line">
                     <span className="scroll-reveal-line" data-reveal-delay="3">Я не знаю почему это работает, но не трогай.</span><br/>
                     <span className="scroll-reveal-line" data-reveal-delay="4">Сделано для ПК — мобилка это побочный квест.</span>
+                    
+                    <span className="scroll-reveal-line block mt-8 text-4xl md:text-5xl font-serif italic text-white" data-reveal-delay="5">
+                      - May all your delulu come trululu cuz being delulu is the solulu -
+                    </span>
                   </p>
-                  <img src="/pic2.jpg" alt="Meme 1" className="max-w-full max-h-[35vh] object-contain border border-[#333330] bg-[#0A0A0A] scale-[1.15] translate-y-15" />
+                  
+                  <div className="flex flex-col items-end w-full translate-y-10"> 
+                    
+                    <img src="/pic2.jpg" alt="Meme 1" className="max-w-full max-h-[35vh] object-contain border border-[#333330] bg-[#0A0A0A] scale-[1.15]" />
+                    
+                    <div className="mt-8 w-full text-right">
+                    <span className="block font-mono text-[16px] text-[#A9A9A2]/60 uppercase tracking-widest">
+                      The enemy cannot know your next move if u don't know it either
+                    </span>
+                    <span className="block font-mono text-[12px] text-[#A9A9A2]/60 tracking-widest mt-1">
+                      - Lao Tzu didn't say that
+                    </span>
+                  </div>
+                  </div>
                 </div>
-              </motion.div>
+            </motion.div>
             </div>
 
 
@@ -650,6 +730,173 @@ export default function Home() {
             </div>
           </section>
 
+          {/* ══ SYSTEM BULLETIN // COMPACT TIMELINE WITH DROPDOWN REVISIONS ═══════════════ */}
+          <section id="sec-bulletin" className="ms-section">
+            <div className="section-label">Index</div>
+            <div className="flex flex-col space-y-5 font-mono">
+              {/* Header with clear typography */}
+              <div className="flex items-baseline justify-between border-b border-[#222220] pb-3.5">
+                <h3 className="font-serif text-3xl sm:text-4xl text-white font-light">
+                  What&apos;s New <span className="italic text-[#3B82F6]">&amp; Updates</span>
+                </h3>
+                <span className="text-xs uppercase tracking-widest text-[#A9A9A2] hidden sm:inline-block">
+                  Select a section to inspect
+                </span>
+              </div>
+
+              {/* Unified Panel */}
+              <div className="border border-[#222220] bg-[#0A0A0A] p-5 sm:p-6 space-y-5">
+                {/* 4 Segmented Tabs with enhanced font size */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 border-b border-[#1A1A1A] pb-4">
+                  {RELEASES.map((item, idx) => {
+                    const isSelected = idx === activeBulletinIdx;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setActiveBulletinIdx(idx)}
+                        className={`p-3 text-left border transition-all cursor-pointer flex items-center justify-between ${
+                          isSelected
+                            ? 'border-[#3B82F6] bg-[#0E1522] text-white shadow-[0_0_15px_rgba(59,130,246,0.15)]'
+                            : 'border-[#1C1C1A] bg-[#070707] text-[#888882] hover:text-[#D8D8D1] hover:border-[#333]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <span className={`text-sm ${isSelected ? 'text-[#3B82F6] font-bold' : 'text-[#666]'}`}>
+                            0{idx + 1}
+                          </span>
+                          <span className="text-sm sm:text-base font-semibold truncate">{item.short}</span>
+                        </div>
+                        {item.isLatest ? (
+                          <span className="px-2 py-0.5 bg-[#3B82F6] text-black text-xs font-bold shrink-0">
+                            NEW
+                          </span>
+                        ) : (
+                          <span className="text-xs text-[#777] shrink-0 font-mono">{item.date}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Active Section Info + Actions */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeRelease.id}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="space-y-4"
+                  >
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div className="space-y-1.5 max-w-3xl">
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                          <span className="font-serif text-2xl sm:text-3xl text-white font-light">
+                            {activeRelease.title}
+                          </span>
+                          <span className="text-[#444]">·</span>
+                          <span className="text-sm text-[#3B82F6] font-mono">{activeRelease.date}.2026</span>
+                          {activeRelease.isLatest && (
+                            <span className="px-2 py-0.5 bg-[#3B82F6]/15 text-[#3B82F6] border border-[#3B82F6]/40 text-xs font-bold">
+                              LATEST RELEASE
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm sm:text-base text-[#D8D8D1] font-sans leading-relaxed">
+                          {activeRelease.summary}
+                        </p>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-3 shrink-0 pt-2 lg:pt-0">
+                        <Link
+                          href={activeRelease.href}
+                          className="px-4 py-2.5 border border-[#333] bg-[#070707] hover:border-[#3B82F6] hover:text-[#3B82F6] text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors"
+                        >
+                          Open →
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => jumpToSection(activeRelease.targetId)}
+                          className="px-5 py-2.5 border border-[#3B82F6] bg-[#3B82F6] hover:bg-[#3B82F6]/90 text-black text-xs sm:text-sm font-bold uppercase tracking-wider transition-all cursor-pointer"
+                        >
+                          Jump to Section ↓
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Dropdown Menu for Section-Specific Timeline (Managed without fake version numbers) */}
+                    <div className="pt-3 border-t border-[#1A1A1A] space-y-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setIsTimelineOpen(!isTimelineOpen)}
+                        className="w-full flex items-center justify-between py-2.5 px-3.5 border border-[#222220] bg-[#080808] hover:border-[#3B82F6]/50 hover:bg-[#0D121B] transition-colors cursor-pointer text-xs sm:text-sm"
+                      >
+                        <span className="flex items-center gap-2 text-white font-semibold">
+                          <span className="w-2 h-2 rounded-full bg-[#3B82F6]" />
+                          <span>TIMELINE </span>
+                        </span>
+                        <div className="flex items-center gap-2 text-[#A9A9A2]">
+                          <span className="text-xs text-[#3B82F6] font-bold">
+                            {isTimelineOpen ? 'COLLAPSE' : 'EXPAND'}
+                          </span>
+                          <span className="text-xs">{isTimelineOpen ? '▲' : '▼'}</span>
+                        </div>
+                      </button>
+
+                      {/* Dropdown Content with Scrollable Overflow for Easy Long-Term Management */}
+                      <AnimatePresence>
+                        {isTimelineOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="max-h-56 overflow-y-auto space-y-2 pt-1 pr-1 scrollbar-thin">
+                              {activeRelease.updates.map((upd, uIdx) => (
+                                <div
+                                  key={`${upd.date}-${uIdx}`}
+                                  className={`p-3 border text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
+                                    uIdx === 0
+                                      ? 'border-[#3B82F6]/50 bg-[#0E1522] text-[#D8D8D1]'
+                                      : 'border-[#1C1C1A] bg-[#070707] text-[#A9A9A2]'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2.5 shrink-0">
+                                    <span
+                                      className={`font-mono text-xs sm:text-sm font-bold px-2 py-0.5 border ${
+                                        uIdx === 0
+                                          ? 'border-[#3B82F6] text-[#3B82F6] bg-[#3B82F6]/10'
+                                          : 'border-[#262624] text-[#A9A9A2] bg-[#111111]'
+                                      }`}
+                                    >
+                                      {upd.date}
+                                    </span>
+                                    {uIdx === 0 && (
+                                      <span className="text-[10px] text-[#3B82F6] font-mono font-bold tracking-wider">
+                                        [LATEST]
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs sm:text-sm font-sans text-[#D8D8D1] flex-1 sm:pl-3 sm:border-l sm:border-[#222220] leading-relaxed">
+                                    {upd.note}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+          </section>
+
           {/* ══ SELECTED WORKS ───────────────────────── */}
           <section id="sec-works" className="ms-section">
             <div className="section-label">Selected Works</div>
@@ -658,7 +905,7 @@ export default function Home() {
               <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}>
                 <TiltCard><Link href="/info-sec" className="service-item">
                   <div className="service-item__body">
-                    <h3 className="service-item__title scroll-reveal-line" data-reveal-delay="0">InfoSec Notes</h3>
+                    <h3 className="service-item__title scroll-reveal-line" data-reveal-delay="0">Notes</h3>
                     <div className="service-item__meta mt-2 scroll-reveal-line" data-reveal-delay="1">Transition from a script kiddie to a professional overthinker.</div>
                   </div>
                   <span className="service-item__arrow">→</span>
@@ -675,16 +922,6 @@ export default function Home() {
                 </Link></TiltCard>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}>
-                <TiltCard><Link href="/projects/rfid" className="service-item">
-                  <div className="service-item__body">
-                    <h3 className="service-item__title scroll-reveal-line" data-reveal-delay="0">IoT RFID Vault</h3>
-                    <div className="service-item__meta mt-2 scroll-reveal-line" data-reveal-delay="1">Final chance to run it with mah G.</div>
-                  </div>
-                  <span className="service-item__arrow">→</span>
-                </Link></TiltCard>
-              </motion.div>
-              
               <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}>
                 <TiltCard><a href="/free-cookie" target="_blank" rel="noopener noreferrer" className="service-item">
                   <div className="service-item__body">
@@ -707,21 +944,13 @@ export default function Home() {
                 className="lg:col-span-4 flex flex-col gap-6"
               >
                 <h3 className="font-serif text-[clamp(2.5rem,4vw,3.8rem)] leading-[1.1] font-light text-white scroll-reveal-line">
-                  <span className="scroll-reveal-line" data-reveal-delay="0">Home SOC</span><br/>
-                  <span className="scroll-reveal-line" data-reveal-delay="1">LAB.</span>
+                  <span className="scroll-reveal-line" data-reveal-delay="0">Wazuh</span><br/>
                 </h3>
-                <div className="flex gap-4 items-center mt-6">
-                  <span className="relative flex h-4 w-4">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3B82F6] opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-4 w-4 bg-[#3B82F6]"></span>
-                  </span>
-                  <span className="font-mono text-[13px] font-semibold text-[#3B82F6] uppercase tracking-widest scroll-reveal-line" data-reveal-delay="2">
-                    4 MODULES ONLINE
-                  </span>
+                <div className="flex gap-2 items-center mt-6">
                 </div>
                 
                 <p className="text-[#A9A9A2] font-mono font-light text-base mt-6 scroll-reveal-line" data-reveal-delay="3">
-                  ///abcdexyzjqk 
+                  ///Coming soon...
                 </p>
                 
                 <div className="mt-10 border-l-2 border-[#333330] pl-6 font-mono text-[13px] text-[#A9A9A2] uppercase tracking-[0.15em] flex flex-col gap-4">
@@ -781,6 +1010,126 @@ export default function Home() {
             </div>
           </section>
 
+          {/* ══ PROJECT: RFID VAULT ════════════════════════════════════════ */}
+          <section id="sec-rfid" className="ms-section">
+            <div className="section-label">Project: RFID Vault</div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+              {/* Left Column: Minimal Typography & Story */}
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }} 
+                whileInView={{ opacity: 1, x: 0 }} 
+                viewport={{ once: false, amount: 0.1 }} 
+                transition={{ duration: 0.8, ease: EASE_OUT }}
+                className="lg:col-span-5 flex flex-col gap-6"
+              >
+                <div>
+                  <h3 className="font-serif text-[clamp(2.5rem,4vw,4rem)] leading-[1.05] font-light text-white tracking-tight">
+                    RFID Vault
+                  </h3>
+                </div>
+
+                <p className="text-[#A9A9A2] font-mono font-light text-sm sm:text-base leading-relaxed">
+                  An automated IoT Attendance System using ESP32, RFID, and FastAPI
+                </p>
+
+                <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-[#A9A9A2]">
+                  <span className="px-3 py-1 border border-[#222220] bg-[#0A0A0A]">
+                    13.56MHz Mifare
+                  </span>
+                  <span className="px-3 py-1 border border-[#222220] bg-[#0A0A0A]">
+                    ESP32 FreeRTOS
+                  </span>
+                  <span className="px-3 py-1 border border-[#222220] bg-[#0A0A0A]">
+                    FastAPI Mutex
+                  </span>
+                </div>
+
+                <div className="pt-2">
+                  <MagneticWrapper>
+                    <Link href="/projects/rfid" className="cta-link inline-block">
+                      <HackerText text="Enter Project →" />
+                    </Link>
+                  </MagneticWrapper>
+                </div>
+              </motion.div>
+
+              {/* Right Column: Tactile Matte Smart Keycard */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }} 
+                whileInView={{ opacity: 1, y: 0 }} 
+                viewport={{ once: false, amount: 0.1 }} 
+                transition={{ duration: 0.8, delay: 0.15, ease: EASE_OUT }}
+                className="lg:col-span-7 flex justify-center"
+              >
+                <div className="w-full max-w-lg">
+                  <TiltCard>
+                    <Link
+                      href="/projects/rfid"
+                      className="group block relative w-full aspect-[1.586/1] bg-gradient-to-br from-[#121212] via-[#0A0A0A] to-[#050505] border border-[#2A2A28] hover:border-[#3B82F6] rounded-2xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden shadow-2xl transition-all duration-300 cursor-pointer"
+                    >
+                      {/* Subtle Holographic Shimmer Effect on Hover */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-white/[0.08] pointer-events-none group-hover:opacity-100 transition-opacity" />
+
+                      {/* Top Row: IC Chip + Contactless Wave Icon + Frequency */}
+                      <div className="flex items-start justify-between relative z-10">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          {/* Gold IC Contact Chip */}
+                          <div className="w-11 h-8 rounded border border-[#856404]/70 bg-gradient-to-br from-[#d4af37]/25 via-[#aa820a]/35 to-[#5c4604]/25 relative overflow-hidden flex items-center justify-center shadow-inner">
+                            <div className="absolute inset-x-0 h-[1px] bg-[#d4af37]/40" />
+                            <div className="absolute inset-y-0 w-[1px] bg-[#d4af37]/40" />
+                            <div className="w-4 h-3.5 border border-[#d4af37]/60 rounded-sm" />
+                          </div>
+                          {/* Contactless Waves */}
+                          <svg className="w-5 h-5 text-[#A9A9A2] group-hover:text-[#3B82F6] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                            <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
+                            <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5" />
+                            <path d="M10.8 13.2c-.8-.8-.8-2.1 0-2.8" />
+                          </svg>
+                        </div>
+
+                        <div className="text-right font-mono">
+                          <span className="text-[10px] tracking-widest text-[#A9A9A2] uppercase block">
+                            MIFARE 1K
+                          </span>
+                          <span className="text-xs text-[#3B82F6] font-bold tracking-wider">
+                            13.56 MHz
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Center: Big Embossed Monospace UID */}
+                      <div className="relative z-10 my-auto py-2">
+                        <span className="text-[9px] font-mono tracking-[0.2em] text-[#666660] uppercase block mb-1">
+                          CARD SERIAL NUMBER (UID)
+                        </span>
+                        <div className="font-mono text-2xl sm:text-3xl font-bold tracking-[0.16em] text-white group-hover:text-[#3B82F6] transition-colors">
+                          E2 : 4A : 8B : 1C
+                        </div>
+                      </div>
+
+                      {/* Bottom Row: Holder Name + Access Verified Pill */}
+                      <div className="flex items-end justify-between relative z-10 pt-3 border-t border-[#1C1C1A]">
+                        <div className="font-mono">
+                          <div className="text-xs sm:text-sm font-bold text-white tracking-wider">
+                            ABCD JQK XYZ
+                          </div>
+                          <div className="text-[10px] text-[#A9A9A2]">
+                            ID: 21110XXX
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 px-3 py-1 rounded bg-[#3B82F6]/10 border border-[#3B82F6]/40 text-[#3B82F6] font-mono text-xs font-semibold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6] animate-pulse" />
+                        </div>
+                      </div>
+                    </Link>
+                  </TiltCard>
+                </div>
+              </motion.div>
+            </div>
+          </section>
+
           {/* ══ PROJECT: FALLGUARD ════════════════════════════════════════ */}
           <section id="sec-fallguard" className="ms-section">
             <div className="section-label">Project: FallGuard</div>
@@ -793,16 +1142,9 @@ export default function Home() {
               >
                 <h3 className="font-serif text-[clamp(2.5rem,4vw,3.8rem)] leading-[1.1] font-light text-white scroll-reveal-line">
                   <span className="scroll-reveal-line" data-reveal-delay="0">FallGuard</span><br/>
-                  <span className="scroll-reveal-line" data-reveal-delay="1">SYSTEM.</span>
+                  <span className="scroll-reveal-line" data-reveal-delay="1">SYSTEM</span>
                 </h3>
                 <div className="flex gap-4 items-center mt-2">
-                  <span className="relative flex h-4 w-4">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3B82F6] opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-4 w-4 bg-[#3B82F6]"></span>
-                  </span>
-                  <span className="font-mono text-[13px] font-semibold text-[#3B82F6] uppercase tracking-widest scroll-reveal-line" data-reveal-delay="2">
-                    POSE AI + 24GHZ MMWAVE RADAR
-                  </span>
                 </div>
                 
                 <p className="text-[#A9A9A2] font-mono font-light text-base leading-relaxed mt-2 scroll-reveal-line" data-reveal-delay="3">
@@ -892,10 +1234,8 @@ export default function Home() {
                       {/* Bottom Command Bar inside Portal */}
                       <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[#1A1A1A] text-xs md:text-sm">
                         <span className="text-[#A9A9A2]">
-                          <span className="text-[#3B82F6] mr-2">$</span>./open_project.sh --interactive
                         </span>
-                        <span className="text-[#3B82F6] font-semibold group-hover:underline">
-                          
+                        <span className="font-serif italic text-base text-[#D8D8D1] group-hover:text-[#3B82F6] transition-colors">
                         </span>
                       </div>
                     </div>
@@ -908,7 +1248,7 @@ export default function Home() {
 
           {/* ══ CONNECT & ASCII COMPANION ═════════════════════════ */}
           <section id="sec-connect" className="ms-section pb-0">
-            <div className="section-label">Connect & Companion</div>
+            <div className="section-label">Connect</div>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
               
               {/* Connect part */}
@@ -934,8 +1274,8 @@ export default function Home() {
                     transformStyle: 'preserve-3d',
                   }}
                 >
-                  Let's break things<br/>
-                  <span className="italic">together.</span>
+                  See ya<br/>
+                  <span className="italic">in the next chaos!</span>
                 </h2>
                 <div className="cta-row">
                   <MagneticWrapper><a href="mailto:an0915129080@gmail.com" className="cta-link"><HackerText text="Email"/></a></MagneticWrapper>
@@ -1005,6 +1345,14 @@ export default function Home() {
                   </div>
                 </div>
               </motion.div>
+
+              {/* Bottom Sign-off inside Connect Section */}
+              <div className="lg:col-span-12 pt-6 border-t border-[#222220] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#3B82F6]">
+                </span>
+                <p className="font-serif italic text-2xl md:text-3xl text-white tracking-wide">
+                </p>
+              </div>
             </div>
           </section>
 

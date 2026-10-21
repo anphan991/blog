@@ -1681,23 +1681,33 @@ cd frontend && npm run dev`}
         </section>
 
         {/* Bottom Return Link */}
-        <div className="pt-8 border-t border-[#333330] flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-sm">
-          <Link
-            href="/#sec-fallguard"
-            className="uppercase tracking-widest text-[#D8D8D1] hover:text-[#4ade80] transition-colors inline-flex items-center gap-2.5 border border-[#333330] hover:border-[#4ade80] px-6 py-3"
-          >
-            <ArrowLeft size={16} />
-            <span>[ RETURN TO MAIN TERMINAL ]</span>
-          </Link>
-          <a
-            href="https://github.com/anphan991/Embedded_System"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="uppercase tracking-widest text-[#4ade80] hover:underline inline-flex items-center gap-2"
-          >
-            <span>github.com/anphan991/Embedded_System</span>
-            <ExternalLink size={15} />
-          </a>
+        <div className="pt-8 border-t border-[#333330] space-y-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-sm">
+            <Link
+              href="/#sec-fallguard"
+              className="uppercase tracking-widest text-[#D8D8D1] hover:text-[#4ade80] transition-colors inline-flex items-center gap-2.5 border border-[#333330] hover:border-[#4ade80] px-6 py-3"
+            >
+              <ArrowLeft size={16} />
+              <span>[ RETURN TO MAIN TERMINAL ]</span>
+            </Link>
+            <a
+              href="https://github.com/anphan991/Embedded_System"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="uppercase tracking-widest text-[#4ade80] hover:underline inline-flex items-center gap-2"
+            >
+              <span>github.com/anphan991/Embedded_System</span>
+              <ExternalLink size={15} />
+            </a>
+          </div>
+
+
+        <div className="pt-6 flex items-center justify-center font-mono text-xs text-[#A9A9A2]">
+          <p className="font-serif italic text-xl sm:text-2xl text-white tracking-wide text-center">
+            <span className="text-green-400 not-italic font-mono animate-pulse">_</span>
+            Anyways, cya in the next chaos<span className="text-green-400 not-italic font-mono animate-pulse">_</span>
+          </p>
+        </div>
         </div>
       </main>
     </div>
