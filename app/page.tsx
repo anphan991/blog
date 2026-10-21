@@ -674,7 +674,7 @@ export default function Home() {
                 
                 <h2 className="split-lines scroll-reveal-line font-serif text-[clamp(2rem,4vw,3.5rem)] leading-[1.4] text-white font-light mb-12">
                   <span className="scroll-reveal-line" data-reveal-delay="0">InfoSec Student </span><br/>
-                  <span className="scroll-reveal-line italic text-[#A9A9A2] text-[0.65em] inline-block pt-1" data-reveal-delay="2">Please excuse me for being weirdo.</span>
+                  <span className="scroll-reveal-line italic text-[#A9A9A2] text-[0.65em] inline-block pt-1" data-reveal-delay="2">Please excuse me for being weird.</span>
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-start">
