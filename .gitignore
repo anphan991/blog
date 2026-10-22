@@ -48,3 +48,4 @@ next-env.d.ts
 /design-system/
 /.agent/
 __pycache__/
+/khz_styles.css/
