@@ -15,19 +15,95 @@ import { triggerAura } from '@/components/BrainrotSuite';
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as [number, number, number, number];
 
-// MAIN PAGE
-// ==========================================
-export default function Home() {
-  useEffect(() => {
-    document.documentElement.classList.add('snap-enabled');
-    return () => document.documentElement.classList.remove('snap-enabled');
-  }, []);
-  const [chaosMode, setChaosMode] = useState(false);
-  const [runawayPos, setRunawayPos] = useState({ x: 0, y: 0 });
-  const [clickCount, setClickCount] = useState(0);
-  const [bsodState, setBsodState] = useState(false);
-  const [navOpen, setNavOpen] = useState(false);
+function HeroTypewriter() {
+  const [typedTitle, setTypedTitle] = useState({ line1: '', line2: '', cursorLine: 1 });
 
+  useEffect(() => {
+    const text1 = "HELLO";
+    const text2 = "WORLD!";
+    let current1 = "";
+    let current2 = "";
+    let i = 0;
+    let j = 0;
+    let phase = 0; // 0: type1, 1: type2, 2: wait, 3: del2, 4: del1, 5: wait
+    let timeout: NodeJS.Timeout;
+    let isMounted = true;
+
+    const tick = () => {
+      if (!isMounted) return;
+      if (phase === 0) {
+        if (i < text1.length) {
+          current1 += text1[i];
+          setTypedTitle({ line1: current1, line2: current2, cursorLine: 1 });
+          i++;
+          timeout = setTimeout(tick, 100);
+        } else {
+          phase = 1;
+          setTypedTitle({ line1: current1, line2: current2, cursorLine: 2 });
+          timeout = setTimeout(tick, 100);
+        }
+      } else if (phase === 1) {
+        if (j < text2.length) {
+          current2 += text2[j];
+          setTypedTitle({ line1: current1, line2: current2, cursorLine: 2 });
+          j++;
+          timeout = setTimeout(tick, 100);
+        } else {
+          phase = 2;
+          timeout = setTimeout(tick, 2000);
+        }
+      } else if (phase === 2) {
+        phase = 3;
+        timeout = setTimeout(tick, 100);
+      } else if (phase === 3) {
+        if (j > 0) {
+          current2 = current2.slice(0, -1);
+          setTypedTitle({ line1: current1, line2: current2, cursorLine: 2 });
+          j--;
+          timeout = setTimeout(tick, 50);
+        } else {
+          phase = 4;
+          setTypedTitle({ line1: current1, line2: current2, cursorLine: 1 });
+          timeout = setTimeout(tick, 50);
+        }
+      } else if (phase === 4) {
+        if (i > 0) {
+          current1 = current1.slice(0, -1);
+          setTypedTitle({ line1: current1, line2: current2, cursorLine: 1 });
+          i--;
+          timeout = setTimeout(tick, 50);
+        } else {
+          phase = 5;
+          timeout = setTimeout(tick, 800);
+        }
+      } else if (phase === 5) {
+        phase = 0;
+        timeout = setTimeout(tick, 100);
+      }
+    };
+
+    timeout = setTimeout(tick, 400);
+    return () => {
+      isMounted = false;
+      clearTimeout(timeout);
+    };
+  }, []);
+
+  return (
+    <motion.h1 
+      className="hero__title font-mono text-[#3B82F6] [text-shadow:0_0_30px_rgba(59,130,246,0.45)] text-[clamp(4rem,12vw,12rem)] leading-[0.85] tracking-tight uppercase"
+    >
+      <span className="hero__line block">
+        {typedTitle.line1}{typedTitle.cursorLine === 1 && <span className="animate-pulse">/</span>}
+      </span>
+      <span className="hero__line block italic">
+        {typedTitle.line2}{typedTitle.cursorLine === 2 && <span className="animate-pulse">/</span>}
+      </span>
+    </motion.h1>
+  );
+}
+
+function FooterClock() {
   const [clockFormat, setClockFormat] = useState<'dec' | 'bin' | 'hex'>('bin');
   const [timeStr, setTimeStr] = useState('');
 
@@ -50,6 +126,29 @@ export default function Home() {
     updateTime();
     return () => clearInterval(t);
   }, [clockFormat]);
+
+  return (
+    <div className="flex flex-col gap-1 cursor-pointer group" onClick={() => setClockFormat(prev => prev === 'bin' ? 'hex' : prev === 'hex' ? 'dec' : 'bin')}>
+      <span className="font-mono text-xl text-[#F5F5F0] block group-hover:text-[#3B82F6] transition-colors">{timeStr || '00:00:00'}</span>
+      <span className="font-mono text-[9px] text-[#A9A9A2] uppercase tracking-widest block">
+        SYS_TIME [{clockFormat.toUpperCase()}] - CLICK TO CYCLE FORMAT
+      </span>
+    </div>
+  );
+}
+
+// MAIN PAGE
+// ==========================================
+export default function Home() {
+  useEffect(() => {
+    document.documentElement.classList.add('snap-enabled');
+    return () => document.documentElement.classList.remove('snap-enabled');
+  }, []);
+  const [chaosMode, setChaosMode] = useState(false);
+  const [runawayPos, setRunawayPos] = useState({ x: 0, y: 0 });
+  const [clickCount, setClickCount] = useState(0);
+  const [bsodState, setBsodState] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
 
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isDestructing, setIsDestructing] = useState(false);
@@ -144,79 +243,7 @@ export default function Home() {
       return () => clearTimeout(timer);
     }
   }, [isDestructing]);
-  const [typedTitle, setTypedTitle] = useState({ line1: '', line2: '', cursorLine: 1 });
 
-  useEffect(() => {
-    const text1 = "HELLO";
-    const text2 = "WORLD!";
-    let current1 = "";
-    let current2 = "";
-    let i = 0;
-    let j = 0;
-    let phase = 0; // 0: type1, 1: type2, 2: wait, 3: del2, 4: del1, 5: wait
-    let timeout: NodeJS.Timeout;
-    let isMounted = true;
-
-    const tick = () => {
-      if (!isMounted) return;
-      if (phase === 0) {
-        if (i < text1.length) {
-          current1 += text1[i];
-          setTypedTitle({ line1: current1, line2: current2, cursorLine: 1 });
-          i++;
-          timeout = setTimeout(tick, 100);
-        } else {
-          phase = 1;
-          setTypedTitle({ line1: current1, line2: current2, cursorLine: 2 });
-          timeout = setTimeout(tick, 100);
-        }
-      } else if (phase === 1) {
-        if (j < text2.length) {
-          current2 += text2[j];
-          setTypedTitle({ line1: current1, line2: current2, cursorLine: 2 });
-          j++;
-          timeout = setTimeout(tick, 100);
-        } else {
-          phase = 2;
-          timeout = setTimeout(tick, 2000); // Wait 2s before deleting
-        }
-      } else if (phase === 2) {
-        phase = 3;
-        timeout = setTimeout(tick, 100);
-      } else if (phase === 3) {
-        if (j > 0) {
-          current2 = current2.slice(0, -1);
-          setTypedTitle({ line1: current1, line2: current2, cursorLine: 2 });
-          j--;
-          timeout = setTimeout(tick, 50); // Delete faster
-        } else {
-          phase = 4;
-          setTypedTitle({ line1: current1, line2: current2, cursorLine: 1 });
-          timeout = setTimeout(tick, 50);
-        }
-      } else if (phase === 4) {
-        if (i > 0) {
-          current1 = current1.slice(0, -1);
-          setTypedTitle({ line1: current1, line2: current2, cursorLine: 1 });
-          i--;
-          timeout = setTimeout(tick, 50);
-        } else {
-          phase = 5;
-          timeout = setTimeout(tick, 800); // Wait 0.8s before typing again
-        }
-      } else if (phase === 5) {
-        phase = 0;
-        timeout = setTimeout(tick, 100);
-      }
-    };
-
-    timeout = setTimeout(tick, 400);
-    
-    return () => {
-      isMounted = false;
-      clearTimeout(timeout);
-    };
-  }, []);
   // CyberCat
   const [petMood, setPetMood] = useState<'chill'|'happy'|'hack'|'angry'|'shield'|'chaos'|'dance'>('chill');
   const [speech, setSpeech] = useState('System online. Awaiting orders,... 🐈');
@@ -514,16 +541,7 @@ export default function Home() {
           </div>
           
           <div className="hero__content absolute bottom-12 md:bottom-24 left-8 md:left-16 lg:left-24 z-10 flex flex-col items-start text-left w-full">
-            <motion.h1 
-              className="hero__title font-mono text-[#3B82F6] [text-shadow:0_0_30px_rgba(59,130,246,0.45)] text-[clamp(4rem,12vw,12rem)] leading-[0.85] tracking-tight uppercase"
-            >
-              <span className="hero__line block">
-                {typedTitle.line1}{typedTitle.cursorLine === 1 && <span className="animate-pulse">/</span>}
-              </span>
-              <span className="hero__line block italic">
-                {typedTitle.line2}{typedTitle.cursorLine === 2 && <span className="animate-pulse">/</span>}
-              </span>
-            </motion.h1>
+            <HeroTypewriter />
             
             <div className="mt-8 overflow-hidden">
               <motion.span 
@@ -1614,12 +1632,7 @@ export default function Home() {
         {/* ══ FOOTER ═══════════════════════════════════ */}
         <footer className="py-16 px-6 md:px-10 border-t border-[#333330]">
           <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-            <div className="flex flex-col gap-1 cursor-pointer group" onClick={() => setClockFormat(prev => prev === 'bin' ? 'hex' : prev === 'hex' ? 'dec' : 'bin')}>
-                <span className="font-mono text-xl text-[#F5F5F0] block group-hover:text-[#3B82F6] transition-colors">{timeStr || '00:00:00'}</span>
-                <span className="font-mono text-[9px] text-[#A9A9A2] uppercase tracking-widest block">
-                  SYS_TIME [{clockFormat.toUpperCase()}] - CLICK TO CYCLE FORMAT
-                </span>
-              </div>
+            <FooterClock />
             
           
               <button

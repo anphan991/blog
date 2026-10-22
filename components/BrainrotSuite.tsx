@@ -487,7 +487,6 @@ export default function BrainrotSuite() {
             );
             if (safeLanes.length > 0) {
               runnerLaneRef.current = safeLanes[0];
-              setRunnerLane(safeLanes[0]);
             }
           }
         }
@@ -1243,7 +1242,7 @@ export default function BrainrotSuite() {
                       const emoji = emojis[Math.floor(Math.random() * emojis.length)];
                       const id = Date.now() + Math.random();
                       setBocchiStickers((prev) => [...prev.slice(-14), { id, x, y, emoji }]);
-                      addAuraToast(25, `Spam sticker ${emoji} lên màn hình Bocchi!`, emoji);
+                      addAuraToast(25, `Spam sticker ${emoji}`, emoji);
                     }}
                     className={`relative w-full flex-1 overflow-hidden border flex items-center justify-center bg-[#080808] cursor-crosshair ${
                       bocchiFxMode === 'panic'
@@ -1691,7 +1690,7 @@ export default function BrainrotSuite() {
             </div>
 
             <div className="px-3 py-1.5 bg-[#070707] border-t border-[#1C1C1A] text-[9px] text-[#A9A9A2]">
-              Chuột phải lần 2 để mở menu trình duyệt
+              Bấm chuột phải để mở menu trình duyệt
             </div>
           </motion.div>
         )}
