@@ -601,8 +601,8 @@ export default function Home() {
                     onMouseLeave={() => setRunawayPos({ x: 0, y: 0 })}
                     onClick={() => {
                       if (!chaosMode) {
-                        triggerAura(99999, 'TÓM SỐNG DEV! Phản xạ thần sầu, gửi offer ngay thôi!', '🏆');
-                        alert('Bắt được rồiii! 🐧');
+                        triggerAura(99999, 'GuGuGaGaaaaaaaaaaaaaaaaaaaaaaaaaaaa!', '🏆');
+                        alert('Caught me! 🐧');
                       }
                     }}
                     animate={{ x: runawayPos.x, y: runawayPos.y }}
