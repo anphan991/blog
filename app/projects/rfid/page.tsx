@@ -316,11 +316,11 @@ export default function RFIDVaultWorkbenchPage() {
       {/* Top Workbench Bar */}
       <nav className="border-b border-[#333330] bg-[#0A0A09]/90 backdrop-blur-md px-6 md:px-12 py-4 flex items-center justify-between sticky top-0 z-40">
         <Link
-          href="/#sec-works"
+          href="/#sec-rfid"
           className="font-mono text-sm uppercase tracking-widest text-[#D8D8D1] hover:text-amber-400 transition-colors flex items-center gap-2.5"
         >
           <ArrowLeft size={16} />
-          <HackerText text="EXIT_WORKBENCH" />
+          <HackerText text="RETURN" />
         </Link>
 
         <div className="flex items-center gap-3">
@@ -1286,11 +1286,11 @@ async def record_attendance(payload: SwipePayload):
         <div className="pt-8 border-t border-[#333330] space-y-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-sm">
             <Link
-              href="/#sec-works"
+              href="/#sec-rfid"
               className="uppercase tracking-widest text-[#D8D8D1] hover:text-amber-400 transition-colors inline-flex items-center gap-2.5 border border-[#333330] hover:border-amber-400 px-6 py-3"
             >
               <ArrowLeft size={16} />
-              <span>[ RETURN TO MAIN TERMINAL ]</span>
+              <span>[ RETURN TO MAIN PAGE ]</span>
             </Link>
             <span className="text-xs text-[#A9A9A2] uppercase tracking-widest">
               ESP32 FREERTOS // MIFARE 13.56MHZ // ACID VAULT

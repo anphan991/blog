@@ -11,6 +11,7 @@ import MagneticWrapper from '@/components/MagneticWrapper';
 
 import NetworkParticles from '@/components/NetworkParticles';
 import ParallaxWireframes from '@/components/ParallaxWireframes';
+import { triggerAura } from '@/components/BrainrotSuite';
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as [number, number, number, number];
 
@@ -52,8 +53,9 @@ export default function Home() {
 
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isDestructing, setIsDestructing] = useState(false);
-  const [activeBulletinIdx, setActiveBulletinIdx] = useState(3);
+  const [activeBulletinIdx, setActiveBulletinIdx] = useState(4);
   const [isTimelineOpen, setIsTimelineOpen] = useState(true);
+  const [egovTampered, setEgovTampered] = useState(false);
 
   const RELEASES = [
     {
@@ -90,15 +92,30 @@ export default function Home() {
       ],
     },
     {
+      id: 'egov',
+      short: 'e-Gov Signature',
+      title: 'Applied Crypto: e-Gov Signature',
+      date: 'JUL-14',
+      isLatest: false,
+      summary: 'Zero-Trust PAdES digital signing infrastructure with SoftHSM2, OCSP, and WORM audit chain.',
+      targetId: 'sec-egov',
+      href: '/projects/e-gov',
+      updates: [
+        { date: 'JUL-14', note: 'PAdES-B-LT, OCSP Kill-Switch & WORM ledger' },
+        { date: 'MAY-29', note: 'Initial PKCS#11 SoftHSM2 & mTLS gateway' },
+      ],
+    },
+    {
       id: 'soc',
       short: 'WAZUH',
       title: 'WAZUH',
-      date: 'AUG-18',
+      date: 'OCT-09',
       isLatest: false,
-      summary: 'Playing ground with Wazuh',
+      summary: 'Multi-layer Cyber Kill Chain detection lab with Wazuh SIEM, Suricata IDS, ModSecurity WAF, and FIM.',
       targetId: 'sec-topic',
-      href: '/soc-lab/01-deploy-wazuh-server',
+      href: '/soc-lab/05-recon-web-waf-wazuh',
       updates: [
+        { date: 'OCT-09', note: 'Recon, Web, WAF & Wazuh Kill Chain Lab' },
         { date: 'AUG-18', note: 'Initial' },
       ],
     },
@@ -219,17 +236,19 @@ export default function Home() {
     const cmd = command.trim().toLowerCase();
     setCommand('');
     const map: Record<string, () => void> = {
-      hi:      () => { setPetMood('happy');  setSpeech('Hello! Systems are 100% green today.'); },
-      hello:   () => { setPetMood('happy');  setSpeech('Hello! Systems are 100% green today.'); },
-      coffee:  () => { setPetMood('happy');  setSpeech('System injected! Compile speed +50%... ☕'); },
-      feed:    () => { setPetMood('happy');  setSpeech('System injected! Compile speed +50%... ☕'); },
-      hack:    () => { setPetMood('hack');   setSpeech('Bypassing firewall... Please wait for the Flag.'); },
-      pwn:     () => { setPetMood('hack');   setSpeech('Bypassing firewall... Please wait for the Flag.'); },
-      shield:  () => { setPetMood('shield'); setSpeech('Shields UP! Monitoring for suspicious packets.'); },
+      hi:      () => { setPetMood('happy');  setSpeech('Hello! Systems are 100% green today.'); triggerAura(100, 'Chào hỏi mèo lịch sự (+100 Aura)', '🐈'); },
+      hello:   () => { setPetMood('happy');  setSpeech('Hello! Systems are 100% green today.'); triggerAura(100, 'Chào hỏi mèo lịch sự (+100 Aura)', '🐈'); },
+      coffee:  () => { setPetMood('happy');  setSpeech('System injected! Compile speed +50%... ☕'); triggerAura(250, 'Cho mèo uống cà phê: Tốc độ gõ phím +50%!', '☕'); },
+      feed:    () => { setPetMood('happy');  setSpeech('System injected! Compile speed +50%... ☕'); triggerAura(250, 'Đã cho mèo ăn pate!', '🐟'); },
+      hack:    () => { setPetMood('hack');   setSpeech('Bypassing firewall... Please wait for the Flag.'); triggerAura(500, 'Đang chạy script pháp sư vượt tường lửa...', '💻'); },
+      pwn:     () => { setPetMood('hack');   setSpeech('Bypassing firewall... Please wait for the Flag.'); triggerAura(500, 'Root shell acquired!', '🚩'); },
+      shield:  () => { setPetMood('shield'); setSpeech('Shields UP! Monitoring for suspicious packets.'); triggerAura(300, 'Đã bật khiên chống rớt môn!', '🛡️'); },
       secure:  () => { setPetMood('shield'); setSpeech('Shields UP! Monitoring for suspicious packets.'); },
+      brainrot:() => { setPetMood('dance');  setSpeech('Deploying Subway Surfers focus module... 🧠'); window.dispatchEvent(new CustomEvent('toggle-brainrot')); },
+      skibidi: () => { setPetMood('dance');  setSpeech('Brainrot level: MAXIMUM OVERDRIVE 🗿'); triggerAura(777, 'Phát hiện từ khóa cấm! +777 Aura vô tri', '🗿'); },
       whoami:  () => { setSpeech('You are the Admin. I am your Loyal Cyber-Companion.'); },
       status:  () => { setSpeech('CPU: Chill | Mood: Stable | Hunger: Coffee_Required'); },
-      help:    () => { setSpeech('Try: hi, coffee, hack, shield, whoami, status, clear'); },
+      help:    () => { setSpeech('Try: hi, coffee, hack, shield, brainrot, skibidi, whoami, clear'); },
       clear:   () => { setPetMood('chill');  setSpeech('Terminal reset. Chilling in the background...'); },
     };
     (map[cmd] || (() => { setPetMood('angry'); setSpeech(`Unknown command: "${cmd}". My database is confused.`); }))();
@@ -455,19 +474,29 @@ export default function Home() {
                 {navOpen && (
                   <div className="absolute top-full right-0 mt-4 bg-[#111111] border border-[#333330] p-4 flex flex-col gap-4 text-[11px] uppercase tracking-widest text-blue-400 font-mono min-w-[160px] shadow-2xl z-50">
                     <button onClick={() => { document.getElementById('sec-manifesto')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[01] MANIFESTO" /></button>
-                    <button onClick={() => { document.getElementById('sec-theme')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[02] THEMES" /></button>
-                    <button onClick={() => { document.getElementById('sec-archive')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[03] ARCHIVE" /></button>
-                    <button onClick={() => { document.getElementById('sec-bulletin')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[04] BULLETIN" /></button>
-                    <button onClick={() => { document.getElementById('sec-works')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[05] WORKS" /></button>
-                    <button onClick={() => { document.getElementById('sec-topic')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[06] WAZUH" /></button>
-                    <button onClick={() => { document.getElementById('sec-rfid')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[07] RFID VAULT" /></button>
+                    <button onClick={() => { document.getElementById('sec-archive')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[02] ARCHIVE" /></button>
+                    <button onClick={() => { document.getElementById('sec-bulletin')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[03] INDEX" /></button>
+                    <button onClick={() => { document.getElementById('sec-works')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[04] WORKS" /></button>
+                    <button onClick={() => { document.getElementById('sec-rfid')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[05] RFID VAULT" /></button>
+                    <button onClick={() => { document.getElementById('sec-egov')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[06] E-GOV PKI" /></button>
+                    <button onClick={() => { document.getElementById('sec-topic')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[07] WAZUH" /></button>
                     <button onClick={() => { document.getElementById('sec-fallguard')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[08] FALLGUARD" /></button>
-                    <button onClick={() => { document.getElementById('sec-connect')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[09] CONNECT" /></button>
+                    <button onClick={() => { document.getElementById('sec-theme')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[09] THEMES" /></button>
+                    <button onClick={() => { document.getElementById('sec-connect')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[10] CONNECT" /></button>
                   </div>
                 )}
               </div>
               <button 
-                onClick={() => document.documentElement.classList.toggle('light-theme')}
+                onClick={() => {
+                  const isNowLight = document.documentElement.classList.toggle('light-theme');
+                  triggerAura(
+                    isNowLight ? -500 : 500,
+                    isNowLight
+                      ? 'FLASHBANG DEPLOYED!'
+                      : 'Dark Mode. +2 mắt',
+                    isNowLight ? '🔦' : '🕶️'
+                  );
+                }}
                 className="w-8 h-8 flex items-center justify-center border border-[#333330] rounded-full text-[#A9A9A2] hover:text-[#3B82F6] hover:border-[#3B82F6] transition-all"
                 title="Toggle Theme"
               >
@@ -527,85 +556,7 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-8 md:px-16 lg:px-24" style={{ paddingBottom: '160px' }}>
           
           {/* ══ MANIFESTO ════════════════════════════════ */}
-          {/* THEME SELECTION SECTION */}
-            <section id="sec-theme" className="ms-section">
-              <div className="section-label">Realities</div>
-              
-              <button 
-                onClick={() => setIsThemeOpen(!isThemeOpen)}
-                className="flex flex-col mb-8 text-left w-full hover:opacity-80 transition-opacity cursor-pointer border-none bg-transparent outline-none"
-              >
-                <h2 className="font-mono text-2xl md:text-3xl text-white uppercase tracking-widest mb-2 flex items-center gap-4">
-                  <HackerText text="Select_Environment" /> 
-                  <span className="text-[#3B82F6] text-sm">{isThemeOpen ? '[-]' : '[+]'}</span>
-                </h2>
-                <p className="font-mono text-[10px] md:text-xs text-[#A9A9A2] opacity-70 tracking-[0.2em] uppercase">
-                  &gt; CLICK TO DEPLOY THEME_SELECTION_MODULE
-                </p>
-              </button>
-
-              <AnimatePresence>
-                {isThemeOpen && (
-                  <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="flex flex-wrap gap-8 md:gap-12 w-full justify-center items-center overflow-hidden py-8"
-                  >
-                    {[
-                      { id: 'matrix', name: 'THE MATRIX', role: 'CURRENT REALITY', img: '/the_matrix.jpg', color: '#4ade80', link: 'https://kanp9.io.vn/' },
-                      { id: 'crystal', name: 'CRYSTAL CARBON', role: 'DEEP DIVE', img: '/cyan_carbon.jpg', color: '#3B82F6', link: 'https://v3.kanp9.io.vn/' },
-                      { id: 'cybercore', name: 'CYBERCORE OS', role: 'NOSTALGIA SECTOR', img: '/cyber_core.jpg', color: '#a855f7', link: 'https://v4.kanp9.io.vn/' }
-                    ].map((theme, i) => (
-                      <motion.a
-                        key={theme.id}
-                        href={theme.link}
-                        initial={{ opacity: 0, y: 50, rotateY: 30, borderColor: "#333330", boxShadow: "0 0 0px rgba(0,0,0,0)" }}
-                        whileInView={{ opacity: 1, y: 0, rotateY: 0, borderColor: "#333330", boxShadow: "0 0 0px rgba(0,0,0,0)" }}
-                        viewport={{ once: false, amount: 0.1 }}
-                        transition={{ delay: 0.01 + i * 0.15, type: "spring", stiffness: 700, damping: 20 }}
-                        whileHover={{ 
-                          scale: 1.05, 
-                          y: -15, 
-                          boxShadow: `0 0 30px ${theme.color}40`,
-                          borderColor: theme.color
-                        }}
-                        className="relative group bg-[#0A0A0A] border border-[#333330] p-6 w-48 md:w-56 flex flex-col items-center transition-all duration-50 no-underline cursor-pointer"
-                        style={{
-                          transformStyle: 'preserve-3d',
-                          perspective: '1000px'
-                        }}
-                      >
-                        {/* Image Container */}
-                        <div className="w-24 h-24 md:w-28 md:h-28 overflow-hidden mb-6 border border-[#333330] group-hover:border-transparent transition-colors relative bg-[#050505]">
-                          <div className="absolute inset-0 bg-black/60 group-hover:bg-transparent transition-colors z-10"></div>
-                          <img src={theme.img} alt={theme.name} className="w-full h-full object-cover grayscale opacity-50 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-500" />
-                        </div>
-                        
-                        {/* Text Info */}
-                        <h3 
-                          className="font-mono text-xl tracking-widest text-center transition-colors uppercase group-hover:text-white"
-                          style={{ color: '#A9A9A2' }}
-                        >
-                          {theme.name}
-                        </h3>
-                        <p className="font-mono text-[9px] text-[#A9A9A2] opacity-50 tracking-[0.2em] text-center mt-2 group-hover:opacity-100 transition-colors uppercase">
-                          {theme.role}
-                        </p>
-
-                        {theme.id === 'matrix' && (
-                          <div className="absolute -top-3 right-4 bg-[#A9A9A2] text-black text-[8px] font-bold px-2 py-1 uppercase tracking-widest">
-                            Active
-                          </div>
-                        )}
-                      </motion.a>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </section>
-
-            <section id="sec-manifesto" className="ms-section">
+          <section id="sec-manifesto" className="ms-section">
             <div className="section-label">Manifesto</div>
             <div className="grid grid-cols-1 md:grid-cols-12 gap-16 items-start">
               
@@ -630,7 +581,12 @@ export default function Home() {
                     suppressHydrationWarning
                     onMouseEnter={handleHireHover}
                     onMouseLeave={() => setRunawayPos({ x: 0, y: 0 })}
-                    onClick={() => { if (!chaosMode) alert('Bắt được rồiii! 🐧'); }}
+                    onClick={() => {
+                      if (!chaosMode) {
+                        triggerAura(99999, 'TÓM SỐNG DEV! Phản xạ thần sầu, gửi offer ngay thôi!', '🏆');
+                        alert('Bắt được rồiii! 🐧');
+                      }
+                    }}
                     animate={{ x: runawayPos.x, y: runawayPos.y }}
                     transition={{ type: 'spring', stiffness: 350, damping: 12 }}
                     className="cta-link cta-link--ghost relative z-20 border border-[#333330] text-center mt-6"
@@ -746,8 +702,8 @@ export default function Home() {
 
               {/* Unified Panel */}
               <div className="border border-[#222220] bg-[#0A0A0A] p-5 sm:p-6 space-y-5">
-                {/* 4 Segmented Tabs with enhanced font size */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 border-b border-[#1A1A1A] pb-4">
+                {/* 5 Segmented Tabs with enhanced font size */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 border-b border-[#1A1A1A] pb-4">
                   {RELEASES.map((item, idx) => {
                     const isSelected = idx === activeBulletinIdx;
                     return (
@@ -933,82 +889,6 @@ export default function Home() {
               </motion.div>
             </div>
           </section>
-          {/* ══ HOME SOC LAB ════════════════════════════════════════ */}
-          <section id="sec-topic" className="ms-section">
-            <div className="section-label">Project: SOC Lab</div>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start h-full">
-              
-              {/* Left Info */}
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.8, ease: "easeOut" }}
-                className="lg:col-span-4 flex flex-col gap-6"
-              >
-                <h3 className="font-serif text-[clamp(2.5rem,4vw,3.8rem)] leading-[1.1] font-light text-white scroll-reveal-line">
-                  <span className="scroll-reveal-line" data-reveal-delay="0">Wazuh</span><br/>
-                </h3>
-                <div className="flex gap-2 items-center mt-6">
-                </div>
-                
-                <p className="text-[#A9A9A2] font-mono font-light text-base mt-6 scroll-reveal-line" data-reveal-delay="3">
-                  ///Coming soon...
-                </p>
-                
-                <div className="mt-10 border-l-2 border-[#333330] pl-6 font-mono text-[13px] text-[#A9A9A2] uppercase tracking-[0.15em] flex flex-col gap-4">
-                  <p className="scroll-reveal-line" data-reveal-delay="4">› Stack: Wazuh</p>
-                  <p className="scroll-reveal-line" data-reveal-delay="5">› Status: Deploying</p>
-                  <p className="scroll-reveal-line" data-reveal-delay="6">› Access: Classified</p>
-                </div>
-
-                <p className="mt-8 font-mono text-sm text-[#333330] tracking-widest scroll-reveal-line" data-reveal-delay="7">
-                  |||||
-                </p>
-
-              </motion.div>
-
-              {/* Right Terminal List */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                className="lg:col-span-8 bg-[#050505] border border-[#333330] flex flex-col font-mono text-sm h-[65vh] max-h-[600px]"
-              >
-                {/* Terminal Header */}
-                <div className="flex justify-between items-center px-6 py-4 border-b border-[#333330] bg-[#0A0A0A]">
-                  <span className="text-[#A9A9A2] text-sm">~/projects/home-soc-lab</span>
-                  <div className="flex gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#333330]"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#333330]"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#333330]"></div>
-                  </div>
-                </div>
-                
-                {/* File List */}
-                <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
-                  {[
-                    "01-deploy-wazuh-server.md",
-                    "02-connect-agents-and-sysmon.md",
-                    "03-generate-and-read-telemetry.md",
-                    "04-build-dashboard.md",
-                    "Coming Soon...",
-                    "Coming Soon...",
-                    "Coming Soon..."
-                  ].map((file, i) => (
-                    <TiltCard key={i}><a href={`/soc-lab/${file.replace('.md', '')}`} className="flex justify-between items-center py-4 border-b border-[#111111] hover:bg-[#111111] transition-colors group cursor-pointer px-4">
-                      <span className="flex gap-5 items-center">
-                        <span className="text-[#333330] group-hover:text-[#3B82F6] text-sm">[{String(i+1).padStart(2, '0')}]</span>
-                        <span className="text-[#D8D8D1] group-hover:text-white transition-colors text-base">{file}</span>
-                      </span>
-                      <span className="text-[#333330] group-hover:text-[#3B82F6] transition-colors text-sm">
-                        {10 + i * 2}.4kb
-                      </span>
-                    </a></TiltCard>
-                  ))}
-                  <div className="py-6 text-[#333330] px-4">
-                    <span className="animate-pulse text-base">_</span>
-                  </div>
-                </div>
-              </motion.div>
-              
-            </div>
-          </section>
 
           {/* ══ PROJECT: RFID VAULT ════════════════════════════════════════ */}
           <section id="sec-rfid" className="ms-section">
@@ -1130,6 +1010,301 @@ export default function Home() {
             </div>
           </section>
 
+          {/* ══ PROJECT: E-GOV DIGITAL SIGNATURE ════════════════════════════════ */}
+          <section id="sec-egov" className="ms-section">
+            <div className="section-label">Applied Cryptography: e-Gov PKI</div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+              {/* Left Column: Tactile PAdES Sealed Decree & Interactive Byte-Flipper */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.1 }}
+                transition={{ duration: 0.8, ease: EASE_OUT }}
+                className="lg:col-span-7 order-2 lg:order-1 flex justify-center"
+              >
+                <div className="w-full max-w-lg relative">
+                  {/* Subtle Stacked Paper Back-Sheet */}
+                  <div
+                    className={`absolute inset-0 translate-x-2 translate-y-2 -rotate-1 rounded-sm border transition-colors duration-500 pointer-events-none ${
+                      egovTampered
+                        ? 'border-red-500/20 bg-red-950/[0.04]'
+                        : 'border-[#222220] bg-[#080808]'
+                    }`}
+                  />
+
+                  <TiltCard>
+                    <Link
+                      href="/projects/e-gov"
+                      className={`group block relative w-full bg-[#0A0A0A] border rounded-sm p-5 sm:p-6 transition-all duration-300 shadow-2xl overflow-hidden cursor-pointer ${
+                        egovTampered
+                          ? 'border-red-500/60 hover:border-red-400'
+                          : 'border-[#2A2A28] hover:border-[#3B82F6]'
+                      }`}
+                    >
+                      {/* Subtle Corner Registration Marks */}
+                      <span className="absolute top-2 left-2.5 font-mono text-xs text-[#A9A9A2]/50 select-none">+</span>
+                      <span className="absolute top-2 right-2.5 font-mono text-xs text-[#A9A9A2]/50 select-none">+</span>
+                      <span className="absolute bottom-2 left-2.5 font-mono text-xs text-[#A9A9A2]/50 select-none">+</span>
+                      <span className="absolute bottom-2 right-2.5 font-mono text-xs text-[#A9A9A2]/50 select-none">+</span>
+
+                      {/* Top Verification Ribbon + Interactive 1-Byte Tamper Trigger */}
+                      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-4 border-b border-[#222220] relative z-10">
+                        <div className="flex items-center gap-2 font-mono text-xs sm:text-sm">
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              egovTampered ? 'bg-red-500 animate-ping' : 'bg-[#3B82F6] animate-pulse'
+                            }`}
+                          />
+                          <span
+                            className={`font-bold tracking-wider uppercase ${
+                              egovTampered ? 'text-red-400' : 'text-white'
+                            }`}
+                          >
+                            {egovTampered ? 'CWE-345 // DIGEST MISMATCH' : 'PAdES-B-LT // HSM SLOT 0x02'}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const nextTampered = !egovTampered;
+                            setEgovTampered(nextTampered);
+                            triggerAura(
+                              nextTampered ? -9999 : 1000,
+                              nextTampered
+                                ? 'Phát hiện sửa 1 byte trái phép! Công an phường đang định vị IP của bạn...'
+                                : 'Đã khôi phục byte 0x4A hợp lệ. Tạm tha tội làm giả sắc lệnh!',
+                              nextTampered ? '🚨' : '🛡️'
+                            );
+                          }}
+                          className={`px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider border transition-all cursor-pointer ${
+                            egovTampered
+                              ? 'border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                              : 'border-[#333330] bg-[#111111] text-[#D8D8D1] hover:text-white hover:border-[#3B82F6]'
+                          }`}
+                        >
+                          {egovTampered ? '[ RESTORE 0x4A ]' : '[ TAMPER 1 BYTE ]'}
+                        </button>
+                      </div>
+
+                      {/* Middle: Redacted Decree Geometry + Live /ByteRange Hex Stream */}
+                      <div className="py-4 space-y-4 relative z-10">
+                        {/* Minimalist Document Structural Bars (Zero Prose Clutter) */}
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[11px] sm:text-xs text-[#A9A9A2] uppercase tracking-wider mb-1.5">
+                            <span>DECREE_2026_signed.pdf</span>
+                            <span>/ByteRange [0 18420 51188 14902]</span>
+                          </div>
+                          <div className="h-2 w-3/4 bg-[#222220] rounded-xs" />
+                          <div className="h-2 w-full bg-[#1A1A1A] rounded-xs" />
+                          <div className="h-2 w-5/6 bg-[#1A1A1A] rounded-xs" />
+                        </div>
+
+                        {/* Interactive Hex Byte Strip & Avalanche SHA-256 Digest */}
+                        <div
+                          className={`p-3.5 sm:p-4 border transition-colors ${
+                            egovTampered
+                              ? 'border-red-500/30 bg-red-950/10'
+                              : 'border-[#222220] bg-[#080808]'
+                          }`}
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2 font-mono mb-2.5">
+                            <span className="text-[#A9A9A2] text-xs uppercase tracking-wider">
+                              OFFSET 0x047F0
+                            </span>
+                            <div className="flex items-center gap-1.5 font-mono text-xs sm:text-sm">
+                              <span className="px-2 py-0.5 bg-[#111111] border border-[#222220] text-[#A9A9A2]">25</span>
+                              <span className="px-2 py-0.5 bg-[#111111] border border-[#222220] text-[#A9A9A2]">50</span>
+                              <span className="px-2 py-0.5 bg-[#111111] border border-[#222220] text-[#A9A9A2]">44</span>
+                              <span
+                                className={`px-2 py-0.5 font-bold border transition-all ${
+                                  egovTampered
+                                    ? 'bg-red-500/20 border-red-500 text-red-400 scale-105'
+                                    : 'bg-[#3B82F6]/15 border-[#3B82F6]/50 text-[#3B82F6]'
+                                }`}
+                              >
+                                {egovTampered ? 'FF' : '4A'}
+                              </span>
+                              <span className="px-2 py-0.5 bg-[#111111] border border-[#222220] text-[#A9A9A2]">2D</span>
+                              <span className="px-2 py-0.5 bg-[#111111] border border-[#222220] text-[#A9A9A2]">31</span>
+                            </div>
+                          </div>
+
+                          <div className="pt-2.5 border-t border-[#222220] flex items-center justify-between gap-3 font-mono">
+                            <span className="text-xs text-[#A9A9A2] uppercase tracking-wider shrink-0">
+                              SHA-256
+                            </span>
+                            <span
+                              className={`text-xs sm:text-sm font-semibold tracking-wider truncate transition-colors ${
+                                egovTampered ? 'text-red-400' : 'text-[#D8D8D1] group-hover:text-[#3B82F6]'
+                              }`}
+                            >
+                              {egovTampered
+                                ? 'e3b0c44298fc1c14...7852b855'
+                                : '8f434346648f6b96...dc327aa4'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bottom Row: O2O QR Matrix + Signer Meta + Circular Cryptographic Stamp */}
+                      <div className="pt-3.5 border-t border-[#222220] flex flex-wrap items-center justify-between gap-3 relative z-10">
+                        <div className="flex items-center gap-3">
+                          {/* Crisp Geometric SVG QR Matrix */}
+                          <div className="w-11 h-11 p-1.5 border border-[#222220] bg-[#080808] shrink-0 flex items-center justify-center">
+                            <svg viewBox="0 0 24 24" className="w-full h-full fill-current text-[#D8D8D1]">
+                              <path d="M3 3h7v7H3V3zm2 2v3h3V5H5zm9-2h7v7h-7V3zm2 2v3h3V5h-3zM3 14h7v7H3v-7zm2 2v3h3v-3H5zm9-2h3v2h-3v-2zm4 0h3v3h-2v-1h-1v-2zm-4 4h2v3h-2v-3zm3 1h4v2h-4v-2z" />
+                            </svg>
+                          </div>
+                          <div className="font-mono">
+                            <div className="text-xs sm:text-sm font-bold text-white tracking-wider">
+                              ABCD JQK XYZ
+                            </div>
+                            <div className="text-[11px] sm:text-xs text-[#A9A9A2] tracking-wider">
+                              RFC 3161 TSA // WORM #0042
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Rotated Circular Cryptographic Wax Seal Stamp */}
+                        <div
+                          className={`px-3.5 py-1.5 rounded-full border-2 border-dashed -rotate-6 transition-all font-mono text-[11px] sm:text-xs font-bold tracking-[0.14em] uppercase select-none ${
+                            egovTampered
+                              ? 'border-red-500/70 bg-red-500/10 text-red-400'
+                              : 'border-[#3B82F6]/60 bg-[#3B82F6]/10 text-[#3B82F6]'
+                          }`}
+                        >
+                          {egovTampered ? 'SIGNATURE BROKEN' : 'ECDSA-P256 SEALED'}
+                        </div>
+                      </div>
+                    </Link>
+                  </TiltCard>
+                </div>
+              </motion.div>
+
+              {/* Right Column: Concise Editorial Typography */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: false, amount: 0.1 }}
+                transition={{ duration: 0.8, delay: 0.15, ease: EASE_OUT }}
+                className="lg:col-span-5 order-1 lg:order-2 flex flex-col gap-5"
+              >
+                <div>
+                  <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#3B82F6] mb-2.5">
+                    <span className="w-2 h-2 rounded-full bg-[#3B82F6] animate-pulse" />
+                    ZERO-TRUST PKI & PADES
+                  </div>
+                  <h3 className="font-serif text-[clamp(2.4rem,4vw,3.6rem)] leading-[1.06] font-light text-white">
+                    e-Gov Signature.
+                  </h3>
+                </div>
+
+                <p className="text-[#A9A9A2] font-mono font-light text-sm sm:text-base leading-relaxed">
+                  Sovereign PAdES-B-LT signing infrastructure isolating ECDSA P-256 private keys inside SoftHSM2 over a 5-zone mTLS network with RFC 3161 timestamping and WORM audit logs.
+                </p>
+
+                <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-[#A9A9A2]">
+                  <span className="px-3 py-1 border border-[#222220] bg-[#0A0A0A]">
+                    PKCS#11 SoftHSM2
+                  </span>
+                  <span className="px-3 py-1 border border-[#222220] bg-[#0A0A0A]">
+                    PAdES-B-LT / TSA
+                  </span>
+                  <span className="px-3 py-1 border border-[#222220] bg-[#0A0A0A]">
+                    WORM Hash-Chain
+                  </span>
+                </div>
+
+                <div className="pt-1 flex flex-wrap items-center gap-6">
+                  <MagneticWrapper>
+                    <Link href="/projects/e-gov" className="cta-link inline-block">
+                      <HackerText text="Enter Project →" />
+                    </Link>
+                  </MagneticWrapper>
+                </div>
+              </motion.div>
+            </div>
+          </section>
+
+          {/* ══ HOME SOC LAB ════════════════════════════════════════ */}
+          <section id="sec-topic" className="ms-section">
+            <div className="section-label">Project: SOC Lab</div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start h-full">
+              
+              {/* Left Info */}
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.8, ease: "easeOut" }}
+                className="lg:col-span-4 flex flex-col gap-6"
+              >
+                <h3 className="font-serif text-[clamp(2.5rem,4vw,3.8rem)] leading-[1.1] font-light text-white scroll-reveal-line">
+                  <span className="scroll-reveal-line" data-reveal-delay="0">Wazuh</span><br/>
+                </h3>
+                
+                <p className="text-[#A9A9A2] font-mono font-light text-sm sm:text-base leading-relaxed mt-2 scroll-reveal-line" data-reveal-delay="3">
+                  Multi-layer telemetry and Cyber Kill Chain detection lab in an isolated VMware network using Wazuh SIEM, Suricata IDS, ModSecurity WAF, and FIM.
+                </p>
+                
+                <div className="mt-4 border-l-2 border-[#333330] pl-6 font-mono text-[13px] text-[#A9A9A2] uppercase tracking-[0.15em] flex flex-col gap-3.5">
+                  <p className="scroll-reveal-line" data-reveal-delay="4">› Stack: Wazuh + Suricata + WAF</p>
+                  <p className="scroll-reveal-line" data-reveal-delay="5">› Scope: Recon, DVWA, C2 &amp; Exfil</p>
+                  <p className="scroll-reveal-line" data-reveal-delay="6">› Nodes: Kali / Ubuntu / Windows</p>
+                </div>
+
+                <p className="mt-4 font-mono text-sm text-[#333330] tracking-widest scroll-reveal-line" data-reveal-delay="7">
+                  |||||
+                </p>
+
+              </motion.div>
+
+              {/* Right Terminal List */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                className="lg:col-span-8 bg-[#050505] border border-[#333330] flex flex-col font-mono text-sm h-[65vh] max-h-[600px]"
+              >
+                {/* Terminal Header */}
+                <div className="flex justify-between items-center px-6 py-4 border-b border-[#333330] bg-[#0A0A0A]">
+                  <span className="text-[#A9A9A2] text-sm">~/projects/home-soc-lab</span>
+                  <div className="flex gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#333330]"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#333330]"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#333330]"></div>
+                  </div>
+                </div>
+                
+                {/* File List */}
+                <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
+                  {[
+                    "01-deploy-wazuh-server.md",
+                    "02-connect-agents-and-sysmon.md",
+                    "03-generate-and-read-telemetry.md",
+                    "04-build-dashboard.md",
+                    "05-recon-web-waf-wazuh.md",
+                    "Coming Soon...",
+                    "Coming Soon..."
+                  ].map((file, i) => (
+                    <TiltCard key={i}><a href={`/soc-lab/${file.replace('.md', '')}`} className="flex justify-between items-center py-4 border-b border-[#111111] hover:bg-[#111111] transition-colors group cursor-pointer px-4">
+                      <span className="flex gap-5 items-center">
+                        <span className="text-[#333330] group-hover:text-[#3B82F6] text-sm">[{String(i+1).padStart(2, '0')}]</span>
+                        <span className="text-[#D8D8D1] group-hover:text-white transition-colors text-base">{file}</span>
+                      </span>
+                      <span className="text-[#333330] group-hover:text-[#3B82F6] transition-colors text-sm">
+                        {10 + i * 2}.4kb
+                      </span>
+                    </a></TiltCard>
+                  ))}
+                  <div className="py-6 text-[#333330] px-4">
+                    <span className="animate-pulse text-base">_</span>
+                  </div>
+                </div>
+              </motion.div>
+              
+            </div>
+          </section>
+
           {/* ══ PROJECT: FALLGUARD ════════════════════════════════════════ */}
           <section id="sec-fallguard" className="ms-section">
             <div className="section-label">Project: FallGuard</div>
@@ -1244,6 +1419,84 @@ export default function Home() {
               </motion.div>
               
             </div>
+          </section>
+
+          {/* ══ THEME SELECTION SECTION ═════════════════════════ */}
+          <section id="sec-theme" className="ms-section">
+            <div className="section-label">Realities</div>
+            
+            <button 
+              onClick={() => setIsThemeOpen(!isThemeOpen)}
+              className="flex flex-col mb-8 text-left w-full hover:opacity-80 transition-opacity cursor-pointer border-none bg-transparent outline-none"
+            >
+              <h2 className="font-mono text-2xl md:text-3xl text-white uppercase tracking-widest mb-2 flex items-center gap-4">
+                <HackerText text="Select_Environment" /> 
+                <span className="text-[#3B82F6] text-sm">{isThemeOpen ? '[-]' : '[+]'}</span>
+              </h2>
+              <p className="font-mono text-[10px] md:text-xs text-[#A9A9A2] opacity-70 tracking-[0.2em] uppercase">
+                &gt; CLICK TO DEPLOY THEME_SELECTION_MODULE
+              </p>
+            </button>
+
+            <AnimatePresence>
+              {isThemeOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex flex-wrap gap-8 md:gap-12 w-full justify-center items-center overflow-hidden py-8"
+                >
+                  {[
+                    { id: 'matrix', name: 'THE MATRIX', role: 'CURRENT REALITY', img: '/the_matrix.jpg', color: '#4ade80', link: 'https://kanp9.io.vn/' },
+                    { id: 'crystal', name: 'CRYSTAL CARBON', role: 'DEEP DIVE', img: '/cyan_carbon.jpg', color: '#3B82F6', link: 'https://v3.kanp9.io.vn/' },
+                    { id: 'cybercore', name: 'CYBERCORE OS', role: 'NOSTALGIA SECTOR', img: '/cyber_core.jpg', color: '#a855f7', link: 'https://v4.kanp9.io.vn/' }
+                  ].map((theme, i) => (
+                    <motion.a
+                      key={theme.id}
+                      href={theme.link}
+                      initial={{ opacity: 0, y: 50, rotateY: 30, borderColor: "#333330", boxShadow: "0 0 0px rgba(0,0,0,0)" }}
+                      whileInView={{ opacity: 1, y: 0, rotateY: 0, borderColor: "#333330", boxShadow: "0 0 0px rgba(0,0,0,0)" }}
+                      viewport={{ once: false, amount: 0.1 }}
+                      transition={{ delay: 0.01 + i * 0.15, type: "spring", stiffness: 700, damping: 20 }}
+                      whileHover={{ 
+                        scale: 1.05, 
+                        y: -15, 
+                        boxShadow: `0 0 30px ${theme.color}40`,
+                        borderColor: theme.color
+                      }}
+                      className="relative group bg-[#0A0A0A] border border-[#333330] p-6 w-48 md:w-56 flex flex-col items-center transition-all duration-50 no-underline cursor-pointer"
+                      style={{
+                        transformStyle: 'preserve-3d',
+                        perspective: '1000px'
+                      }}
+                    >
+                      {/* Image Container */}
+                      <div className="w-24 h-24 md:w-28 md:h-28 overflow-hidden mb-6 border border-[#333330] group-hover:border-transparent transition-colors relative bg-[#050505]">
+                        <div className="absolute inset-0 bg-black/60 group-hover:bg-transparent transition-colors z-10"></div>
+                        <img src={theme.img} alt={theme.name} className="w-full h-full object-cover grayscale opacity-50 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-500" />
+                      </div>
+                      
+                      {/* Text Info */}
+                      <h3 
+                        className="font-mono text-xl tracking-widest text-center transition-colors uppercase group-hover:text-white"
+                        style={{ color: '#A9A9A2' }}
+                      >
+                        {theme.name}
+                      </h3>
+                      <p className="font-mono text-[9px] text-[#A9A9A2] opacity-50 tracking-[0.2em] text-center mt-2 group-hover:opacity-100 transition-colors uppercase">
+                        {theme.role}
+                      </p>
+
+                      {theme.id === 'matrix' && (
+                        <div className="absolute -top-3 right-4 bg-[#A9A9A2] text-black text-[8px] font-bold px-2 py-1 uppercase tracking-widest">
+                          Active
+                        </div>
+                      )}
+                    </motion.a>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </section>
 
           {/* ══ CONNECT & ASCII COMPANION ═════════════════════════ */}

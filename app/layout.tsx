@@ -46,6 +46,7 @@ export const metadata: Metadata = {
 };
 
 import KhzCursor from '@/components/KhzCursor'
+import BrainrotSuite from '@/components/BrainrotSuite'
 
 
 export default function RootLayout({
@@ -69,6 +70,7 @@ export default function RootLayout({
       {/* 4. Nhúng biến font vào thẻ body */}
       <body className={`${inter.variable} ${jetbrainsMono.variable} ${cormorant.variable} font-sans antialiased bg-[#0a0a0a]`}>
         <KhzCursor />
+        <BrainrotSuite />
         {/* Intro veil overlay */}
         <div className="intro-veil" aria-hidden="true">
           <span className="intro-veil__mark">@AP991</span>

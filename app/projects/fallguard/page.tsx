@@ -528,7 +528,7 @@ TELEGRAM_CHAT_ID=<your_caregiver_chat_id>`;
           className="font-mono text-sm uppercase tracking-widest text-[#D8D8D1] hover:text-[#4ade80] transition-colors flex items-center gap-2.5"
         >
           <ArrowLeft size={16} />
-          <HackerText text="TERMINAL_RETURN" />
+          <HackerText text="RETURN" />
         </Link>
 
         <div className="flex items-center gap-4">
@@ -1688,7 +1688,7 @@ cd frontend && npm run dev`}
               className="uppercase tracking-widest text-[#D8D8D1] hover:text-[#4ade80] transition-colors inline-flex items-center gap-2.5 border border-[#333330] hover:border-[#4ade80] px-6 py-3"
             >
               <ArrowLeft size={16} />
-              <span>[ RETURN TO MAIN TERMINAL ]</span>
+              <span>[ RETURN TO MAIN PAGE ]</span>
             </Link>
             <a
               href="https://github.com/anphan991/Embedded_System"
