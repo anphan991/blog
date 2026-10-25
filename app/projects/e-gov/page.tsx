@@ -23,7 +23,7 @@ import {
   Fingerprint,
 } from 'lucide-react';
 import HackerText from '@/components/HackerText';
-import { triggerAura } from '@/components/BrainrotSuite';
+import { triggerAura } from '@/lib/aura';
 
 type SimulationModeId = 'normal_sign' | 'tamper_attack' | 'replay_attack' | 'ocsp_killswitch';
 
@@ -538,8 +538,8 @@ export default function EGovSignatureProjectPage() {
                 triggerAura(
                   next ? -5000 : 1500,
                   next
-                    ? 'Sửa trộm BLOCK #0041 thất bại! Chuỗi băm WORM đã báo động toàn mạng!'
-                    : 'Đã khôi phục sổ cái WORM nguyên vẹn (+1,500 Aura chính trực)',
+                    ? 'Unauthorized edit on BLOCK #0041! WORM hash chain broke & alerted SOC!'
+                    : 'Restored WORM ledger integrity (+1,500 Integrity Aura)',
                   next ? '💀' : '✅'
                 );
               }}

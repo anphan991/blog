@@ -546,6 +546,42 @@ html.light-theme .scroll-reveal-line.is-bright.service-item__title {
   transform: translateZ(0);
 }
 
+/* ═══ AURA DYNAMIC ISLAND (HEADBAR NOTIFICATIONS) ═══ */
+.aura-island {
+  height: 30px;
+  padding: 0 14px;
+  max-width: 220px;
+  transition: max-width 0.45s cubic-bezier(0.19, 1, 0.22, 1), border-color 0.25s, box-shadow 0.25s;
+  white-space: nowrap;
+}
+.aura-island--open {
+  max-width: min(96vw, 1200px);
+}
+.aura-island__sweep {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  pointer-events: none;
+  animation: auraSweep 0.7s ease-out forwards;
+}
+@keyframes auraSweep {
+  from { transform: translateX(-110%); opacity: 1; }
+  to { transform: translateX(260%); opacity: 0; }
+}
+.aura-island__combo {
+  display: inline-block;
+  animation: auraCombo 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes auraCombo {
+  from { transform: scale(1.6); }
+  to { transform: scale(1); }
+}
+html.light-theme .brainrot-hud-root .aura-island {
+  background-color: #070707 !important;
+}
+
 /* ═══ BRAINROT HUD / TOAST / MENU / ARCADE PIP READABILITY IN LIGHT THEME ═══ */
 html.light-theme .brainrot-hud-root .text-white {
   color: #FFFFFF !important;

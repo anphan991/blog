@@ -11,7 +11,8 @@ import MagneticWrapper from '@/components/MagneticWrapper';
 
 import NetworkParticles from '@/components/NetworkParticles';
 import ParallaxWireframes from '@/components/ParallaxWireframes';
-import { triggerAura } from '@/components/BrainrotSuite';
+import { triggerAura } from '@/lib/aura';
+import CyberCompanion from '@/components/CyberCompanion';
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as [number, number, number, number];
 
@@ -243,43 +244,6 @@ export default function Home() {
       return () => clearTimeout(timer);
     }
   }, [isDestructing]);
-
-  // CyberCat
-  const [petMood, setPetMood] = useState<'chill'|'happy'|'hack'|'angry'|'shield'|'chaos'|'dance'>('chill');
-  const [speech, setSpeech] = useState('System online. Awaiting orders,... 🐈');
-  const [command, setCommand] = useState('');
-  const asciiFrames = {
-    chill: `  |\\__/,|   (\`\\ \n _.0-0._ |  _) ) \n_(_(_/-(_(_/  `,
-    happy: `  /\\_/\\  \n ( ^.^ )  *purr*\n  > ~ <   `,
-    hack:  `  /\\_/\\   [😎] \n ( -.- )  [SSH]\n  > ^ <   [BUSY]`,
-    angry: `  /\\_/\\  \n ( >_< )  *HISS!\n  vv vv  `,
-    shield:`  /\\_/\\   [🛡️]\n ( o.o )  [SEC]\n  > ^ <   `,
-    chaos: `  /\\_/\\  \n ( X.X )  FATAL\n  UNSTABLE`,
-    dance: `  /\\_/\\  \n ~( v.v )~\n  > ^ <   `,
-  };
-
-  const handleCommand = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter') return;
-    const cmd = command.trim().toLowerCase();
-    setCommand('');
-    const map: Record<string, () => void> = {
-      hi:      () => { setPetMood('happy');  setSpeech('Hello! Systems are 100% green today.'); triggerAura(100, 'Chào hỏi mèo lịch sự (+100 Aura)', '🐈'); },
-      hello:   () => { setPetMood('happy');  setSpeech('Hello! Systems are 100% green today.'); triggerAura(100, 'Chào hỏi mèo lịch sự (+100 Aura)', '🐈'); },
-      coffee:  () => { setPetMood('happy');  setSpeech('System injected! Compile speed +50%... ☕'); triggerAura(250, 'Cho mèo uống cà phê: Tốc độ gõ phím +50%!', '☕'); },
-      feed:    () => { setPetMood('happy');  setSpeech('System injected! Compile speed +50%... ☕'); triggerAura(250, 'Đã cho mèo ăn pate!', '🐟'); },
-      hack:    () => { setPetMood('hack');   setSpeech('Bypassing firewall... Please wait for the Flag.'); triggerAura(500, 'Đang chạy script pháp sư vượt tường lửa...', '💻'); },
-      pwn:     () => { setPetMood('hack');   setSpeech('Bypassing firewall... Please wait for the Flag.'); triggerAura(500, 'Root shell acquired!', '🚩'); },
-      shield:  () => { setPetMood('shield'); setSpeech('Shields UP! Monitoring for suspicious packets.'); triggerAura(300, 'Đã bật khiên chống rớt môn!', '🛡️'); },
-      secure:  () => { setPetMood('shield'); setSpeech('Shields UP! Monitoring for suspicious packets.'); },
-      brainrot:() => { setPetMood('dance');  setSpeech('Deploying Subway Surfers focus module... 🧠'); window.dispatchEvent(new CustomEvent('toggle-brainrot')); },
-      skibidi: () => { setPetMood('dance');  setSpeech('Brainrot level: MAXIMUM OVERDRIVE 🗿'); triggerAura(777, 'Phát hiện từ khóa cấm! +777 Aura vô tri', '🗿'); },
-      whoami:  () => { setSpeech('You are the Admin. I am your Loyal Cyber-Companion.'); },
-      status:  () => { setSpeech('CPU: Chill | Mood: Stable | Hunger: Coffee_Required'); },
-      help:    () => { setSpeech('Try: hi, coffee, hack, shield, brainrot, skibidi, whoami, clear'); },
-      clear:   () => { setPetMood('chill');  setSpeech('Terminal reset. Chilling in the background...'); },
-    };
-    (map[cmd] || (() => { setPetMood('angry'); setSpeech(`Unknown command: "${cmd}". My database is confused.`); }))();
-  };
 
   const handleStatusClick = () => {
     if (bsodState) { setBsodState(false); setClickCount(0); return; }
@@ -1093,8 +1057,8 @@ export default function Home() {
                             triggerAura(
                               nextTampered ? -9999 : 1000,
                               nextTampered
-                                ? 'Phát hiện sửa 1 byte trái phép! Công an phường đang định vị IP của bạn...'
-                                : 'Đã khôi phục byte 0x4A hợp lệ. Tạm tha tội làm giả sắc lệnh!',
+                                ? '1-byte PDF tampering detected! Tracing your IP address...'
+                                : 'Restored valid byte 0x4A. Signature integrity verified!',
                               nextTampered ? '🚨' : '🛡️'
                             );
                           }}
@@ -1517,17 +1481,17 @@ export default function Home() {
             </AnimatePresence>
           </section>
 
-          {/* ══ CONNECT & ASCII COMPANION ═════════════════════════ */}
+          {/* ══ CONNECT & CYBER COMPANION ═════════════════════════ */}
           <section id="sec-connect" className="ms-section pb-0">
             <div className="section-label">Connect</div>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-center">
               
               {/* Connect part */}
               <motion.div 
                 initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}
-                className="lg:col-span-7"
+                className="lg:col-span-6"
               >
-                <h2 className="split-lines scroll-reveal-line font-serif text-[clamp(2.5rem,5vw,6.5rem)] leading-[1.5] text-white font-light mb-12 pb-6"
+                <h2 className="split-lines scroll-reveal-line font-serif text-[clamp(2.5rem,4.6vw,5.6rem)] leading-[1.4] text-white font-light mb-10 pb-4"
                   style={{
                     textShadow: `
                       1px 1px 0 rgba(59,130,246,0.4),
@@ -1555,75 +1519,13 @@ export default function Home() {
                 </div>
               </motion.div>
 
-              {/* ASCII Companion (Smaller) */}
+              {/* Hybrid Cyber-Tamagotchi Companion */}
               <motion.div 
                 initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.15 }}
-                className="lg:col-span-5 flex flex-col items-center"
+                className="lg:col-span-6 flex flex-col items-center w-full"
               >
-                <div 
-                  className="w-full flex flex-col items-center justify-center h-48 border border-[#333330] cursor-pointer transition-all hover:border-[#D8D8D1] bg-[#0A0A0A] mb-6"
-                  onClick={() => { setPetMood('angry'); setSpeech('Hiss! I am compiling Kernel! Do not disturb.'); }}
-                >
-                  <AnimatePresence mode="wait">
-                    <motion.pre
-                      key={chaosMode ? 'chaos' : petMood}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="font-mono text-[10px] md:text-[11px] leading-snug text-center text-[#D8D8D1]"
-                    >
-                      {chaosMode ? asciiFrames.chaos : asciiFrames[petMood]}
-                    </motion.pre>
-                  </AnimatePresence>
-                </div>
-                
-                <div className="w-full">
-                  <AnimatePresence mode="wait">
-                    <motion.p
-                      key={speech}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      className="text-[#A9A9A2] text-[11px] font-light mb-4 font-mono min-h-[2rem]"
-                    >
-                      {speech}
-                    </motion.p>
-                  </AnimatePresence>
-                  
-                  <div className="flex items-center gap-3 border-b border-[#333330] pb-2">
-                    <span className="font-mono text-[10px] text-[#A9A9A2]">root@terminal:~$</span>
-                    <input
-                      type="text"
-                      value={command}
-                      onChange={(e) => setCommand(e.target.value)}
-                      onKeyDown={handleCommand}
-                      placeholder="Type 'help'..."
-                      className="flex-1 bg-transparent border-none outline-none text-white text-[11px] placeholder:text-[#A9A9A2]/50 font-mono tracking-wide"
-                    />
-                  </div>
-                  
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {['hi', 'hack', 'whoami', 'clear'].map((cmd) => (
-                      <button
-                        key={cmd}
-                        onClick={() => setCommand(cmd)}
-                        onDoubleClick={() => { setCommand(cmd); handleCommand({ key: 'Enter' } as any); }}
-                        className="font-mono text-[9px] text-[#A9A9A2] border border-[#333330] px-2 py-1 uppercase tracking-widest hover:text-[#F5F5F0] transition-colors"
-                      >
-                        {cmd}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <CyberCompanion chaosMode={chaosMode} />
               </motion.div>
-
-              {/* Bottom Sign-off inside Connect Section */}
-              <div className="lg:col-span-12 pt-6 border-t border-[#222220] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#3B82F6]">
-                </span>
-                <p className="font-serif italic text-2xl md:text-3xl text-white tracking-wide">
-                </p>
-              </div>
             </div>
           </section>
 
