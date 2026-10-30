@@ -6,43 +6,57 @@ import { triggerAura } from '@/lib/aura';
 type PetMood =
   | 'chill'
   | 'happy'
+  | 'dance'
   | 'hack'
   | 'angry'
   | 'shield'
   | 'sleep'
   | 'dizzy'
   | 'dead'
-  | 'dance'
-  | 'eat';
+  | 'overclock';
 
-type PetModel = 'neko' | 'tux' | 'ghost' | 'fox';
-type PetGear = 'none' | 'shades' | 'headset' | 'crown' | 'blackhat';
+type ChassisModel = 'tux' | 'kitsune' | 'kuro';
+type ArmorMod = 'std' | 'halo' | 'drones' | 'overdrive';
 
-interface ThreatBug {
+interface VectorPacket {
   alive: boolean;
-  x: number; // percent of arena width
-  y: number; // percent of arena height
+  x: number; // % of arena width (0..100)
+  y: number; // % of arena height (0..100)
   vx: number;
   vy: number;
-  icon: string;
+  angleDeg: number; // direction from center or heading
+  code: string;
 }
 
-const BUG_POOL = 8;
-const BUG_ICONS = ['🦠', '🕷️', '💣', '🐛'];
+interface ShatterShard {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+  label: string;
+}
 
-const MODELS: { id: PetModel; label: string; badge: string }[] = [
-  { id: 'neko', label: '🐈‍⬛ NEKO', badge: 'STEALTH_CAT' },
-  { id: 'tux', label: '🐧 TUX', badge: 'KERNEL_PENGUIN' },
-  { id: 'ghost', label: '👻 GHOST', badge: 'DAEMON_SPIRIT' },
-  { id: 'fox', label: '🦊 FOX', badge: 'FLIPPER_FOX' },
+const PACKET_POOL = 8;
+const THREAT_CODES = ['SYN_FLOOD', '0xDEADBEEF', 'SQLi_PKT', 'RCE_PAYLOAD', 'XSS_VECT', 'ROOTKIT'];
+
+const CHASSIS_LIST: { id: ChassisModel; code: string; name: string; spec: string }[] = [
+  { id: 'tux', code: '01', name: 'TUX_MK4', spec: 'CRYO KERNEL UNIT' },
+  { id: 'kitsune', code: '02', name: 'KITSUNE', spec: 'ZERO-DAY MECHA' },
+  { id: 'kuro', code: '03', name: 'KURO_RONIN', spec: 'STEALTH PANTHER' },
 ];
 
-const GEARS: { id: PetGear; label: string }[] = [
-  { id: 'none', label: '✨ BARE' },
-  { id: 'shades', label: '🕶️ SHADES' },
-  { id: 'headset', label: '🎧 HEADSET' },
-  { id: 'crown', label: '👑 CROWN' },
-  { id: 'blackhat', label: '🎩 BLACKHAT' },
+const ARMOR_MODS: { id: ArmorMod; label: string }[] = [
+  { id: 'std', label: 'MOD: STD' },
+  { id: 'halo', label: 'MOD: HALO' },
+  { id: 'drones', label: 'MOD: BITS' },
+  { id: 'overdrive', label: 'MOD: AURA' },
+];
+
+const HIRE_TAUNTS = [
+  'Target evaded cursor! That [Hire Me?] button runs custom 60fps evasion firmware.',
+  'Missed again! Want me to lock onto that runaway button with my railgun?',
+  'Telemetry report: Admin made that button faster than a caffeinated SOC analyst.',
+  'Pro tip: Corner the [Hire Me?] button or bribe me with [OVERCLOCK] cycles.',
 ];
 
 const FORTUNES = [
@@ -53,7 +67,7 @@ const FORTUNES = [
   'Tarot [CHMOD 777]: Convenience today, Wazuh Level-15 alert tomorrow.',
 ];
 
-const LEVEL_TITLES = [
+const RANK_TITLES = [
   'Noob',
   'Noob',
   'Noob',
@@ -61,277 +75,506 @@ const LEVEL_TITLES = [
   'Max',
 ];
 
-function makeBar(val: number): string {
+function makeSegmentBar(val: number): string {
   const clamped = Math.max(0, Math.min(100, val));
   const filled = Math.round(clamped / 12.5);
-  return '█'.repeat(filled) + '░'.repeat(8 - filled);
+  return '▰'.repeat(filled) + '▱'.repeat(8 - filled);
+}
+
+function normalizeAngleDelta(a: number, b: number): number {
+  let diff = ((a - b + 540) % 360) - 180;
+  if (diff < -180) diff += 360;
+  return Math.abs(diff);
 }
 
 export default function CyberCompanion({ chaosMode = false }: { chaosMode?: boolean }) {
-  const [model, setModel] = useState<PetModel>('neko');
-  const [gearIdx, setGearIdx] = useState<number>(0);
+  const [chassis, setChassis] = useState<ChassisModel>('tux');
+  const [modIdx, setModIdx] = useState<number>(0);
   const [mood, setMood] = useState<PetMood>('chill');
   const [speech, setSpeech] = useState<string>(
-    'Rub my head to pet, toggle 🔴 LASER to play, toss snacks, or defend against malware!'
+    'SYS.ONLINE // Move cursor to track, rub chassis to calibrate, or engage [FIREWALL_SIM].'
   );
   const [command, setCommand] = useState<string>('');
 
-  // Stats
-  const [energy, setEnergy] = useState<number>(85);
-  const [xp, setXp] = useState<number>(30);
+  // Core Telemetry
+  const [energy, setEnergy] = useState<number>(88);
+  const [xp, setXp] = useState<number>(40);
+  const [scrollSpike, setScrollSpike] = useState<number>(0);
 
   // Interactive Modes
   const [laserMode, setLaserMode] = useState<boolean>(false);
-  const [fallingSnack, setFallingSnack] = useState<{ active: boolean; icon: string } | null>(null);
-  const [floatingFx, setFloatingFx] = useState<
-    { id: number; x: number; y: number; text: string }[]
-  >([]);
+  const [firewallActive, setFirewallActive] = useState<boolean>(false);
+  const [firewallTimeLeft, setFirewallTimeLeft] = useState<number>(0);
+  const [shards, setShards] = useState<ShatterShard[]>([]);
 
-  // Mini-Game: Malware Defense (bugs live in refs + rAF, zero per-frame React renders)
-  const [defendActive, setDefendActive] = useState<boolean>(false);
-  const [defendTimeLeft, setDefendTimeLeft] = useState<number>(0);
-  const bugsRef = useRef<ThreatBug[]>(
-    Array.from({ length: BUG_POOL }, () => ({ alive: false, x: 0, y: 0, vx: 0, vy: 0, icon: '🦠' }))
-  );
-  const bugDomRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const zapLineRef = useRef<SVGLineElement | null>(null);
-  const zapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const zapCountRef = useRef<number>(0);
-
-  // Zero-lag GPU / DOM refs (No getBoundingClientRect or CSS transition conflicts on mousemove!)
+  // Zero-Rerender Refs for 60fps Procedural Animation & Physics
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const arenaRef = useRef<HTMLDivElement | null>(null);
   const arenaRectRef = useRef<DOMRect | null>(null);
-  const petGroupRef = useRef<SVGGElement | null>(null);
+  const isVisibleRef = useRef<boolean>(true);
+
+  const unitGroupRef = useRef<SVGGElement | null>(null);
+  const headGroupRef = useRef<SVGGElement | null>(null);
   const eyeGroupRef = useRef<SVGGElement | null>(null);
+  const blinkLidRef = useRef<SVGRectElement | null>(null);
+  const leftLimbRef = useRef<SVGGElement | null>(null);
+  const rightLimbRef = useRef<SVGGElement | null>(null);
+  const tailOrCloakRef = useRef<SVGGElement | null>(null);
+  const coreGlowRef = useRef<SVGCircleElement | null>(null);
+  const shieldOrbitRef = useRef<SVGGElement | null>(null);
+  const railgunLineRef = useRef<SVGLineElement | null>(null);
+  const wavePathRef = useRef<SVGPathElement | null>(null);
   const laserDotDomRef = useRef<HTMLDivElement | null>(null);
 
-  // Smooth Lerp Physics state for Laser Chasing (0 React re-renders!)
-  const laserTargetRef = useRef<{ rx: number; ry: number; px: number; py: number; inside: boolean }>({
-    rx: 0.5,
+  // Physics State Refs (0 React re-renders!)
+  const pointerRef = useRef({
+    rx: 0.5, // normalized 0..1 inside arena
     ry: 0.5,
     px: 0,
     py: 0,
     inside: false,
+    shieldDeg: -90, // degrees around center (110, 82)
   });
-  const petCurrentPosRef = useRef<{ x: number; y: number; rot: number }>({ x: 0, y: 0, rot: 0 });
 
+  const motionRef = useRef({
+    posX: 0,
+    posY: 0,
+    rot: 0,
+    eyeX: 0,
+    eyeY: 0,
+    recoilX: 0,
+    recoilY: 0,
+    scrollVelY: 0,
+    lookOverrideX: 0,
+    lookOverrideUntil: 0,
+    nextBlinkAt: 2500,
+    blinkEndAt: 0,
+  });
+
+  // Firewall Threat Packet Pool
+  const packetsRef = useRef<VectorPacket[]>(
+    Array.from({ length: PACKET_POOL }, () => ({
+      alive: false,
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+      angleDeg: 0,
+      code: '0x00',
+    }))
+  );
+  const packetDomRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const interceptCountRef = useRef<number>(0);
+
+  // Gesture & Timer Refs
   const lastPosRef = useRef<{ x: number; y: number } | null>(null);
   const rubDistRef = useRef<number>(0);
   const spinAccumRef = useRef<number>(0);
   const lastAngleRef = useRef<number | null>(null);
-  const lastTriggerRef = useRef<number>(0);
+  const lastGestureAtRef = useRef<number>(0);
   const pokeCountRef = useRef<number>(0);
   const pokeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const actionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const railgunTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const gear = GEARS[gearIdx]?.id || 'none';
+  const activeMod = ARMOR_MODS[modIdx]?.id || 'std';
   const level = Math.min(5, Math.floor(xp / 100) + 1);
   const xpInLevel = xp % 100;
-  const levelTitle = LEVEL_TITLES[level - 1] || LEVEL_TITLES[0];
+  const rankTitle = RANK_TITLES[level - 1] || RANK_TITLES[0];
   const activeMood: PetMood = chaosMode ? 'dead' : mood;
 
-  const spawnFx = useCallback((text: string, x = 50, y = 30) => {
+  // Dynamic Phosphor Accent Color
+  const accent =
+    activeMood === 'dead' || activeMood === 'angry'
+      ? '#EF4444'
+      : activeMood === 'overclock'
+      ? '#F59E0B'
+      : activeMood === 'hack'
+      ? '#10B981'
+      : activeMood === 'shield' || firewallActive
+      ? '#38BDF8'
+      : activeMood === 'dizzy'
+      ? '#A855F7'
+      : '#3B82F6';
+
+  const spawnShard = useCallback((label: string, x = 50, y = 40, color = '#38BDF8') => {
     const id = Date.now() + Math.random();
-    setFloatingFx((prev) => [...prev.slice(-4), { id, x, y, text }]);
+    setShards((prev) => [...prev.slice(-5), { id, x, y, color, label }]);
     setTimeout(() => {
-      setFloatingFx((prev) => prev.filter((item) => item.id !== id));
-    }, 850);
+      setShards((prev) => prev.filter((s) => s.id !== id));
+    }, 780);
   }, []);
 
+  // Cleanup timers
   useEffect(() => {
     return () => {
       if (pokeTimerRef.current) clearTimeout(pokeTimerRef.current);
       if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
+      if (railgunTimerRef.current) clearTimeout(railgunTimerRef.current);
     };
   }, []);
 
-  // Dedicated 60/120fps Zero-Lag Lerp Loop ONLY when Laser Mode is ON!
+  // Pause rAF when scrolled completely out of viewport
   useEffect(() => {
-    if (!laserMode) {
-      petCurrentPosRef.current = { x: 0, y: 0, rot: 0 };
-      if (petGroupRef.current) {
-        petGroupRef.current.style.transform = 'translate(0px, 0px) rotate(0deg)';
-      }
-      return;
-    }
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isVisibleRef.current = entry.isIntersecting;
+        });
+      },
+      { threshold: 0.02 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
-    let rafId = 0;
-    let pounceCooldown = 0;
+  // ── PAGE-AWARE AI: Listen to Hire-Me Button, Chaos Mode & Scroll Velocity ──
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let lastScrollT = performance.now();
+    let spikeResetTimer: ReturnType<typeof setTimeout> | null = null;
+    let lastSpikeReact = 0;
 
-    const tickLaser = () => {
-      rafId = requestAnimationFrame(tickLaser);
-      if (document.hidden || !petGroupRef.current) return;
+    const onScroll = () => {
+      const now = performance.now();
+      const dt = Math.max(12, now - lastScrollT);
+      const dy = window.scrollY - lastScrollY;
+      lastScrollY = window.scrollY;
+      lastScrollT = now;
 
-      const target = laserTargetRef.current;
-      const goalX = target.inside ? (target.rx - 0.5) * 68 : 0;
-      const goalY = target.inside ? (target.ry - 0.52) * 34 : 0;
-      const goalRot = target.inside ? (goalX - petCurrentPosRef.current.x) * 0.45 : 0;
+      const velPxPerSec = Math.round((Math.abs(dy) / dt) * 1000);
+      // Apply physical G-force inertia to unit
+      motionRef.current.scrollVelY = Math.max(-24, Math.min(24, -dy * 0.32));
 
-      const cur = petCurrentPosRef.current;
-      cur.x += (goalX - cur.x) * 0.16;
-      cur.y += (goalY - cur.y) * 0.16;
-      cur.rot += (goalRot - cur.rot) * 0.2;
-
-      petGroupRef.current.style.transform = `translate(${cur.x.toFixed(2)}px, ${cur.y.toFixed(
-        2
-      )}px) rotate(${cur.rot.toFixed(2)}deg)`;
-
-      // Also lock eyes onto laser dot smoothly
-      if (eyeGroupRef.current) {
-        const ex = target.inside ? (target.rx - 0.5) * 13 : 0;
-        const ey = target.inside ? (target.ry - 0.5) * 8 : 0;
-        eyeGroupRef.current.style.transform = `translate(${ex.toFixed(2)}px, ${ey.toFixed(2)}px)`;
-      }
-
-      // Trigger reward gently when pet catches close to the laser dot
-      if (pounceCooldown > 0) {
-        pounceCooldown--;
-      } else if (
-        target.inside &&
-        Math.hypot(goalX - cur.x, goalY - cur.y) < 3.5 &&
-        Math.hypot(goalX, goalY) > 10
-      ) {
-        pounceCooldown = 210; // ~3.5s cooldown so zero React state lag while moving!
-        setXp((v) => v + 15);
-        spawnFx('🐾 CAUGHT! +40', Math.round(target.rx * 76) + 12, Math.round(target.ry * 55) + 15);
-        triggerAura(40, 'Companion pounced on the red laser dot!', '🔴');
+      if (velPxPerSec > 2600 && isVisibleRef.current && now - lastSpikeReact > 3500) {
+        lastSpikeReact = now;
+        setScrollSpike(velPxPerSec);
+        if (!firewallActive && activeMood !== 'sleep' && activeMood !== 'dead') {
+          setSpeech(`G-FORCE TELEMETRY // High scroll velocity detected (${velPxPerSec} px/s). Stabilizers engaged.`);
+        }
+        if (spikeResetTimer) clearTimeout(spikeResetTimer);
+        spikeResetTimer = setTimeout(() => setScrollSpike(0), 2200);
       }
     };
 
-    rafId = requestAnimationFrame(tickLaser);
-    return () => cancelAnimationFrame(rafId);
-  }, [laserMode, spawnFx]);
+    const onCompanionSignal = (e: Event) => {
+      const custom = e as CustomEvent<{ type: string }>;
+      const sig = custom.detail?.type;
+      if (sig === 'hire-evade') {
+        // Snap gaze to the left toward the Hire Me button
+        motionRef.current.lookOverrideX = -9;
+        motionRef.current.lookOverrideUntil = performance.now() + 2200;
+        const msg = HIRE_TAUNTS[Math.floor(Math.random() * HIRE_TAUNTS.length)];
+        setMood('happy');
+        setSpeech(msg);
+      } else if (sig === 'wipe-init') {
+        setMood('dead');
+        setSpeech('CRITICAL ALERT // wipe_data.sh invoked! Engaging emergency core lockdown!');
+      }
+    };
 
-  // Malware Defense: single rAF loop, bugs move via direct DOM transforms
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('companion-signal', onCompanionSignal as EventListener);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('companion-signal', onCompanionSignal as EventListener);
+      if (spikeResetTimer) clearTimeout(spikeResetTimer);
+    };
+  }, [firewallActive, activeMood]);
+
+  const displayedSpeech = chaosMode
+    ? 'KERNEL PANIC! Everything is melting!! Why did you press that button?!'
+    : speech;
+
+  // ── UNIFIED 60FPS PROCEDURAL IDLE, EYE TRACKING, LASER CHASE & OSCILLOSCOPE LOOP ──
   useEffect(() => {
-    if (!defendActive) return;
+    let rafId = 0;
+    let lastPounceAt = 0;
 
-    const bugs = bugsRef.current;
-    zapCountRef.current = 0;
+    const tick = (now: number) => {
+      rafId = requestAnimationFrame(tick);
+      if (document.hidden || !isVisibleRef.current) return;
 
-    const hideBug = (i: number) => {
-      bugs[i].alive = false;
-      const el = bugDomRefs.current[i];
+      const m = motionRef.current;
+      const p = pointerRef.current;
+      const isSleeping = activeMood === 'sleep';
+      const isDancing = activeMood === 'dance';
+      const isOverclocked = activeMood === 'overclock' || chaosMode;
+      const freq = isSleeping ? 0.0014 : isDancing ? 0.0085 : isOverclocked ? 0.0065 : 0.0028;
+
+      // 1. Procedural Sine Breathing & Hover Float
+      const breatheY = Math.sin(now * freq) * (isSleeping ? 2.2 : isDancing ? 8.5 : 4.5);
+      const secondaryWave = Math.cos(now * freq * 1.35);
+
+      // Decay physical recoil & scroll inertia
+      m.recoilX *= 0.84;
+      m.recoilY *= 0.84;
+      m.scrollVelY *= 0.88;
+
+      // 2. Target Unit Position (Laser Chase vs Centered Hover)
+      let targetX = 0;
+      let targetY = breatheY + m.scrollVelY + m.recoilY;
+      let targetRot = 0;
+
+      if (laserMode && p.inside && !isSleeping) {
+        targetX = (p.rx - 0.5) * 145;
+        targetY = (p.ry - 0.5) * 68 + breatheY * 0.5;
+        targetRot = (targetX - m.posX) * 0.22;
+
+        const dist = Math.hypot(targetX - m.posX, targetY - m.posY);
+        if (dist < 11 && now - lastPounceAt > 1800) {
+          lastPounceAt = now;
+          setXp((v) => v + 12);
+          spawnShard('TARGET_LOCKED +12XP', p.rx * 100, p.ry * 100, '#EF4444');
+          triggerAura(45, 'Target lock acquired on tactical laser!', '🎯');
+        }
+      } else if (isDancing) {
+        targetX = Math.sin(now * 0.0055) * 14 + m.recoilX;
+        targetRot = Math.sin(now * 0.0055) * 8.5;
+      } else {
+        targetX = m.recoilX + (p.inside && !isSleeping ? (p.rx - 0.5) * 10 : 0);
+        targetRot = p.inside && !isSleeping ? (p.rx - 0.5) * 4.5 : Math.sin(now * 0.0015) * 1.2;
+      }
+
+      m.posX += (targetX - m.posX) * 0.14;
+      m.posY += (targetY - m.posY) * 0.14;
+      m.rot += (targetRot - m.rot) * 0.15;
+
+      if (chaosMode) {
+        m.posX += (Math.random() - 0.5) * 2.4;
+      }
+
+      if (unitGroupRef.current) {
+        unitGroupRef.current.style.transform = `translate3d(${m.posX.toFixed(2)}px, ${m.posY.toFixed(2)}px, 0) rotate(${m.rot.toFixed(2)}deg)`;
+      }
+
+      // 3. Articulated Floating Limbs / Cloak / Thrusters
+      if (leftLimbRef.current) {
+        const ly = secondaryWave * (isOverclocked ? 5.5 : 3.2);
+        const lr = Math.sin(now * freq * 1.2) * 6;
+        leftLimbRef.current.style.transform = `translate3d(0px, ${ly.toFixed(2)}px, 0) rotate(${lr.toFixed(1)}deg)`;
+      }
+      if (rightLimbRef.current) {
+        const ry = -secondaryWave * (isOverclocked ? 5.5 : 3.2);
+        const rr = -Math.sin(now * freq * 1.2) * 6;
+        rightLimbRef.current.style.transform = `translate3d(0px, ${ry.toFixed(2)}px, 0) rotate(${rr.toFixed(1)}deg)`;
+      }
+      if (tailOrCloakRef.current) {
+        const tr = Math.sin(now * freq * 1.6) * (isOverclocked ? 9 : 5);
+        tailOrCloakRef.current.style.transform = `rotate(${tr.toFixed(2)}deg)`;
+      }
+      if (coreGlowRef.current) {
+        const pulse = 0.55 + (Math.sin(now * (isOverclocked ? 0.012 : 0.004)) + 1) * 0.22;
+        coreGlowRef.current.style.opacity = pulse.toFixed(2);
+      }
+
+      // 4. Smooth Eye & Head Tracking + Natural Random Blink
+      let desiredEyeX = 0;
+      let desiredEyeY = 0;
+      if (now < m.lookOverrideUntil) {
+        desiredEyeX = m.lookOverrideX;
+        desiredEyeY = -1.5;
+      } else if (p.inside && !isSleeping) {
+        desiredEyeX = (p.rx - 0.5) * 14;
+        desiredEyeY = (p.ry - 0.5) * 9;
+      }
+
+      m.eyeX += (desiredEyeX - m.eyeX) * 0.22;
+      m.eyeY += (desiredEyeY - m.eyeY) * 0.22;
+
+      if (eyeGroupRef.current) {
+        eyeGroupRef.current.style.transform = `translate3d(${m.eyeX.toFixed(2)}px, ${m.eyeY.toFixed(2)}px, 0)`;
+      }
+      if (headGroupRef.current) {
+        headGroupRef.current.style.transform = `translate3d(${(m.eyeX * 0.28).toFixed(2)}px, ${(m.eyeY * 0.22).toFixed(2)}px, 0)`;
+      }
+
+      // Blink eyelid
+      if (blinkLidRef.current) {
+        if (isSleeping) {
+          blinkLidRef.current.style.transform = 'scaleY(1)';
+        } else {
+          if (now > m.nextBlinkAt) {
+            m.blinkEndAt = now + 130;
+            m.nextBlinkAt = now + 2600 + Math.random() * 3200;
+          }
+          blinkLidRef.current.style.transform = now < m.blinkEndAt ? 'scaleY(1)' : 'scaleY(0)';
+        }
+      }
+
+      // 5. 360° Orbital Firewall Shield Tracking
+      if (firewallActive && shieldOrbitRef.current) {
+        shieldOrbitRef.current.style.transform = `rotate(${p.shieldDeg.toFixed(1)}deg)`;
+      }
+
+      // 6. Background Live Telemetry Oscilloscope Waveform
+      if (wavePathRef.current) {
+        const amp = isSleeping ? 2 : firewallActive || isOverclocked ? 9 : 4.2;
+        const phase = now * (isOverclocked ? 0.012 : 0.0045);
+        let d = 'M 0 75';
+        for (let x = 0; x <= 220; x += 10) {
+          const y = 75 + Math.sin(x * 0.08 + phase) * amp * Math.sin((x / 220) * Math.PI);
+          d += ` L ${x} ${y.toFixed(1)}`;
+        }
+        wavePathRef.current.setAttribute('d', d);
+      }
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [activeMood, chaosMode, laserMode, firewallActive, spawnShard]);
+
+  // ── 360° ORBITAL FIREWALL & VECTOR MALWARE SIMULATION LOOP ──
+  useEffect(() => {
+    if (!firewallActive) return;
+
+    const packets = packetsRef.current;
+    interceptCountRef.current = 0;
+
+    const hidePacket = (i: number) => {
+      packets[i].alive = false;
+      const el = packetDomRefs.current[i];
       if (el) {
         el.style.opacity = '0';
         el.style.pointerEvents = 'none';
       }
     };
 
-    const spawnBug = (i: number) => {
-      // Pick one of 4 edges: 0 = top, 1 = right, 2 = bottom, 3 = left
+    const spawnPacket = (i: number) => {
       const edge = Math.floor(Math.random() * 4);
       let sx = 0;
       let sy = 0;
       if (edge === 0) {
-        // Top edge
-        sx = 10 + Math.random() * 80;
-        sy = 4;
+        sx = 12 + Math.random() * 76;
+        sy = 5;
       } else if (edge === 1) {
-        // Right edge
-        sx = 96;
-        sy = 12 + Math.random() * 76;
+        sx = 95;
+        sy = 14 + Math.random() * 72;
       } else if (edge === 2) {
-        // Bottom edge
-        sx = 10 + Math.random() * 80;
-        sy = 94;
+        sx = 12 + Math.random() * 76;
+        sy = 93;
       } else {
-        // Left edge
-        sx = 4;
-        sy = 12 + Math.random() * 76;
+        sx = 5;
+        sy = 14 + Math.random() * 72;
       }
 
-      // Fly towards pet center (50%, 50%)
-      const tx = 50;
-      const ty = 50;
-      const dx = tx - sx;
-      const dy = ty - sy;
+      const dx = 50 - sx;
+      const dy = 50 - sy;
       const dist = Math.hypot(dx, dy) || 1;
-      const speed = 0.38 + Math.random() * 0.16; // % per frame @60fps
-      const b = bugs[i];
-      b.alive = true;
-      b.x = sx;
-      b.y = sy;
-      b.vx = (dx / dist) * speed;
-      b.vy = (dy / dist) * speed;
-      b.icon = BUG_ICONS[Math.floor(Math.random() * BUG_ICONS.length)];
+      const speed = 0.36 + Math.random() * 0.16;
+      const headingDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
 
-      const el = bugDomRefs.current[i];
+      const pkt = packets[i];
+      pkt.alive = true;
+      pkt.x = sx;
+      pkt.y = sy;
+      pkt.vx = (dx / dist) * speed;
+      pkt.vy = (dy / dist) * speed;
+      pkt.angleDeg = headingDeg;
+      pkt.code = THREAT_CODES[Math.floor(Math.random() * THREAT_CODES.length)];
+
+      const el = packetDomRefs.current[i];
       if (el) {
-        el.textContent = b.icon;
-        el.style.left = `${b.x.toFixed(2)}%`;
-        el.style.top = `${b.y.toFixed(2)}%`;
+        el.style.left = `${pkt.x.toFixed(2)}%`;
+        el.style.top = `${pkt.y.toFixed(2)}%`;
+        el.style.transform = `translate(-50%, -50%) rotate(${headingDeg.toFixed(1)}deg)`;
         el.style.opacity = '1';
         el.style.pointerEvents = 'auto';
       }
     };
 
-    for (let i = 0; i < BUG_POOL; i++) hideBug(i);
-    spawnBug(0);
-    spawnBug(1);
-    spawnBug(2);
+    for (let i = 0; i < PACKET_POOL; i++) hidePacket(i);
+    spawnPacket(0);
+    spawnPacket(1);
+    spawnPacket(2);
 
     let raf = 0;
     let last = performance.now();
     let spawnClock = 0;
-    let lastHitAt = 0;
+    let lastBreachAt = 0;
 
-    const tick = (now: number) => {
-      raf = requestAnimationFrame(tick);
+    const tickFirewall = (now: number) => {
+      raf = requestAnimationFrame(tickFirewall);
       if (document.hidden) {
         last = now;
         return;
       }
-      const dt = Math.min(2.5, (now - last) / 16.67); // frame-rate independent
+      const dt = Math.min(2.4, (now - last) / 16.67);
       last = now;
 
       spawnClock += dt;
       if (spawnClock > 22) {
         spawnClock = 0;
-        const free = bugs.findIndex((b) => !b.alive);
-        const aliveCount = bugs.filter((b) => b.alive).length;
+        const free = packets.findIndex((p) => !p.alive);
+        const aliveCount = packets.filter((p) => p.alive).length;
         if (free !== -1 && aliveCount < 5) {
-          spawnBug(free);
+          spawnPacket(free);
         }
       }
 
-      for (let i = 0; i < BUG_POOL; i++) {
-        const b = bugs[i];
-        if (!b.alive) continue;
-        b.x += b.vx * dt;
-        b.y += b.vy * dt;
+      const shieldDeg = pointerRef.current.shieldDeg;
 
-        // Threat breaches firewall (hits central pet ~50%, 50%)
-        if (Math.hypot(b.x - 50, b.y - 50) < 11) {
-          hideBug(i);
-          if (now - lastHitAt > 600) {
-            lastHitAt = now;
+      for (let i = 0; i < PACKET_POOL; i++) {
+        const pkt = packets[i];
+        if (!pkt.alive) continue;
+
+        pkt.x += pkt.vx * dt;
+        pkt.y += pkt.vy * dt;
+
+        const relX = pkt.x - 50;
+        const relY = pkt.y - 50;
+        const distFromCenter = Math.hypot(relX, relY);
+
+        // 1. Check 360° Orbital Shield Arc Parry (Radius ~ 16% .. 24%)
+        if (distFromCenter >= 15 && distFromCenter <= 24) {
+          const pktAngleFromCenter = (Math.atan2(relY, relX) * 180) / Math.PI;
+          if (normalizeAngleDelta(pktAngleFromCenter, shieldDeg) <= 42) {
+            hidePacket(i);
+            interceptCountRef.current += 1;
+            motionRef.current.recoilX = -Math.cos((pktAngleFromCenter * Math.PI) / 180) * 4;
+            motionRef.current.recoilY = -Math.sin((pktAngleFromCenter * Math.PI) / 180) * 4;
+            spawnShard(`PARRY // ${pkt.code}`, pkt.x, pkt.y, '#38BDF8');
+            triggerAura(60, `Orbital Shield deflected ${pkt.code}!`, '🛡️');
+            continue;
+          }
+        }
+
+        // 2. Check Core Breach (< 11%)
+        if (distFromCenter < 11) {
+          hidePacket(i);
+          if (now - lastBreachAt > 600) {
+            lastBreachAt = now;
             setMood('angry');
             setEnergy((e) => Math.max(5, e - 10));
-            setSpeech('OUCH! Malware breached the firewall! Click threats to zap them!');
+            motionRef.current.recoilX = (Math.random() - 0.5) * 14;
+            motionRef.current.recoilY = 6;
+            setSpeech(`BREACH_DETECTED // ${pkt.code} bypassed perimeter! Rotate shield or click to fire railgun!`);
           }
           continue;
         }
 
-        // Failsafe bounds check to recycle any stray bug
-        if (b.x < -10 || b.x > 110 || b.y < -10 || b.y > 110) {
-          hideBug(i);
+        // 3. Out-of-bounds failsafe
+        if (pkt.x < -10 || pkt.x > 110 || pkt.y < -10 || pkt.y > 110) {
+          hidePacket(i);
           continue;
         }
 
-        const el = bugDomRefs.current[i];
+        const el = packetDomRefs.current[i];
         if (el) {
-          el.style.left = `${b.x.toFixed(2)}%`;
-          el.style.top = `${b.y.toFixed(2)}%`;
+          el.style.left = `${pkt.x.toFixed(2)}%`;
+          el.style.top = `${pkt.y.toFixed(2)}%`;
         }
       }
     };
-    raf = requestAnimationFrame(tick);
+
+    raf = requestAnimationFrame(tickFirewall);
 
     const countdown = setInterval(() => {
-      setDefendTimeLeft((t) => {
+      setFirewallTimeLeft((t) => {
         if (t <= 1) {
-          setDefendActive(false);
+          setFirewallActive(false);
           return 0;
         }
         return t - 1;
@@ -341,186 +584,218 @@ export default function CyberCompanion({ chaosMode = false }: { chaosMode?: bool
     return () => {
       cancelAnimationFrame(raf);
       clearInterval(countdown);
-      for (let i = 0; i < BUG_POOL; i++) hideBug(i);
+      for (let i = 0; i < PACKET_POOL; i++) hidePacket(i);
     };
-  }, [defendActive]);
+  }, [firewallActive, spawnShard]);
 
-  // Wave end reward (fires once when the countdown finishes naturally)
-  const prevDefendRef = useRef<boolean>(false);
+  // Wave Cleared Completion Reward
+  const prevFirewallRef = useRef<boolean>(false);
   useEffect(() => {
-    if (prevDefendRef.current && !defendActive && defendTimeLeft === 0) {
-      const zaps = zapCountRef.current;
+    if (prevFirewallRef.current && !firewallActive && firewallTimeLeft === 0) {
+      const intercepts = interceptCountRef.current;
       setMood('happy');
-      setXp((v) => v + 60 + zaps * 8);
-      setSpeech(`🛡️ WAVE CLEARED! ${zaps} threats neutralized. (+400 Aura, +${60 + zaps * 8} XP)`);
-      triggerAura(400, `Malware wave cleared (${zaps} zaps)`, '🛡️');
+      setXp((v) => v + 65 + intercepts * 10);
+      setSpeech(
+        `FIREWALL_SIM COMPLETE // ${intercepts} threat packets neutralized. (+450 Aura, +${65 + intercepts * 10} XP)`
+      );
+      triggerAura(450, `Firewall simulation cleared (${intercepts} intercepts)`, '🛡️');
     }
-    prevDefendRef.current = defendActive;
-  }, [defendActive, defendTimeLeft]);
+    prevFirewallRef.current = firewallActive;
+  }, [firewallActive, firewallTimeLeft]);
 
-  useEffect(() => {
-    return () => {
-      if (zapTimerRef.current) clearTimeout(zapTimerRef.current);
-    };
-  }, []);
+  const fireRailgunAtPacket = (i: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const pkt = packetsRef.current[i];
+    if (!pkt?.alive) return;
 
-  const handleZapBug = (e: React.MouseEvent, i: number) => {
-    e.stopPropagation();
-    const b = bugsRef.current[i];
-    if (!b?.alive) return;
-    b.alive = false;
-    const el = bugDomRefs.current[i];
+    pkt.alive = false;
+    const el = packetDomRefs.current[i];
     if (el) {
       el.style.opacity = '0';
       el.style.pointerEvents = 'none';
     }
-    zapCountRef.current += 1;
+    interceptCountRef.current += 1;
 
-    // Laser beam from pet center to bug (full-arena coordinates)
-    const line = zapLineRef.current;
-    if (line) {
-      line.setAttribute('x2', `${b.x.toFixed(1)}%`);
-      line.setAttribute('y2', `${b.y.toFixed(1)}%`);
-      line.style.opacity = '1';
-      if (zapTimerRef.current) clearTimeout(zapTimerRef.current);
-      zapTimerRef.current = setTimeout(() => {
-        if (zapLineRef.current) zapLineRef.current.style.opacity = '0';
-      }, 140);
+    // Physical recoil opposite to shot vector
+    const shotRad = Math.atan2(pkt.y - 50, pkt.x - 50);
+    motionRef.current.recoilX = -Math.cos(shotRad) * 9;
+    motionRef.current.recoilY = -Math.sin(shotRad) * 7;
+
+    // Render high-energy Railgun Beam
+    const beam = railgunLineRef.current;
+    if (beam) {
+      beam.setAttribute('x2', `${pkt.x.toFixed(1)}%`);
+      beam.setAttribute('y2', `${pkt.y.toFixed(1)}%`);
+      beam.style.opacity = '1';
+      if (railgunTimerRef.current) clearTimeout(railgunTimerRef.current);
+      railgunTimerRef.current = setTimeout(() => {
+        if (railgunLineRef.current) railgunLineRef.current.style.opacity = '0';
+      }, 150);
     }
 
     setMood('hack');
-    spawnFx('⚡ ZAP', b.x, b.y);
-    triggerAura(50, `Zapped ${b.icon} threat`, '⚡');
+    spawnShard(`RAILGUN // +75`, pkt.x, pkt.y, '#38BDF8');
+    triggerAura(75, `Railgun vaporized ${pkt.code}`, '⚡');
   };
 
-  // Toss a snack from top into the pet's mouth
-  const handleTossSnack = () => {
-    if (fallingSnack?.active || activeMood === 'dead') return;
-    const snacks = ['🐟', '☕', '🔋', '🍪', '💾'];
-    const icon = snacks[Math.floor(Math.random() * snacks.length)];
-    setMood('eat');
-    setSpeech(`Oooh incoming ${icon} packet! Opening mouth port... :O`);
-    setFallingSnack({ active: true, icon });
+  // Trigger Overclock Core Surge
+  const handleOverclock = () => {
+    if (activeMood === 'dead') return;
+    setMood('overclock');
+    const nextEnergy = Math.min(100, energy + 25);
+    setEnergy(nextEnergy);
+    setXp((v) => v + 30);
+    motionRef.current.recoilY = -8;
+    setSpeech(`CORE_OVERCLOCK // Voltage surged to 1.45V! Energy at ${nextEnergy}%, clock multiplier unlocked.`);
+    spawnShard('⚡ OVERCLOCK +30XP', 50, 28, '#F59E0B');
+    triggerAura(140, `Overclocked ${chassis.toUpperCase()} core!`, '⚡');
 
     if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
     actionTimerRef.current = setTimeout(() => {
-      setFallingSnack(null);
-      setMood('happy');
-      setEnergy((e) => Math.min(100, e + 25));
-      setXp((v) => v + 25);
-      setSpeech(`*CHOMP!* Delicious ${icon}! Energy restored to ${Math.min(100, energy + 25)}%!`);
-      spawnFx(`+25 XP ${icon}`, 50, 30);
-      triggerAura(120, `Fed ${icon} to Companion!`, icon);
-    }, 550);
+      setMood('chill');
+    }, 2400);
   };
 
+  // Arena Pointer Tracking
   const handleArenaMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     arenaRectRef.current = e.currentTarget.getBoundingClientRect();
-    laserTargetRef.current.inside = true;
-    if (laserDotDomRef.current) {
+    pointerRef.current.inside = true;
+    if (laserMode && laserDotDomRef.current) {
       laserDotDomRef.current.style.opacity = '1';
     }
   };
 
-  // Ultra-fast Mouse Move: 0 DOM layout queries, 0 CSS transition clashes!
   const handleArenaMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = arenaRectRef.current || e.currentTarget.getBoundingClientRect();
-    if (!arenaRectRef.current) arenaRectRef.current = rect;
+    const el = arenaRef.current;
+    if (!el) return;
+    const rect = arenaRectRef.current || el.getBoundingClientRect();
+    arenaRectRef.current = rect;
 
     const px = e.clientX - rect.left;
     const py = e.clientY - rect.top;
-    const rx = Math.max(0, Math.min(1, px / rect.width));
-    const ry = Math.max(0, Math.min(1, py / rect.height));
+    const rx = Math.max(0, Math.min(1, px / (rect.width || 1)));
+    const ry = Math.max(0, Math.min(1, py / (rect.height || 1)));
 
-    // If Laser Mode is active: move GPU-composited HTML dot instantaneously (1:1 zero lag!)
-    if (laserMode && activeMood !== 'dead') {
-      laserTargetRef.current = { rx, ry, px, py, inside: true };
-      if (laserDotDomRef.current) {
-        laserDotDomRef.current.style.opacity = '1';
-        laserDotDomRef.current.style.transform = `translate3d(${px - 9}px, ${py - 9}px, 0)`;
-      }
-      return;
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    const angleDeg = (Math.atan2(py - cy, px - cx) * 180) / Math.PI;
+
+    pointerRef.current.px = px;
+    pointerRef.current.py = py;
+    pointerRef.current.rx = rx;
+    pointerRef.current.ry = ry;
+    pointerRef.current.inside = true;
+    pointerRef.current.shieldDeg = angleDeg;
+
+    if (laserMode && laserDotDomRef.current) {
+      laserDotDomRef.current.style.opacity = '1';
+      laserDotDomRef.current.style.transform = `translate3d(${px - 9}px, ${py - 9}px, 0)`;
     }
 
-    // Normal mode: instant eye tracking + subtle body tilt (no CSS transition lag!)
-    if (activeMood !== 'sleep' && activeMood !== 'dead') {
-      if (eyeGroupRef.current) {
-        const ex = (rx - 0.5) * 11;
-        const ey = (ry - 0.5) * 7;
-        eyeGroupRef.current.style.transform = `translate(${ex.toFixed(1)}px, ${ey.toFixed(1)}px)`;
-      }
-      if (petGroupRef.current) {
-        const tilt = (rx - 0.5) * 5;
-        petGroupRef.current.style.transform = `rotate(${tilt.toFixed(1)}deg)`;
-      }
-    }
+    if (firewallActive || laserMode || activeMood === 'sleep' || activeMood === 'dead') return;
 
-    // Detect Circling Cursor -> Dizzy (@_@)
-    const angle = Math.atan2(ry - 0.55, rx - 0.5);
-    if (lastAngleRef.current !== null) {
-      let delta = angle - lastAngleRef.current;
-      if (delta > Math.PI) delta -= Math.PI * 2;
-      if (delta < -Math.PI) delta += Math.PI * 2;
-      spinAccumRef.current += Math.abs(delta);
-      const now = Date.now();
-      if (spinAccumRef.current > Math.PI * 5.5 && now - lastTriggerRef.current > 2800) {
-        spinAccumRef.current = 0;
-        lastTriggerRef.current = now;
-        setMood('dizzy');
-        setSpeech('@_@ Whoaaa stop spinning the cursor, my gyroscope is dizzy!!');
-        spawnFx('🌀 DIZZY', 50, 24);
-        return;
-      }
-    }
-    lastAngleRef.current = angle;
-
-    // Detect Gentle Head Rubbing -> Happy Petting (<3)
-    if (ry > 0.15 && ry < 0.62 && rx > 0.24 && rx < 0.76 && activeMood !== 'dead') {
+    const now = Date.now();
+    // Gesture 1: Rubbing / Petting Head Armor
+    if (ry > 0.16 && ry < 0.62 && rx > 0.26 && rx < 0.74) {
       if (lastPosRef.current) {
-        rubDistRef.current += Math.abs(e.clientX - lastPosRef.current.x);
-        const now = Date.now();
-        if (rubDistRef.current > 250 && now - lastTriggerRef.current > 2200) {
+        const dist = Math.hypot(px - lastPosRef.current.x, py - lastPosRef.current.y);
+        rubDistRef.current += dist;
+        if (rubDistRef.current > 280 && now - lastGestureAtRef.current > 2400) {
           rubDistRef.current = 0;
-          lastTriggerRef.current = now;
+          lastGestureAtRef.current = now;
           setMood('happy');
-          setXp((v) => v + 20);
+          setXp((v) => v + 15);
+          setEnergy((en) => Math.min(100, en + 5));
           setSpeech('*purrrrr* // Headpats accepted! Happiness buffer at 100% <3');
-          spawnFx('<3 +50', Math.round(rx * 70) + 15, Math.round(ry * 50) + 15);
-          triggerAura(50, 'Headpatted the Companion!', '💖');
+          spawnShard('<3 +50', 50, 26, '#3B82F6');
+          triggerAura(80, 'Gave Companion gentle headpats!', '💙');
         }
       }
-      lastPosRef.current = { x: e.clientX, y: e.clientY };
+      lastPosRef.current = { x: px, y: py };
+    } else {
+      lastPosRef.current = null;
     }
+
+    // Gesture 2: Spinning Cursor 360° -> Gyro Overload
+    const rad = Math.atan2(py - cy, px - cx);
+    if (lastAngleRef.current !== null) {
+      let delta = rad - lastAngleRef.current;
+      if (delta > Math.PI) delta -= Math.PI * 2;
+      if (delta < -Math.PI) delta += Math.PI * 2;
+      spinAccumRef.current += delta;
+
+      if (Math.abs(spinAccumRef.current) > Math.PI * 5 && now - lastGestureAtRef.current > 3200) {
+        spinAccumRef.current = 0;
+        lastGestureAtRef.current = now;
+        setMood('dizzy');
+        setXp((v) => v + 20);
+        setSpeech('@_@ Whoaaa stop spinning the cursor, my gyroscope is dizzy!!');
+        spawnShard('🌀 DIZZY', 50, 24, '#A855F7');
+        triggerAura(150, 'Made Companion dizzy with 360° cursor spin!', '🌀');
+      }
+    }
+    lastAngleRef.current = rad;
   };
 
   const handleArenaMouseLeave = () => {
     arenaRectRef.current = null;
+    pointerRef.current.inside = false;
     lastPosRef.current = null;
     lastAngleRef.current = null;
     rubDistRef.current = 0;
     spinAccumRef.current = 0;
-    laserTargetRef.current.inside = false;
-
     if (laserDotDomRef.current) {
       laserDotDomRef.current.style.opacity = '0';
     }
-    if (!laserMode) {
-      if (eyeGroupRef.current) eyeGroupRef.current.style.transform = 'translate(0px, 0px)';
-      if (petGroupRef.current) petGroupRef.current.style.transform = 'translate(0px, 0px) rotate(0deg)';
-    }
   };
 
-  const wakeUpPet = () => {
+  const wakeUnit = () => {
     setMood('chill');
     setSpeech('Yawn... Waking up from hibernation mode!');
-    spawnFx('☀️ AWAKE', 50, 26);
+    spawnShard('ONLINE', 50, 26, '#3B82F6');
   };
 
-  // Click on Pet: Wake up if sleeping, or trigger Tazer if spam-poked!
+  // Arena Click: During Firewall -> Aim-assist Railgun nearest packet to click! Otherwise -> Poke / Counter-shock
   const handleArenaClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (defendActive || laserMode || activeMood === 'dead') return;
+    if (firewallActive) {
+      const rect = arenaRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const clickX = ((e.clientX - rect.left) / rect.width) * 100;
+      const clickY = ((e.clientY - rect.top) / rect.height) * 100;
+
+      // Find nearest alive threat packet within generous 18% magnetic lock radius
+      let bestIdx = -1;
+      let bestDist = 18;
+      packetsRef.current.forEach((p, idx) => {
+        if (!p.alive) return;
+        const d = Math.hypot(p.x - clickX, p.y - clickY);
+        if (d < bestDist) {
+          bestDist = d;
+          bestIdx = idx;
+        }
+      });
+
+      if (bestIdx !== -1) {
+        fireRailgunAtPacket(bestIdx);
+      } else {
+        // Blank warning shot toward cursor
+        const beam = railgunLineRef.current;
+        if (beam) {
+          beam.setAttribute('x2', `${clickX.toFixed(1)}%`);
+          beam.setAttribute('y2', `${clickY.toFixed(1)}%`);
+          beam.style.opacity = '0.55';
+          if (railgunTimerRef.current) clearTimeout(railgunTimerRef.current);
+          railgunTimerRef.current = setTimeout(() => {
+            if (railgunLineRef.current) railgunLineRef.current.style.opacity = '0';
+          }, 110);
+        }
+      }
+      return;
+    }
+
+    if (laserMode || activeMood === 'dead') return;
     if (activeMood === 'sleep') {
-      wakeUpPet();
+      wakeUnit();
       return;
     }
 
@@ -530,51 +805,52 @@ export default function CyberCompanion({ chaosMode = false }: { chaosMode?: bool
       pokeCountRef.current = 0;
     }, 2000);
 
-    const rect = arenaRectRef.current || e.currentTarget.getBoundingClientRect();
-    const px = Math.round(((e.clientX - rect.left) / rect.width) * 76) + 12;
-    const py = Math.round(((e.clientY - rect.top) / rect.height) * 56) + 18;
-
     if (pokeCountRef.current >= 4) {
       pokeCountRef.current = 0;
       setMood('angry');
+      motionRef.current.recoilY = -10;
       setSpeech('⚡ TAZER COUNTERMEASURE! Stop poking my visor! (-100 Aura)');
-      spawnFx('⚡ -100', px, py);
+      spawnShard('⚡ -100 AURA', 50, 25, '#EF4444');
       triggerAura(-100, 'Shocked by Companion anti-poke tazer!', '⚡');
     } else {
+      motionRef.current.recoilY = -4;
       setMood('happy');
-      setXp((v) => v + 8);
-      setSpeech('Boop! Try 🔴 LASER chase, toss a 🐟 SNACK, or equip gear below!');
-      spawnFx('♪', px, py);
+      setXp((v) => v + 5);
+      setSpeech('Boop! Rub my head to pet, toggle LASER_TRACK, OVERCLOCK, or test FIREWALL_SIM!');
+      spawnShard('BOOP! +5XP', 50, 30, '#3B82F6');
+      triggerAura(25, 'Poked Cyber Companion!', '👉');
     }
   };
 
-  const runCommand = (rawCmd: string) => {
-    const cmd = rawCmd.trim().toLowerCase();
+  // Terminal CLI Command Execution
+  const runCommand = (raw: string) => {
+    const cmd = raw.trim().toLowerCase();
     if (!cmd) return;
-    setCommand('');
 
-    if (cmd.startsWith('sudo')) {
+    if (cmd === 'sudo' || cmd.startsWith('sudo ')) {
       setMood('angry');
       setSpeech('sudo: Permission denied. Incident logged and forwarded to your mom 🐧');
-      spawnFx('🚨 DENIED', 50, 26);
+      spawnShard('🚨 403_MOM', 50, 26, '#EF4444');
       triggerAura(-50, 'Unauthorized sudo attempt!', '🚨');
       return;
     }
 
     if (cmd === 'cat flag' || cmd === 'cat flag.txt' || cmd === 'ctf') {
       setMood('hack');
-      setXp((v) => v + 50);
-      setSpeech('FLAG{caffeine_overflow_0x991} // +500 Aura unlocked!');
-      spawnFx('🚩 +500', 50, 26);
+      setXp((v) => v + 60);
+      setSpeech('FLAG{guguUUUUUUUuu_GggagaAAA} // +500 Aura unlocked!');
+      spawnShard('🚩 +500 AURA', 50, 24, '#10B981');
       triggerAura(500, 'Captured Companion CTF Flag!', '🚩');
       return;
     }
 
     if (cmd === 'kill -9' || cmd === 'rm -rf' || cmd === 'rm -rf /') {
+      setLaserMode(false);
+      setFirewallActive(false);
       setMood('dead');
       setEnergy(0);
       setSpeech('[SIGKILL] Companion flatlined... restoring from snapshot in 3s...');
-      spawnFx('💀 SIGKILL', 50, 26);
+      spawnShard('💀 SIGKILL', 50, 24, '#EF4444');
       if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
       actionTimerRef.current = setTimeout(() => {
         setMood('angry');
@@ -586,341 +862,322 @@ export default function CyberCompanion({ chaosMode = false }: { chaosMode?: bool
 
     if (cmd === 'fortune' || cmd === 'tarot') {
       setMood('dance');
-      setXp((v) => v + 20);
-      setSpeech(FORTUNES[Math.floor(Math.random() * FORTUNES.length)]);
-      spawnFx('🔮 ORACLE', 50, 26);
+      setXp((v) => v + 15);
+      const f = FORTUNES[Math.floor(Math.random() * FORTUNES.length)];
+      setSpeech(f);
+      spawnShard('🔮 ORACLE', 50, 26, '#38BDF8');
       triggerAura(100, 'Consulted the Cyber Oracle!', '🔮');
       return;
     }
 
-    const map: Record<string, () => void> = {
+    const actions: Record<string, () => void> = {
       hi: () => {
+        const spec = CHASSIS_LIST.find((c) => c.id === chassis);
         setMood('happy');
-        setXp((v) => v + 15);
-        setSpeech(`Hey Admin! ${MODELS.find((m) => m.id === model)?.badge} standing by.`);
-        spawnFx('👋 +100', 50, 26);
-        triggerAura(100, 'Greeted the Companion!', '✨');
+        setSpeech(`Hey Admin! ${spec?.name} (${spec?.spec}) standing by.`);
       },
-      coffee: () => handleTossSnack(),
-      feed: () => handleTossSnack(),
-      laser: () => {
-        setDefendActive(false);
-        setLaserMode((l) => !l);
+      help: () => {
+        setMood('chill');
+        setSpeech('Try: hi, overclock, hack, firewall, laser, dance, sleep, cat flag, fortune, sudo, kill -9');
       },
-      defend: () => {
+      overclock: () => handleOverclock(),
+      coffee: () => handleOverclock(),
+      feed: () => handleOverclock(),
+      firewall: () => {
         setLaserMode(false);
-        setDefendActive(true);
-        setDefendTimeLeft(15);
+        setFirewallActive(true);
+        setFirewallTimeLeft(16);
         setMood('shield');
-        setSpeech('🚨 MALWARE WAVE INCOMING! Click the bugs before they hit me!');
+        setSpeech('FIREWALL_SIM // Move cursor to aim 360° Orbital Shield, or click packets to fire Railgun!');
       },
-      sleep: () => {
-        setLaserMode(false);
-        setMood('sleep');
-        setEnergy(100);
-        setSpeech('Zzz... Dreaming of 0 warnings, 0 vulnerabilities...');
-        spawnFx('💤 Zzz', 55, 25);
+      defend: () => actions.firewall(),
+      laser: () => {
+        setFirewallActive(false);
+        setLaserMode((prev) => {
+          const next = !prev;
+          setMood(next ? 'happy' : 'chill');
+          setSpeech(
+            next
+              ? 'LASER_TRACK // Optical target acquisition active. Sweep cursor across OLED viewport.'
+              : 'LASER_TRACK // Optical emitter stowed.'
+          );
+          return next;
+        });
+      },
+      hack: () => {
+        setMood('hack');
+        setXp((v) => v + 25);
+        setSpeech('Injecting payload on port 4444... Try `cat flag` next!');
+        spawnShard('💻 +300 AURA', 50, 24, '#10B981');
+        triggerAura(300, 'Companion executed exploit chain!', '💻');
+      },
+      scan: () => {
+        setMood('hack');
+        setXp((v) => v + 25);
+        setSpeech('NMAP_SCAN // 0 open ports exposed, SoftHSM2 sealed, Wazuh ruleset active (+250 Aura).');
+        spawnShard('SCAN_CLEAN +250', 50, 24, '#10B981');
+        triggerAura(250, 'Completed deep security telemetry scan!', '🛰️');
       },
       dance: () => {
         setMood('dance');
         setXp((v) => v + 20);
         setSpeech('♪ Vibing to 3 AM synthwave while packets fly by ♫');
-        spawnFx('♪ ♫', 50, 26);
+        spawnShard('🎵 SYNTHWAVE', 50, 24, '#38BDF8');
         triggerAura(150, 'Dance party with Companion!', '🎵');
       },
-      hack: () => {
-        setMood('hack');
-        setXp((v) => v + 35);
-        setSpeech('Injecting payload on port 4444... Try `cat flag` next!');
-        spawnFx('💻 ROOT', 50, 26);
-        triggerAura(300, 'Companion executed exploit chain!', '💻');
-      },
       brainrot: () => {
-        setMood('dance');
+        setMood('happy');
         setSpeech('Launching ADHD Arcade OS... 🧠');
         window.dispatchEvent(new CustomEvent('toggle-brainrot'));
       },
-      help: () => {
-        setSpeech(
-          'Try: hi, coffee, hack, defend, laser, dance, sleep, cat flag, fortune, sudo, kill -9'
-        );
+      whoami: () => {
+        const spec = CHASSIS_LIST.find((c) => c.id === chassis);
+        setMood('happy');
+        setSpeech(`ID // ${spec?.name} (${spec?.spec}) — LV.${level} ${rankTitle}.`);
       },
-      clear: () => {
-        setMood('chill');
-        setSpeech('Terminal cleared. Ready for next interaction.');
+      sleep: () => {
+        setLaserMode(false);
+        setFirewallActive(false);
+        setMood('sleep');
+        setEnergy(100);
+        setSpeech('Zzz... Dreaming of 0 warnings, 0 vulnerabilities...');
+        spawnShard('Zzz...', 54, 26, '#60A5FA');
       },
     };
 
-    if (map[cmd]) {
-      map[cmd]();
+    if (actions[cmd]) {
+      actions[cmd]();
     } else {
-      setMood('dizzy');
-      setSpeech(`Unknown command "${cmd}". Type 'help' or click the toy buttons above!`);
+      setMood('chill');
+      setSpeech(`zsh: command not found: ${cmd}. Try "help"!`);
     }
   };
 
-  const accent =
-    activeMood === 'happy' || activeMood === 'eat'
-      ? '#10B981'
-      : activeMood === 'hack'
-      ? '#A855F7'
-      : activeMood === 'angry' || activeMood === 'dead'
-      ? '#EF4444'
-      : activeMood === 'shield'
-      ? '#06B6D4'
-      : activeMood === 'dance' || activeMood === 'dizzy'
-      ? '#F59E0B'
-      : activeMood === 'sleep'
-      ? '#64748B'
-      : '#3B82F6';
+  const handleCommandKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+    const val = command;
+    setCommand('');
+    runCommand(val);
+  };
 
-  const renderFaceExpressions = () => (
-    <g ref={eyeGroupRef}>
-      {activeMood === 'chill' && (
-        <>
-          <rect x="89" y="64" width="12" height="14" rx="4" fill={accent} />
-          <rect x="119" y="64" width="12" height="14" rx="4" fill={accent} />
-          <circle cx="93" cy="68" r="2.2" fill="#FFFFFF" />
-          <circle cx="123" cy="68" r="2.2" fill="#FFFFFF" />
-          {model !== 'tux' && (
-            <path
-              d="M104 83 Q110 88 116 83"
-              stroke={accent}
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              fill="none"
-            />
-          )}
-        </>
-      )}
+  // Render Dot-Matrix Phosphor Eyes
+  const renderPhosphorOptics = () => {
+    const eyeColor =
+      activeMood === 'dead' || activeMood === 'angry'
+        ? '#EF4444'
+        : activeMood === 'overclock'
+        ? '#FBBF24'
+        : activeMood === 'hack'
+        ? '#34D399'
+        : '#60A5FA';
 
-      {activeMood === 'happy' && (
-        <>
+    return (
+      <g ref={eyeGroupRef}>
+        {activeMood === 'dead' ? (
+          <>
+            <path d="M88 64 L98 74 M98 64 L88 74" stroke="#EF4444" strokeWidth="2.8" strokeLinecap="round" />
+            <path d="M122 64 L132 74 M132 64 L122 74" stroke="#EF4444" strokeWidth="2.8" strokeLinecap="round" />
+          </>
+        ) : activeMood === 'sleep' ? (
+          <>
+            <line x1="86" y1="70" x2="100" y2="70" stroke="#60A5FA" strokeWidth="2.2" strokeLinecap="round" />
+            <line x1="120" y1="70" x2="134" y2="70" stroke="#60A5FA" strokeWidth="2.2" strokeLinecap="round" />
+          </>
+        ) : activeMood === 'angry' ? (
+          <>
+            <polygon points="85,63 101,68 100,73 85,71" fill="#EF4444" filter="url(#phosphorGlow)" />
+            <polygon points="135,63 119,68 120,73 135,71" fill="#EF4444" filter="url(#phosphorGlow)" />
+          </>
+        ) : activeMood === 'happy' || activeMood === 'dance' ? (
+          <>
+            <path d="M86 72 L93 65 L100 72" stroke={eyeColor} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" fill="none" filter="url(#phosphorGlow)" />
+            <path d="M120 72 L127 65 L134 72" stroke={eyeColor} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" fill="none" filter="url(#phosphorGlow)" />
+          </>
+        ) : activeMood === 'dizzy' ? (
+          <>
+            <circle cx="93" cy="69" r="5.5" stroke="#A855F7" strokeWidth="2" strokeDasharray="4 2" fill="none" />
+            <circle cx="127" cy="69" r="5.5" stroke="#A855F7" strokeWidth="2" strokeDasharray="4 2" fill="none" />
+          </>
+        ) : (
+          <>
+            {/* Segmented Phosphor LED Optics */}
+            <rect x="86" y="65" width="13" height="7.5" rx="1.5" fill={eyeColor} filter="url(#phosphorGlow)" />
+            <rect x="88" y="66.5" width="4" height="2.2" fill="#FFFFFF" fillOpacity="0.85" />
+            <rect x="121" y="65" width="13" height="7.5" rx="1.5" fill={eyeColor} filter="url(#phosphorGlow)" />
+            <rect x="123" y="66.5" width="4" height="2.2" fill="#FFFFFF" fillOpacity="0.85" />
+          </>
+        )}
+
+        {/* Hardware Blink Shutter Lid */}
+        <rect
+          ref={blinkLidRef}
+          x="82"
+          y="61"
+          width="56"
+          height="16"
+          fill="#06080F"
+          style={{
+            transformOrigin: '110px 61px',
+            transform: 'scaleY(0)',
+            transition: 'transform 0.06s linear',
+          }}
+        />
+      </g>
+    );
+  };
+
+  // Render Cybernetic Armor Attachments
+  const renderArmorMod = () => {
+    if (activeMod === 'std') return null;
+
+    if (activeMod === 'halo') {
+      return (
+        <g>
+          <ellipse
+            cx="110"
+            cy="20"
+            rx="28"
+            ry="5.5"
+            stroke={accent}
+            strokeWidth="1.6"
+            strokeDasharray="8 4 2 4"
+            fill="none"
+            filter="url(#phosphorGlow)"
+          />
+          <polygon points="110,11 107,16 113,16" fill={accent} />
+        </g>
+      );
+    }
+
+    if (activeMod === 'drones') {
+      return (
+        <g>
+          {/* Left Sentinel Bit */}
+          <g transform="translate(38, 44)">
+            <polygon points="0,-10 8,0 0,10 -8,0" fill="#0F172A" stroke={accent} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="2.5" fill={accent} filter="url(#phosphorGlow)" />
+          </g>
+          {/* Right Sentinel Bit */}
+          <g transform="translate(182, 44)">
+            <polygon points="0,-10 8,0 0,10 -8,0" fill="#0F172A" stroke={accent} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="2.5" fill={accent} filter="url(#phosphorGlow)" />
+          </g>
+        </g>
+      );
+    }
+
+    if (activeMod === 'overdrive') {
+      return (
+        <g>
+          {/* Tactical HUD Target Reticle + Plasma Arcs */}
+          <path d="M52 36 L44 36 L44 46" stroke={accent} strokeWidth="1.5" fill="none" opacity="0.8" />
+          <path d="M168 36 L176 36 L176 46" stroke={accent} strokeWidth="1.5" fill="none" opacity="0.8" />
+          <path d="M52 126 L44 126 L44 116" stroke={accent} strokeWidth="1.5" fill="none" opacity="0.8" />
+          <path d="M168 126 L176 126 L176 116" stroke={accent} strokeWidth="1.5" fill="none" opacity="0.8" />
           <path
-            d="M87 73 Q95 62 103 73"
-            stroke="#10B981"
-            strokeWidth="3.2"
-            strokeLinecap="round"
+            d="M60 92 L52 84 L58 76"
+            stroke="#38BDF8"
+            strokeWidth="1.4"
             fill="none"
+            filter="url(#phosphorGlow)"
           />
           <path
-            d="M117 73 Q125 62 133 73"
-            stroke="#10B981"
-            strokeWidth="3.2"
-            strokeLinecap="round"
+            d="M160 92 L168 84 L162 76"
+            stroke="#38BDF8"
+            strokeWidth="1.4"
             fill="none"
+            filter="url(#phosphorGlow)"
           />
-          <circle cx="84" cy="79" r="3.5" fill="#EC4899" fillOpacity="0.65" />
-          <circle cx="136" cy="79" r="3.5" fill="#EC4899" fillOpacity="0.65" />
-          {model !== 'tux' && (
-            <path
-              d="M102 82 Q106 88 110 83 Q114 88 118 82"
-              stroke="#10B981"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              fill="none"
-            />
-          )}
-        </>
-      )}
-
-      {activeMood === 'eat' && (
-        <>
-          <circle cx="95" cy="68" r="6" fill="#10B981" />
-          <circle cx="125" cy="68" r="6" fill="#10B981" />
-          <circle cx="93" cy="66" r="2" fill="#FFFFFF" />
-          <circle cx="123" cy="66" r="2" fill="#FFFFFF" />
-          <ellipse cx="110" cy="84" rx="8" ry="9" fill="#EF4444" stroke="#FCA5A5" strokeWidth="1.5" />
-        </>
-      )}
-
-      {activeMood === 'hack' && (
-        <>
-          <rect x="85" y="65" width="19" height="9" rx="2" fill="#A855F7" />
-          <rect x="116" y="65" width="19" height="9" rx="2" fill="#A855F7" />
-          <text
-            x="110"
-            y="86"
-            fill="#4ADE80"
-            fontSize="8.5"
-            fontFamily="monospace"
-            textAnchor="middle"
-            fontWeight="bold"
-          >
-            0x1337
-          </text>
-        </>
-      )}
-
-      {activeMood === 'angry' && (
-        <>
-          <polygon points="86,63 103,69 103,75 86,73" fill="#EF4444" />
-          <polygon points="134,63 117,69 117,75 134,73" fill="#EF4444" />
-          <polyline
-            points="100,85 105,80 110,86 115,80 120,85"
-            stroke="#EF4444"
-            strokeWidth="2.4"
-            fill="none"
-          />
-        </>
-      )}
-
-      {activeMood === 'shield' && (
-        <>
-          <circle cx="95" cy="70" r="7" stroke="#06B6D4" strokeWidth="2.2" />
-          <circle cx="95" cy="70" r="2.2" fill="#06B6D4" />
-          <circle cx="125" cy="70" r="7" stroke="#06B6D4" strokeWidth="2.2" />
-          <circle cx="125" cy="70" r="2.2" fill="#06B6D4" />
-          <line x1="102" y1="84" x2="118" y2="84" stroke="#06B6D4" strokeWidth="2.4" strokeLinecap="round" />
-        </>
-      )}
-
-      {activeMood === 'sleep' && (
-        <>
-          <path d="M88 71 Q95 76 102 71" stroke="#94A3B8" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-          <path d="M118 71 Q125 76 132 71" stroke="#94A3B8" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-          <text x="142" y="54" fill="#60A5FA" fontSize="11" fontWeight="bold">
-            Zzz
-          </text>
-        </>
-      )}
-
-      {activeMood === 'dizzy' && (
-        <>
-          <text x="95" y="75" fill="#F59E0B" fontSize="15" fontWeight="bold" textAnchor="middle">
-            @
-          </text>
-          <text x="125" y="75" fill="#F59E0B" fontSize="15" fontWeight="bold" textAnchor="middle">
-            @
-          </text>
-          <path d="M102 84 Q106 80 110 84 Q114 88 118 84" stroke="#F59E0B" strokeWidth="2.2" fill="none" />
-        </>
-      )}
-
-      {activeMood === 'dance' && (
-        <>
-          <text x="95" y="75" fill="#F59E0B" fontSize="15" textAnchor="middle">
-            ★
-          </text>
-          <text x="125" y="75" fill="#F59E0B" fontSize="15" textAnchor="middle">
-            ★
-          </text>
-          <path d="M103 82 Q110 90 117 82" stroke="#F59E0B" strokeWidth="2.8" strokeLinecap="round" fill="none" />
-        </>
-      )}
-
-      {activeMood === 'dead' && (
-        <>
-          <path d="M89 65 L101 77 M101 65 L89 77" stroke="#EF4444" strokeWidth="2.8" strokeLinecap="round" />
-          <path d="M119 65 L131 77 M131 65 L119 77" stroke="#EF4444" strokeWidth="2.8" strokeLinecap="round" />
-          <line x1="100" y1="85" x2="120" y2="85" stroke="#EF4444" strokeWidth="2.4" strokeDasharray="3 3" />
-        </>
-      )}
-
-      {model === 'tux' && activeMood !== 'eat' && (
-        <polygon points="103,77 117,77 110,86" fill="#F59E0B" stroke="#FDE68A" strokeWidth="1" />
-      )}
-    </g>
-  );
-
-  const renderEquippedGear = () => {
-    if (gear === 'shades') {
-      return (
-        <g pointerEvents="none">
-          <rect x="80" y="61" width="26" height="13" fill="#09090B" stroke="#F4F4F5" strokeWidth="1.5" />
-          <rect x="114" y="61" width="26" height="13" fill="#09090B" stroke="#F4F4F5" strokeWidth="1.5" />
-          <rect x="106" y="63" width="8" height="4" fill="#09090B" />
-          <rect x="84" y="64" width="6" height="3" fill="#FFFFFF" />
-          <rect x="118" y="64" width="6" height="3" fill="#FFFFFF" />
         </g>
       );
     }
-    if (gear === 'crown') {
-      return (
-        <g pointerEvents="none">
-          <polygon
-            points="90,41 90,23 100,32 110,19 120,32 130,23 130,41"
-            fill="#FACC15"
-            stroke="#FEF08A"
-            strokeWidth="1.5"
-          />
-          <circle cx="110" cy="34" r="2.5" fill="#EF4444" />
-        </g>
-      );
-    }
-    if (gear === 'headset') {
-      return (
-        <g pointerEvents="none">
-          <path d="M66 76 C66 30, 154 30, 154 76" stroke="#06B6D4" strokeWidth="4.5" fill="none" />
-          <rect x="59" y="64" width="11" height="24" rx="5" fill="#EC4899" stroke="#F4F4F5" strokeWidth="1.2" />
-          <rect x="150" y="64" width="11" height="24" rx="5" fill="#EC4899" stroke="#F4F4F5" strokeWidth="1.2" />
-        </g>
-      );
-    }
-    if (gear === 'blackhat') {
-      return (
-        <g pointerEvents="none">
-          <ellipse cx="110" cy="41" rx="34" ry="6" fill="#18181B" stroke="#52525B" strokeWidth="1.5" />
-          <path d="M88 41 L93 20 L127 20 L132 41 Z" fill="#18181B" stroke="#52525B" strokeWidth="1.5" />
-          <rect x="89" y="34" width="42" height="4.5" fill="#EF4444" />
-        </g>
-      );
-    }
+
     return null;
   };
 
   return (
-    <div className="w-full font-mono select-none">
-      {/* 1. ENLARGED MODEL SWITCHER HEADER */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border border-b-0 border-[#333330] bg-[#111111] px-4 py-2.5 text-xs">
-        <div className="flex items-center gap-2">
-          <span
-            style={{ backgroundColor: accent }}
-            className="w-2.5 h-2.5 rounded-full inline-block shrink-0"
-          />
-          <span className="text-[#F5F5F0] font-bold tracking-wider">
-            LV.{level} {levelTitle}
-          </span>
+    <div
+      ref={rootRef}
+      className="cyber-companion-deck w-full max-w-[540px] border border-[#2A2A28] bg-[#0B0C10] p-3.5 sm:p-4 font-mono text-xs select-none shadow-[0_24px_60px_rgba(0,0,0,0.9)] flex flex-col gap-3 relative"
+    >
+      {/* Hardware Anodized Corner Hex Bolts */}
+      <span className="absolute top-1.5 left-2 text-[9px] text-[#444440] pointer-events-none">⊕</span>
+      <span className="absolute top-1.5 right-2 text-[9px] text-[#444440] pointer-events-none">⊕</span>
+      <span className="absolute bottom-1.5 left-2 text-[9px] text-[#444440] pointer-events-none">⊕</span>
+      <span className="absolute bottom-1.5 right-2 text-[9px] text-[#444440] pointer-events-none">⊕</span>
+
+      {/* 1. TOP CHASSIS SELECTOR & SERIAL TELEMETRY PLATE */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[#1E2028] pt-1">
+        <div className="flex items-center gap-1">
+          {CHASSIS_LIST.map((c) => {
+            const active = chassis === c.id;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => {
+                  setChassis(c.id);
+                  setMood('chill');
+                  setSpeech(`CHASSIS_SWAP // Deployed ${c.name} [${c.spec}]. All servos online.`);
+                  spawnShard(c.name, 50, 28, '#3B82F6');
+                }}
+                className={`px-2.5 py-1 border text-[10px] tracking-[0.12em] uppercase transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  active
+                    ? 'bg-[#121826] border-[#3B82F6] text-[#F5F5F0] font-bold'
+                    : 'bg-[#08090C] border-[#22242C] text-[#888882] hover:text-[#D8D8D1] hover:border-[#3A3D4A]'
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    active ? 'bg-[#3B82F6] shadow-[0_0_6px_#3B82F6]' : 'bg-[#333330]'
+                  }`}
+                />
+                <span>{c.name}</span>
+              </button>
+            );
+          })}
         </div>
 
-        <div className="flex items-center gap-1.5">
-          {MODELS.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => {
-                setModel(m.id);
-                setMood('happy');
-                setSpeech(`Morphed chassis into ${m.badge}!`);
-              }}
-              className={`px-2.5 py-1 border text-[11px] font-bold cursor-pointer transition-colors ${
-                model === m.id
-                  ? 'border-[#3B82F6] bg-[#3B82F6] text-black'
-                  : 'border-[#333330] text-[#A9A9A2] hover:text-[#F5F5F0]'
-              }`}
-            >
-              {m.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-2 text-[10px] tracking-[0.14em] uppercase">
+          <span className="px-2 py-0.5 bg-[#10131C] border border-[#252A38] text-[#60A5FA] font-bold">
+            LV.{level} {'//'} {rankTitle}
+          </span>
         </div>
       </div>
 
-      {/* 2. ENLARGED INTERACTIVE PET ARENA (Zero-Lag GPU Laser Dot) */}
+      {/* 2. RECESSED OLED PHOSPHOR VIEWPORT (MECHA ARENA) */}
       <div
         ref={arenaRef}
         onMouseEnter={handleArenaMouseEnter}
         onMouseMove={handleArenaMouseMove}
         onMouseLeave={handleArenaMouseLeave}
         onClick={handleArenaClick}
-        className={`relative w-full h-72 sm:h-80 border bg-[#080A10] flex flex-col items-center justify-between p-4 overflow-hidden transition-colors ${
+        className={`relative w-full h-72 sm:h-80 border bg-[#05070C] shadow-[inset_0_6px_28px_rgba(0,0,0,0.95)] flex flex-col items-center justify-between p-3.5 overflow-hidden transition-colors ${
           laserMode
             ? 'border-red-500/80'
-            : defendActive
-            ? 'border-cyan-400'
-            : 'border-[#333330] hover:border-[#3B82F6]'
+            : firewallActive
+            ? 'border-sky-400'
+            : activeMood === 'overclock'
+            ? 'border-amber-400/80'
+            : 'border-[#222530] hover:border-[#3B82F6]/60'
         }`}
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 50% 52%, rgba(59,130,246,0.09) 0%, transparent 65%), linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px)',
+          backgroundSize: '100% 100%, 22px 22px, 22px 22px',
+        }}
       >
-        {/* Hardware-Composited Zero-Lag Laser Dot */}
+        {/* Subtle CRT OLED Scanline Texture */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none opacity-25 z-[5]"
+          style={{
+            background:
+              'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(0,0,0,0.55) 2px, rgba(0,0,0,0.55) 4px)',
+          }}
+        />
+
+        {/* Zero-Lag Tactical Laser Target Reticle */}
         {laserMode && (
           <div
             ref={laserDotDomRef}
@@ -929,337 +1186,632 @@ export default function CyberCompanion({ chaosMode = false }: { chaosMode?: bool
               willChange: 'transform',
               transform: 'translate3d(0px, 0px, 0)',
             }}
-            className="absolute top-0 left-0 w-[18px] h-[18px] rounded-full bg-red-500/35 flex items-center justify-center pointer-events-none z-30"
+            className="absolute top-0 left-0 w-[18px] h-[18px] rounded-full border border-red-400/80 bg-red-500/20 flex items-center justify-center pointer-events-none z-30"
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500 border border-red-200 shadow-[0_0_12px_#EF4444]" />
+            <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_12px_#EF4444]" />
           </div>
         )}
 
-        {/* Full-Arena Defense Laser Beam */}
+        {/* Full-Arena Railgun Beam Layer */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none z-20 overflow-visible">
           <line
-            ref={zapLineRef}
+            ref={railgunLineRef}
             x1="50%"
             y1="50%"
             x2="50%"
             y2="50%"
             stroke="#38BDF8"
-            strokeWidth="3.5"
+            strokeWidth="3"
             strokeLinecap="round"
-            style={{ opacity: 0, transition: 'opacity 0.12s linear' }}
+            style={{
+              opacity: 0,
+              filter: 'drop-shadow(0 0 8px #38BDF8)',
+              transition: 'opacity 0.12s linear',
+            }}
           />
         </svg>
 
-        {/* Top Status Strip */}
-        <div className="w-full flex items-center justify-between text-[11px] text-[#A9A9A2] z-10 pointer-events-none">
-          <span>
-            ENERGY <span className="text-[#3B82F6]">{makeBar(energy)}</span> {energy}%
-          </span>
-          {defendActive ? (
-            <span className="px-2.5 py-0.5 bg-red-500 text-black font-bold">
-              ⚔️ WAVE: {defendTimeLeft}s (CLICK BUGS!)
+        {/* Top OLED Telemetry HUD Strip */}
+        <div className="w-full flex items-center justify-between text-[10px] tracking-[0.14em] text-[#94A3B8] z-10 pointer-events-none uppercase">
+          <div className="flex items-center gap-2">
+            <span className="text-[#64748B]">PWR</span>
+            <span style={{ color: accent }}>{makeSegmentBar(energy)}</span>
+            <span className="text-[#E2E8F0] tabular-nums">{energy}%</span>
+          </div>
+
+          {firewallActive ? (
+            <span className="px-2 py-0.5 bg-sky-400 text-black font-bold tracking-wider">
+              FIREWALL_SIM // {firewallTimeLeft}S
+            </span>
+          ) : scrollSpike > 0 ? (
+            <span className="px-2 py-0.5 bg-amber-500/20 border border-amber-400/50 text-amber-300 font-bold">
+              G-SYNC // {scrollSpike} PX/S
             </span>
           ) : (
-            <span>
-              XP <span className="text-emerald-400">{makeBar(xpInLevel)}</span> {xpInLevel}/100
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[#64748B]">SYNC</span>
+              <span className="text-emerald-400">{makeSegmentBar(xpInLevel)}</span>
+              <span className="text-[#E2E8F0] tabular-nums">{xpInLevel}%</span>
+            </div>
           )}
         </div>
 
-        {/* Falling Snack Animation */}
-        {fallingSnack?.active && (
-          <div className="absolute top-8 left-1/2 -translate-x-1/2 text-3xl z-20 pointer-events-none animate-bounce">
-            {fallingSnack.icon}
-          </div>
-        )}
-
-        {/* Center Character SVG (Scaled up crisply!) */}
+        {/* Center Multi-Layered Mecha SVG + Oscilloscope + 360° Orbital Shield */}
         <svg
-          viewBox="0 0 220 150"
+          viewBox="0 0 220 155"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="w-[260px] h-[178px] sm:w-[292px] sm:h-[200px] z-10 overflow-visible pointer-events-none"
+          className="w-[270px] h-[188px] sm:w-[304px] sm:h-[212px] z-10 overflow-visible pointer-events-none"
         >
-          <ellipse cx="110" cy="134" rx="40" ry="6" fill={accent} fillOpacity="0.18" />
+          <defs>
+            {/* Carbon & Titanium Mecha Gradients */}
+            <linearGradient id="carbonArmor" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#23293A" />
+              <stop offset="55%" stopColor="#121622" />
+              <stop offset="100%" stopColor="#090B11" />
+            </linearGradient>
+            <linearGradient id="titaniumPlate" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#475569" />
+              <stop offset="50%" stopColor="#1E293B" />
+              <stop offset="100%" stopColor="#0F172A" />
+            </linearGradient>
+            <linearGradient id="cryoAlloy" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#E2E8F0" />
+              <stop offset="65%" stopColor="#94A3B8" />
+              <stop offset="100%" stopColor="#475569" />
+            </linearGradient>
+            <linearGradient id="obsidianVisor" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#0B1120" />
+              <stop offset="100%" stopColor="#030509" />
+            </linearGradient>
+            <radialGradient id="corePulseGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="35%" stopColor={accent} />
+              <stop offset="100%" stopColor={accent} stopOpacity="0" />
+            </radialGradient>
+            <filter id="phosphorGlow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="2.2" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
 
+          {/* Live Background Oscilloscope Waveform */}
+          <path
+            ref={wavePathRef}
+            d="M 0 75 L 220 75"
+            stroke={accent}
+            strokeOpacity="0.18"
+            strokeWidth="1.2"
+            fill="none"
+          />
+
+          {/* Ground Magnetic Projection Ring */}
+          <ellipse cx="110" cy="142" rx="46" ry="6" fill={accent} fillOpacity="0.14" />
+          <ellipse
+            cx="110"
+            cy="142"
+            rx="34"
+            ry="3.5"
+            stroke={accent}
+            strokeOpacity="0.35"
+            strokeWidth="1"
+            strokeDasharray="6 4"
+          />
+
+          {/* 360° Orbital Firewall Shield Ring (Active in FIREWALL_SIM) */}
+          {firewallActive && (
+            <g
+              ref={shieldOrbitRef}
+              style={{
+                transformOrigin: '110px 80px',
+                willChange: 'transform',
+              }}
+            >
+              {/* Faint full orbit guide */}
+              <circle
+                cx="110"
+                cy="80"
+                r="62"
+                stroke="#38BDF8"
+                strokeOpacity="0.16"
+                strokeWidth="1"
+                strokeDasharray="3 5"
+              />
+              {/* Active 80-degree Tactical Energy Barrier Arc centered at +X (0 deg) */}
+              <path
+                d="M 157.5 40.2 A 62 62 0 0 1 157.5 119.8"
+                stroke="#38BDF8"
+                strokeWidth="5"
+                strokeLinecap="round"
+                fill="none"
+                filter="url(#phosphorGlow)"
+              />
+              <path
+                d="M 161.5 46 A 66 66 0 0 1 161.5 114"
+                stroke="#E0F2FE"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                fill="none"
+              />
+            </g>
+          )}
+
+          {/* ══ PROCEDURALLY ANIMATED MECHA UNIT ══ */}
           <g
-            ref={petGroupRef}
+            ref={unitGroupRef}
             style={{
-              transformOrigin: '110px 80px',
+              transformOrigin: '110px 82px',
               willChange: 'transform',
             }}
           >
-            {/* ── MODEL 1: NEKO STEALTH DRONE ── */}
-            {model === 'neko' && (
+            {/* ── CHASSIS 01: TUX_MK4 // ARMORED CRYO-KERNEL MECHA PENGUIN ── */}
+            {chassis === 'tux' && (
               <>
-                <path
-                  d="M148 102 Q176 96 172 72"
-                  stroke={accent}
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                <polygon points="72,54 66,24 94,42" fill="#18181B" stroke={accent} strokeWidth="2.2" />
-                <polygon points="74,48 71,31 88,42" fill={accent} fillOpacity="0.45" />
-                <polygon points="148,54 154,24 126,42" fill="#18181B" stroke={accent} strokeWidth="2.2" />
-                <polygon points="146,48 149,31 132,42" fill={accent} fillOpacity="0.45" />
+                {/* Hydraulic Mecha Stabilizer Feet */}
+                <polygon points="80,132 102,132 105,139 76,139" fill="#F59E0B" stroke="#78350F" strokeWidth="1.2" />
+                <polygon points="118,132 140,132 144,139 115,139" fill="#F59E0B" stroke="#78350F" strokeWidth="1.2" />
 
-                <rect
-                  x="66"
-                  y="40"
-                  width="88"
-                  height="70"
-                  rx="28"
-                  fill="#141418"
-                  stroke={accent}
-                  strokeWidth="2.4"
-                />
-                <rect
-                  x="76"
-                  y="51"
-                  width="68"
-                  height="44"
-                  rx="18"
-                  fill="#060912"
-                  stroke="#27272A"
-                  strokeWidth="1.5"
-                />
-                <line x1="54" y1="70" x2="68" y2="72" stroke={accent} strokeWidth="2" strokeLinecap="round" />
-                <line x1="54" y1="79" x2="68" y2="78" stroke={accent} strokeWidth="2" strokeLinecap="round" />
-                <line x1="166" y1="70" x2="152" y2="72" stroke={accent} strokeWidth="2" strokeLinecap="round" />
-                <line x1="166" y1="79" x2="152" y2="78" stroke={accent} strokeWidth="2" strokeLinecap="round" />
+                {/* Left & Right Articulated Jet-Thruster Flippers */}
+                <g ref={leftLimbRef} style={{ transformOrigin: '68px 84px' }}>
+                  <polygon
+                    points="68,78 52,92 48,116 64,112 72,92"
+                    fill="url(#titaniumPlate)"
+                    stroke={accent}
+                    strokeWidth="1.6"
+                  />
+                  {/* Ion Thruster Plume */}
+                  <polygon points="51,116 58,114 54,126" fill="#38BDF8" fillOpacity="0.85" filter="url(#phosphorGlow)" />
+                </g>
+                <g ref={rightLimbRef} style={{ transformOrigin: '152px 84px' }}>
+                  <polygon
+                    points="152,78 168,92 172,116 156,112 148,92"
+                    fill="url(#titaniumPlate)"
+                    stroke={accent}
+                    strokeWidth="1.6"
+                  />
+                  {/* Ion Thruster Plume */}
+                  <polygon points="169,116 162,114 166,126" fill="#38BDF8" fillOpacity="0.85" filter="url(#phosphorGlow)" />
+                </g>
 
-                <ellipse cx="88" cy="115" rx="9" ry="6" fill="#1F1F25" stroke={accent} strokeWidth="1.5" />
-                <ellipse cx="132" cy="115" rx="9" ry="6" fill="#1F1F25" stroke={accent} strokeWidth="1.5" />
-              </>
-            )}
-
-            {/* ── MODEL 2: TUX KERNEL PENGUIN ── */}
-            {model === 'tux' && (
-              <>
-                <ellipse
-                  cx="65"
-                  cy="86"
-                  rx="9"
-                  ry="22"
-                  transform={
-                    activeMood === 'happy' || activeMood === 'dance'
-                      ? 'rotate(32 65 86)'
-                      : 'rotate(14 65 86)'
-                  }
-                  fill="#18181B"
-                  stroke={accent}
-                  strokeWidth="2"
-                />
-                <ellipse
-                  cx="155"
-                  cy="86"
-                  rx="9"
-                  ry="22"
-                  transform={
-                    activeMood === 'happy' || activeMood === 'dance'
-                      ? 'rotate(-32 155 86)'
-                      : 'rotate(-14 155 86)'
-                  }
-                  fill="#18181B"
-                  stroke={accent}
-                  strokeWidth="2"
-                />
-                <ellipse cx="93" cy="124" rx="12" ry="5.5" fill="#F59E0B" />
-                <ellipse cx="127" cy="124" rx="12" ry="5.5" fill="#F59E0B" />
-                <ellipse cx="110" cy="82" rx="42" ry="44" fill="#14161F" stroke={accent} strokeWidth="2.4" />
-                <ellipse cx="110" cy="96" rx="27" ry="26" fill="#E2E8F0" />
-                <rect x="78" y="54" width="64" height="32" rx="14" fill="#070B14" stroke="#334155" strokeWidth="1.2" />
-              </>
-            )}
-
-            {/* ── MODEL 3: PHANTOM DAEMON GHOST ── */}
-            {model === 'ghost' && (
-              <>
-                <circle cx="56" cy="64" r="4.5" fill="#A855F7" fillOpacity="0.8" />
-                <circle cx="164" cy="74" r="3.5" fill="#06B6D4" fillOpacity="0.8" />
-                <path
-                  d="M70 76 C70 36, 150 36, 150 76 L150 118 L137 108 L124 118 L110 108 L96 118 L83 108 L70 118 Z"
-                  fill="#13172B"
-                  stroke={accent}
-                  strokeWidth="2.4"
-                />
-                <rect x="80" y="54" width="60" height="38" rx="16" fill="#070A14" />
-              </>
-            )}
-
-            {/* ── MODEL 4: FLIPPER CYBER FOX ── */}
-            {model === 'fox' && (
-              <>
-                <path
-                  d="M145 106 Q178 98 168 74 Q156 80 144 94 Z"
-                  fill="#EA580C"
-                  stroke="#FDBA74"
-                  strokeWidth="1.5"
-                />
-                <polygon points="74,50 56,16 96,40" fill="#EA580C" stroke={accent} strokeWidth="2" />
-                <polygon points="74,46 63,24 89,40" fill="#090D16" />
-                <polygon points="146,50 164,16 124,40" fill="#EA580C" stroke={accent} strokeWidth="2" />
-                <polygon points="146,46 157,24 131,40" fill="#090D16" />
-
+                {/* Heavy Armored Cryo-Chassis Torso */}
                 <polygon
-                  points="66,58 84,40 136,40 154,58 142,102 110,114 78,102"
-                  fill="#EA580C"
-                  stroke={accent}
-                  strokeWidth="2.2"
+                  points="74,78 146,78 148,118 134,133 86,133 72,118"
+                  fill="url(#carbonArmor)"
+                  stroke="#475569"
+                  strokeWidth="1.8"
                 />
-                <polygon points="69,76 96,90 110,113 78,102" fill="#F8FAFC" />
-                <polygon points="151,76 124,90 110,113 142,102" fill="#F8FAFC" />
-                <rect x="78" y="55" width="64" height="33" rx="12" fill="#070B14" stroke="#1E293B" strokeWidth="1.5" />
-                <polygon points="105,94 115,94 110,101" fill="#09090B" />
+                {/* Brushed Alloy Belly Shield Plate */}
+                <polygon
+                  points="86,86 134,86 136,116 124,129 96,129 84,116"
+                  fill="url(#cryoAlloy)"
+                  stroke="#334155"
+                  strokeWidth="1.4"
+                />
+                {/* Cryo-Kernel Chest Turbine Core */}
+                <circle cx="110" cy="106" r="10" fill="#090D16" stroke={accent} strokeWidth="1.6" />
+                <circle
+                  ref={coreGlowRef}
+                  cx="110"
+                  cy="106"
+                  r="6.5"
+                  fill="url(#corePulseGrad)"
+                />
+                <line x1="92" y1="118" x2="128" y2="118" stroke="#475569" strokeWidth="1.2" />
+
+                {/* Tux Mk-IV Helmet, Tactical Goggles & Cyber Beak */}
+                <g ref={headGroupRef}>
+                  {/* Armored Dome + Head Antenna */}
+                  <line x1="110" y1="24" x2="110" y2="35" stroke={accent} strokeWidth="2" />
+                  <circle cx="110" cy="22" r="2.5" fill={accent} filter="url(#phosphorGlow)" />
+
+                  <polygon
+                    points="76,52 88,35 132,35 144,52 144,82 76,82"
+                    fill="url(#carbonArmor)"
+                    stroke="#475569"
+                    strokeWidth="1.8"
+                  />
+                  {/* Forehead Tactical Goggles */}
+                  <rect x="80" y="39" width="26" height="11" rx="3" fill="#0F172A" stroke={accent} strokeWidth="1.4" />
+                  <rect x="114" y="39" width="26" height="11" rx="3" fill="#0F172A" stroke={accent} strokeWidth="1.4" />
+                  <line x1="106" y1="44" x2="114" y2="44" stroke={accent} strokeWidth="1.6" />
+
+                  {/* Recessed Optic Visor */}
+                  <rect
+                    x="81"
+                    y="55"
+                    width="58"
+                    height="23"
+                    rx="5"
+                    fill="url(#obsidianVisor)"
+                    stroke="#1E293B"
+                    strokeWidth="1.4"
+                  />
+
+                  {renderPhosphorOptics()}
+
+                  {/* Faceted Metallic Cyber-Beak */}
+                  <polygon
+                    points="100,77 120,77 115,86 110,89 105,86"
+                    fill="#F59E0B"
+                    stroke="#B45309"
+                    strokeWidth="1.2"
+                  />
+                </g>
               </>
             )}
 
-            {renderFaceExpressions()}
-            {renderEquippedGear()}
+            {/* ── CHASSIS 02: KITSUNE // ZERO-DAY MULTI-JOINT MECHA ── */}
+            {chassis === 'kitsune' && (
+              <>
+                {/* Segmented Energy Tail */}
+                <g
+                  ref={tailOrCloakRef}
+                  style={{ transformOrigin: '132px 112px' }}
+                >
+                  <path
+                    d="M134 114 Q166 108 176 80 Q180 64 166 56"
+                    stroke={accent}
+                    strokeWidth="2.2"
+                    strokeDasharray="5 3"
+                    fill="none"
+                    filter="url(#phosphorGlow)"
+                  />
+                  <polygon points="154,104 166,96 160,111" fill="url(#titaniumPlate)" stroke={accent} strokeWidth="1.2" />
+                  <polygon points="168,86 180,76 174,93" fill="url(#titaniumPlate)" stroke={accent} strokeWidth="1.2" />
+                  <polygon points="166,54 180,60 168,69" fill={accent} fillOpacity="0.85" />
+                </g>
+
+                {/* Upper Mecha Torso & Segmented Collar */}
+                <polygon
+                  points="84,96 136,96 144,126 124,134 96,134 76,126"
+                  fill="url(#carbonArmor)"
+                  stroke="#334155"
+                  strokeWidth="1.6"
+                />
+                {/* Shoulder Pauldrons */}
+                <polygon points="72,98 88,94 82,114 68,110" fill="url(#titaniumPlate)" stroke={accent} strokeWidth="1.3" />
+                <polygon points="148,98 132,94 138,114 152,110" fill="url(#titaniumPlate)" stroke={accent} strokeWidth="1.3" />
+
+                {/* Hexagonal Chest Reactor Core */}
+                <polygon
+                  points="110,103 118,108 118,118 110,123 102,118 102,108"
+                  fill="#060913"
+                  stroke={accent}
+                  strokeWidth="1.5"
+                />
+                <circle
+                  ref={coreGlowRef}
+                  cx="110"
+                  cy="113"
+                  r="6"
+                  fill="url(#corePulseGrad)"
+                />
+
+                {/* Angular Origami Mecha Head */}
+                <g ref={headGroupRef}>
+                  {/* Swept Cyber Ears with Glowing Thermal Vents */}
+                  <polygon points="74,52 54,14 96,38" fill="url(#carbonArmor)" stroke="#475569" strokeWidth="1.8" />
+                  <polygon points="75,46 62,22 89,39" fill={accent} fillOpacity="0.55" />
+                  <line x1="65" y1="28" x2="82" y2="39" stroke="#E0F2FE" strokeWidth="1" />
+
+                  <polygon points="146,52 166,14 124,38" fill="url(#carbonArmor)" stroke="#475569" strokeWidth="1.8" />
+                  <polygon points="145,46 158,22 131,39" fill={accent} fillOpacity="0.55" />
+                  <line x1="155" y1="28" x2="138" y2="39" stroke="#E0F2FE" strokeWidth="1" />
+
+                  {/* Faceted Stealth Helmet Shell */}
+                  <polygon
+                    points="66,58 84,38 136,38 154,58 144,90 110,100 76,90"
+                    fill="url(#carbonArmor)"
+                    stroke="#475569"
+                    strokeWidth="1.8"
+                  />
+                  {/* Metallic Brow Rim-Light */}
+                  <polyline
+                    points="74,54 90,42 130,42 146,54"
+                    stroke={accent}
+                    strokeWidth="1.4"
+                    fill="none"
+                  />
+                  {/* Cheek Armor Plates */}
+                  <polygon points="68,62 80,68 78,88 68,80" fill="url(#titaniumPlate)" />
+                  <polygon points="152,62 140,68 142,88 152,80" fill="url(#titaniumPlate)" />
+
+                  {/* Recessed Smoked-Glass Optic Visor */}
+                  <polygon
+                    points="78,56 142,56 136,82 110,88 84,82"
+                    fill="url(#obsidianVisor)"
+                    stroke="#1E293B"
+                    strokeWidth="1.4"
+                  />
+
+                  {renderPhosphorOptics()}
+                </g>
+
+                {/* Left & Right Floating Articulated Mecha Claws */}
+                <g ref={leftLimbRef} style={{ transformOrigin: '52px 98px' }}>
+                  <polygon points="44,92 60,88 62,104 46,108" fill="url(#titaniumPlate)" stroke={accent} strokeWidth="1.4" />
+                  <line x1="46" y1="108" x2="43" y2="116" stroke={accent} strokeWidth="2" strokeLinecap="round" />
+                  <line x1="52" y1="107" x2="51" y2="116" stroke={accent} strokeWidth="2" strokeLinecap="round" />
+                  <line x1="58" y1="105" x2="58" y2="114" stroke={accent} strokeWidth="2" strokeLinecap="round" />
+                </g>
+                <g ref={rightLimbRef} style={{ transformOrigin: '168px 98px' }}>
+                  <polygon points="176,92 160,88 158,104 174,108" fill="url(#titaniumPlate)" stroke={accent} strokeWidth="1.4" />
+                  <line x1="174" y1="108" x2="177" y2="116" stroke={accent} strokeWidth="2" strokeLinecap="round" />
+                  <line x1="168" y1="107" x2="169" y2="116" stroke={accent} strokeWidth="2" strokeLinecap="round" />
+                  <line x1="162" y1="105" x2="162" y2="114" stroke={accent} strokeWidth="2" strokeLinecap="round" />
+                </g>
+              </>
+            )}
+
+            {/* ── CHASSIS 03: KURO // CYBER-PANTHER STEALTH RONIN ── */}
+            {chassis === 'kuro' && (
+              <>
+                {/* Diagonal High-Frequency RF Katana on Back */}
+                <g>
+                  <line x1="64" y1="128" x2="164" y2="22" stroke="#334155" strokeWidth="4.5" strokeLinecap="round" />
+                  <line x1="64" y1="128" x2="164" y2="22" stroke={accent} strokeWidth="1.4" strokeLinecap="round" filter="url(#phosphorGlow)" />
+                  {/* Katana Tsuba & Hilt */}
+                  <line x1="146" y1="32" x2="156" y2="42" stroke="#F8FAFC" strokeWidth="2.5" strokeLinecap="round" />
+                  <circle cx="165" cy="21" r="2.8" fill={accent} filter="url(#phosphorGlow)" />
+                </g>
+
+                {/* Flowing Digital Cloak & Tactical Scarf */}
+                <g ref={tailOrCloakRef} style={{ transformOrigin: '110px 94px' }}>
+                  <path
+                    d="M76 92 L144 92 L156 132 L134 125 L118 135 L102 126 L84 134 L66 126 Z"
+                    fill="url(#carbonArmor)"
+                    stroke={accent}
+                    strokeWidth="1.5"
+                  />
+                  {/* Glowing Digital Circuit Trim on Cloak */}
+                  <path
+                    d="M76 118 L96 118 L104 126 M144 116 L126 116 L118 126"
+                    stroke={accent}
+                    strokeOpacity="0.6"
+                    strokeWidth="1.2"
+                    fill="none"
+                  />
+                  <circle
+                    ref={coreGlowRef}
+                    cx="110"
+                    cy="108"
+                    r="5"
+                    fill="url(#corePulseGrad)"
+                  />
+                </g>
+
+                {/* Ronin Panther Head + Half-Visor Tactical Helmet */}
+                <g ref={headGroupRef}>
+                  {/* Sharp Stealth Panther Ears */}
+                  <polygon points="73,50 64,20 94,40" fill="url(#carbonArmor)" stroke="#475569" strokeWidth="1.8" />
+                  <polygon points="75,46 69,27 88,40" fill={accent} fillOpacity="0.4" />
+                  <polygon points="147,50 156,20 126,40" fill="url(#carbonArmor)" stroke="#475569" strokeWidth="1.8" />
+                  <polygon points="145,46 151,27 132,40" fill={accent} fillOpacity="0.4" />
+
+                  {/* Lower Face & Jaw */}
+                  <path
+                    d="M72 54 L148 54 L142 86 L110 96 L78 86 Z"
+                    fill="url(#obsidianVisor)"
+                    stroke="#334155"
+                    strokeWidth="1.6"
+                  />
+
+                  {renderPhosphorOptics()}
+
+                  {/* Tactical Upper Half-Visor Helmet Plate */}
+                  <polygon
+                    points="68,58 78,36 142,36 152,58 128,63 110,59 92,63"
+                    fill="url(#titaniumPlate)"
+                    stroke={accent}
+                    strokeWidth="1.5"
+                  />
+                  {/* Forehead Crest [0x991] */}
+                  <line x1="100" y1="48" x2="120" y2="48" stroke={accent} strokeWidth="2" filter="url(#phosphorGlow)" />
+                  <circle cx="110" cy="43" r="2" fill="#F8FAFC" />
+
+                  {/* High-Collar Neck Guard */}
+                  <polygon
+                    points="74,84 110,94 146,84 142,98 110,104 78,98"
+                    fill="url(#titaniumPlate)"
+                    stroke="#475569"
+                    strokeWidth="1.4"
+                  />
+                </g>
+
+                {/* Left & Right Floating Kunai / Ronin Gauntlets */}
+                <g ref={leftLimbRef} style={{ transformOrigin: '54px 96px' }}>
+                  <polygon points="52,82 58,96 52,110 46,96" fill="url(#titaniumPlate)" stroke={accent} strokeWidth="1.3" />
+                  <circle cx="52" cy="96" r="2" fill={accent} />
+                </g>
+                <g ref={rightLimbRef} style={{ transformOrigin: '166px 96px' }}>
+                  <polygon points="168,82 174,96 168,110 162,96" fill="url(#titaniumPlate)" stroke={accent} strokeWidth="1.3" />
+                  <circle cx="168" cy="96" r="2" fill={accent} />
+                </g>
+              </>
+            )}
+
+            
+
+            {renderArmorMod()}
           </g>
         </svg>
 
-        {/* Malware Bugs Pool */}
-        {defendActive &&
-          Array.from({ length: BUG_POOL }).map((_, i) => (
+        {/* Vector Malware Packets Pool (Geometric Red Laser Nodes, Zero Emojis!) */}
+        {firewallActive &&
+          Array.from({ length: PACKET_POOL }).map((_, i) => (
             <button
               key={i}
               ref={(el) => {
-                bugDomRefs.current[i] = el;
+                packetDomRefs.current[i] = el;
               }}
               type="button"
-              onClick={(e) => handleZapBug(e, i)}
+              onClick={(e) => fireRailgunAtPacket(i, e)}
               style={{
                 opacity: 0,
                 pointerEvents: 'none',
                 left: '50%',
                 top: '50%',
               }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 text-2xl sm:text-3xl p-3 z-30 cursor-crosshair select-none transition-transform hover:scale-125 active:scale-90 focus:outline-none drop-shadow-[0_0_10px_rgba(239,68,68,0.7)]"
-              title="Click to neutralize threat!"
-            />
+              className="absolute w-10 h-10 flex items-center justify-center z-30 cursor-crosshair select-none focus:outline-none group"
+              title="Click to vaporize with Railgun or block with 360° Shield"
+            >
+              <svg
+                viewBox="0 0 36 24"
+                className="w-9 h-6 overflow-visible drop-shadow-[0_0_8px_rgba(239,68,68,0.9)] group-hover:scale-125 transition-transform"
+              >
+                {/* Trailing Laser Wake */}
+                <line
+                  x1="0"
+                  y1="12"
+                  x2="16"
+                  y2="12"
+                  stroke="#EF4444"
+                  strokeWidth="2"
+                  strokeOpacity="0.65"
+                  strokeDasharray="3 2"
+                />
+                {/* Sharp Vector Malware Warhead pointing toward +X (rotated by headingDeg) */}
+                <polygon
+                  points="32,12 16,4 20,12 16,20"
+                  fill="#EF4444"
+                  stroke="#FCA5A5"
+                  strokeWidth="1.2"
+                />
+                <circle cx="22" cy="12" r="2" fill="#FFFFFF" />
+              </svg>
+            </button>
           ))}
 
-        {/* Interactive Toy Dock inside Arena Bottom */}
+        {/* Tactical Hardware Switch Deck inside Bottom of OLED Frame */}
         <div
           onClick={(e) => e.stopPropagation()}
-          className="w-full flex flex-wrap items-center justify-between gap-2 text-[11px] z-20"
+          className="w-full flex flex-wrap items-center justify-between gap-1.5 text-[10px] tracking-[0.12em] uppercase z-20"
         >
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <button
               type="button"
-              onClick={() => {
-                setDefendActive(false);
-                const next = !laserMode;
-                setLaserMode(next);
-                setMood(next ? 'happy' : 'chill');
-                setSpeech(
-                  next
-                    ? '🔴 LASER LOCKED! Glide your cursor around the arena!'
-                    : 'Laser pointer holstered.'
-                );
-              }}
-              className={`px-3 py-1.5 border font-bold cursor-pointer transition-colors ${
+              onClick={() => runCommand('laser')}
+              className={`px-2.5 py-1.5 border transition-colors cursor-pointer flex items-center gap-1.5 ${
                 laserMode
-                  ? 'bg-red-500 border-red-400 text-black'
-                  : 'bg-[#111111] border-[#333330] text-[#D8D8D1] hover:border-red-400'
+                  ? 'bg-red-950/60 border-red-500 text-red-300 font-bold'
+                  : 'bg-[#0B0E16] border-[#252A38] text-[#94A3B8] hover:border-red-400/70 hover:text-white'
               }`}
             >
-              🔴 {laserMode ? 'LASER: ON' : 'LASER'}
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  laserMode ? 'bg-red-500 shadow-[0_0_6px_#EF4444]' : 'bg-[#475569]'
+                }`}
+              />
+              <span>LASER_TRACK</span>
             </button>
 
             <button
               type="button"
-              onClick={handleTossSnack}
-              className="px-3 py-1.5 bg-[#111111] border border-[#333330] text-[#D8D8D1] hover:border-emerald-400 hover:text-emerald-300 font-bold cursor-pointer transition-colors"
+              onClick={handleOverclock}
+              className={`px-2.5 py-1.5 border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                activeMood === 'overclock'
+                  ? 'bg-amber-950/60 border-amber-400 text-amber-300 font-bold'
+                  : 'bg-[#0B0E16] border-[#252A38] text-[#94A3B8] hover:border-amber-400/70 hover:text-white'
+              }`}
             >
-              🐟 SNACK
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  activeMood === 'overclock' ? 'bg-amber-400 shadow-[0_0_6px_#F59E0B]' : 'bg-amber-500/50'
+                }`}
+              />
+              <span>OVERCLOCK</span>
             </button>
 
             <button
               type="button"
               onClick={() => {
-                const next = (gearIdx + 1) % GEARS.length;
-                setGearIdx(next);
+                const next = (modIdx + 1) % ARMOR_MODS.length;
+                setModIdx(next);
                 setMood('happy');
-                setSpeech(`Equipped cosmetic: ${GEARS[next].label}! Looking sharp.`);
+                setSpeech(`ARMOR_BUS // Mounted [${ARMOR_MODS[next].label}] tactical attachment.`);
+                spawnShard(ARMOR_MODS[next].label, 50, 24, '#38BDF8');
+                triggerAura(40, `Mounted ${ARMOR_MODS[next].label} on Cyber-Unit`, '💠');
               }}
-              className="px-3 py-1.5 bg-[#111111] border border-[#333330] text-[#D8D8D1] hover:border-amber-400 hover:text-amber-300 font-bold cursor-pointer transition-colors"
+              className="px-2.5 py-1.5 bg-[#0B0E16] border border-[#252A38] text-[#94A3B8] hover:border-[#3B82F6] hover:text-white transition-colors cursor-pointer"
             >
-              {GEARS[gearIdx].label}
+              {ARMOR_MODS[modIdx].label}
             </button>
           </div>
 
           <div className="flex items-center gap-1.5">
             <button
               type="button"
-              disabled={defendActive}
-              onClick={() => runCommand('defend')}
-              className="px-3 py-1.5 bg-cyan-500/15 border border-cyan-500/50 text-cyan-300 hover:bg-cyan-400 hover:text-black font-bold cursor-pointer disabled:opacity-40 transition-colors"
+              disabled={firewallActive}
+              onClick={() => runCommand('firewall')}
+              className="px-2.5 py-1.5 bg-sky-500/10 border border-sky-400/50 text-sky-300 hover:bg-sky-400 hover:text-black font-bold cursor-pointer disabled:opacity-40 transition-colors flex items-center gap-1.5"
             >
-              ⚔️ DEFEND
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
+              <span>FIREWALL_SIM</span>
             </button>
 
             <button
               type="button"
-              onClick={() => (activeMood === 'sleep' ? wakeUpPet() : runCommand('sleep'))}
-              className="px-2.5 py-1.5 bg-[#111111] border border-[#333330] text-[#A9A9A2] hover:text-white cursor-pointer"
-              title="Sleep / Wake"
+              onClick={() => (activeMood === 'sleep' ? wakeUnit() : runCommand('sleep'))}
+              className={`px-2 py-1.5 border transition-colors cursor-pointer ${
+                activeMood === 'sleep'
+                  ? 'bg-blue-950/60 border-[#3B82F6] text-[#60A5FA]'
+                  : 'bg-[#0B0E16] border-[#252A38] text-[#64748B] hover:text-white'
+              }`}
+              title="Toggle Cryo Standby"
             >
-              💤
+              {activeMood === 'sleep' ? 'WAKE' : 'STBY'}
             </button>
           </div>
         </div>
 
-        {/* Floating Feedback Particles */}
-        {floatingFx.map((fx) => (
+        {/* Floating Vector Telemetry Shards */}
+        {shards.map((s) => (
           <span
-            key={fx.id}
-            style={{ left: `${fx.x}%`, top: `${fx.y}%` }}
-            className="absolute text-xs font-bold text-[#3B82F6] pointer-events-none z-30 animate-[fadeUp_0.8s_ease-out_forwards]"
+            key={s.id}
+            style={{ left: `${s.x}%`, top: `${s.y}%`, color: s.color }}
+            className="absolute -translate-x-1/2 text-[10px] font-bold tracking-wider pointer-events-none z-30 animate-[fadeUp_0.75s_ease-out_forwards] drop-shadow-[0_0_8px_rgba(0,0,0,0.9)] whitespace-nowrap"
           >
-            {fx.text}
+            {s.label}
           </span>
         ))}
       </div>
 
-      {/* 3. ENLARGED DIALOGUE & TERMINAL SHELL */}
-      <div className="w-full pt-4">
-        <p className="text-[#D8D8D1] text-xs font-light mb-3 font-mono min-h-[2.4rem] leading-relaxed">
-          &gt; {speech}
-        </p>
+      {/* 3. TELEMETRY LOG CONSOLE & DIRECTIVE INPUT */}
+      <div className="border border-[#1E2028] bg-[#07080C] px-3 py-2 flex items-start gap-2 min-h-[46px]">
+        <span className="text-[#3B82F6] font-bold shrink-0 mt-0.5">&gt;_</span>
+        <p className="text-[#CBD5E1] text-[11px] leading-relaxed break-words">{displayedSpeech}</p>
+      </div>
 
-        <div className="flex items-center gap-2.5 border-b border-[#333330] pb-2.5">
-          <span className="font-mono text-xs text-[#3B82F6] font-semibold shrink-0">
-            root@{model}:~$
-          </span>
-          <input
-            type="text"
-            value={command}
-            onChange={(e) => setCommand(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') runCommand(command);
+      <div className="flex items-center gap-2 border border-[#222530] bg-[#07080C] px-3 py-2 focus-within:border-[#3B82F6] transition-colors">
+        <span className="text-[#3B82F6] font-bold text-[11px]">root@unit:~$</span>
+        <input
+          type="text"
+          value={command}
+          onChange={(e) => setCommand(e.target.value)}
+          onKeyDown={handleCommandKeyDown}
+          placeholder="Type 'cat flag', 'fortune', 'sudo', 'dance', 'kill -9'..."
+          className="bg-transparent border-none outline-none text-[#F5F5F0] w-full text-[11px] placeholder:text-[#525866]"
+        />
+      </div>
+
+      {/* Quick Easter-Egg & Joke Commands */}
+      <div className="flex flex-wrap gap-1.5 text-[10px]">
+        {['cat flag', 'fortune', 'dance', 'hack', 'sudo rm -rf', 'kill -9', 'help'].map((cmd) => (
+          <button
+            key={cmd}
+            type="button"
+            onClick={() => {
+              setCommand('');
+              runCommand(cmd);
             }}
-            placeholder="Type 'cat flag', 'fortune', 'sudo', 'dance'..."
-            className="flex-1 bg-transparent border-none outline-none text-white text-xs placeholder:text-[#A9A9A2]/50 font-mono tracking-wide"
-          />
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          {['cat flag', 'fortune', 'dance', 'hack', 'sudo rm -rf', 'kill -9', 'help'].map(
-            (cmd) => (
-              <button
-                key={cmd}
-                type="button"
-                onClick={() => runCommand(cmd)}
-                className="font-mono text-[10px] text-[#A9A9A2] border border-[#333330] px-2.5 py-1 uppercase tracking-wider hover:border-[#3B82F6] hover:text-[#F5F5F0] transition-colors cursor-pointer"
-              >
-                {cmd}
-              </button>
-            )
-          )}
-        </div>
+            className="px-2 py-0.5 bg-[#090B11] border border-[#1E2230] text-[#7D8597] hover:text-[#60A5FA] hover:border-[#3B82F6]/60 transition-colors cursor-pointer"
+          >
+            {cmd}
+          </button>
+        ))}
       </div>
     </div>
   );

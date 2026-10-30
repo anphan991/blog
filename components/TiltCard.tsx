@@ -1,73 +1,136 @@
 'use client';
 
-import React, { useRef, useState, MouseEvent } from 'react';
-import { motion, useSpring, useTransform } from 'framer-motion';
+import React, { useRef, useEffect, useCallback } from 'react';
 
-export default function TiltCard({ children, className }: { children: React.ReactNode, className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+interface TiltCardProps {
+  children: React.ReactNode;
+  className?: string;
+  dataCursor?: 'inspect' | 'decrypt' | 'zoom' | 'square';
+  maxTilt?: number;
+}
 
-  const x = useSpring(0, { stiffness: 400, damping: 40, mass: 0.5 });
-  const y = useSpring(0, { stiffness: 400, damping: 40, mass: 0.5 });
+export default function TiltCard({
+  children,
+  className = '',
+  dataCursor,
+  maxTilt = 4.2,
+}: TiltCardProps) {
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const rectRef = useRef<DOMRect | null>(null);
+  const stateRef = useRef({
+    hovered: false,
+    targetRx: 0,
+    targetRy: 0,
+    currRx: 0,
+    currRy: 0,
+    rafId: 0,
+    running: false,
+  });
 
-  const rotateX = useTransform(y, [-100, 100], [5, -5]);
-  const rotateY = useTransform(x, [-100, 100], [-5, 5]);
+  const startLoop = useCallback(() => {
+    const st = stateRef.current;
+    if (st.running) return;
+    st.running = true;
 
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    
-    x.set(((mouseX - centerX) / centerX) * 100);
-    y.set(((mouseY - centerY) / centerY) * 100);
+    const step = () => {
+      const el = cardRef.current;
+      if (!el) {
+        st.running = false;
+        return;
+      }
 
-    setMousePosition({
-      x: (mouseX / rect.width) * 100,
-      y: (mouseY / rect.height) * 100,
-    });
+      st.currRx += (st.targetRx - st.currRx) * 0.16;
+      st.currRy += (st.targetRy - st.currRy) * 0.16;
+
+      el.style.transform = `perspective(1100px) rotateX(${st.currRx.toFixed(2)}deg) rotateY(${st.currRy.toFixed(2)}deg) translateZ(0)`;
+
+      const settled =
+        !st.hovered &&
+        Math.abs(st.currRx) < 0.03 &&
+        Math.abs(st.currRy) < 0.03;
+
+      if (settled) {
+        el.style.transform = 'perspective(1100px) rotateX(0deg) rotateY(0deg) translateZ(0)';
+        st.running = false;
+        return;
+      }
+
+      st.rafId = requestAnimationFrame(step);
+    };
+
+    st.rafId = requestAnimationFrame(step);
+  }, []);
+
+  useEffect(() => {
+    const st = stateRef.current;
+    return () => {
+      cancelAnimationFrame(st.rafId);
+    };
+  }, []);
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    rectRef.current = el.getBoundingClientRect();
+    stateRef.current.hovered = true;
+    el.style.setProperty('--spot-opacity', '1');
+    startLoop();
   };
 
-  const handleMouseEnter = () => setIsHovered(true);
-  
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = cardRef.current;
+    if (!el) return;
+    const rect = rectRef.current || el.getBoundingClientRect();
+    rectRef.current = rect;
+
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    const nx = (px / (rect.width || 1)) * 2 - 1; // -1 .. 1
+    const ny = (py / (rect.height || 1)) * 2 - 1; // -1 .. 1
+
+    stateRef.current.targetRy = nx * maxTilt;
+    stateRef.current.targetRx = -ny * maxTilt;
+
+    el.style.setProperty('--spot-x', `${px.toFixed(1)}px`);
+    el.style.setProperty('--spot-y', `${py.toFixed(1)}px`);
+    startLoop();
+  };
+
   const handleMouseLeave = () => {
-    setIsHovered(false);
-    x.set(0);
-    y.set(0);
+    const el = cardRef.current;
+    stateRef.current.hovered = false;
+    stateRef.current.targetRx = 0;
+    stateRef.current.targetRy = 0;
+    rectRef.current = null;
+    if (el) {
+      el.style.setProperty('--spot-opacity', '0');
+    }
+    startLoop();
   };
 
   return (
-    <motion.div
-      ref={ref}
-      onMouseMove={handleMouseMove}
+    <div
+      ref={cardRef}
+      data-cursor={dataCursor}
       onMouseEnter={handleMouseEnter}
+      onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      style={{
-        rotateX,
-        rotateY,
-        transformStyle: 'preserve-3d',
-      }}
-      className={`relative w-full cursor-pointer perspective-[1000px] ${className || ''}`}
+      style={
+        {
+          '--spot-x': '50%',
+          '--spot-y': '50%',
+          '--spot-opacity': '0',
+          willChange: 'transform',
+        } as React.CSSProperties
+      }
+      className={`tilt-spotlight-card relative w-full ${className}`}
     >
-      <div 
-        style={{ transform: 'translateZ(20px)' }} 
-        className="w-full h-full relative z-10"
-      >
-        {children}
-      </div>
+      <div className="w-full h-full relative z-10">{children}</div>
 
-      {/* Glare effect */}
-      <motion.div
-        className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300 rounded-[inherit]"
-        style={{
-          background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(255,255,255,0.15) 0%, transparent 60%)`,
-          opacity: isHovered ? 1 : 0,
-        }}
-      />
-    </motion.div>
+      {/* Proximity Spotlight Border (Only illuminates border near cursor) */}
+      <div className="tilt-spotlight-border" aria-hidden="true" />
+
+      {/* Subtle Chromatic / Holographic Surface Glare */}
+      <div className="tilt-chromatic-glare" aria-hidden="true" />
+    </div>
   );
 }

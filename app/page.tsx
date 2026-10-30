@@ -256,10 +256,13 @@ export default function Home() {
 
 
   const handleHireHover = () => {
-    if (!chaosMode) setRunawayPos({ x: (Math.random() - 0.5) * 400, y: (Math.random() - 0.5) * 400 });
+    if (!chaosMode) {
+      setRunawayPos({ x: (Math.random() - 0.5) * 400, y: (Math.random() - 0.5) * 400 });
+      window.dispatchEvent(new CustomEvent('companion-signal', { detail: { type: 'hire-evade' } }));
+    }
   };
 
-  // ── INIT KHZ DOM EFFECTS ──
+  // ── INIT KHZ DOM EFFECTS (CYBER-SHUTTER, HEX SCRAMBLE & VELOCITY SKEW) ──
   useEffect(() => {
     // Toggle chaos mode on body
     document.body.classList.toggle('chaos-mode', chaosMode);
@@ -286,6 +289,41 @@ export default function Home() {
       }
     };
     window.addEventListener('scroll', handleScrollHero, { passive: true });
+
+    // Scroll Velocity Kinetic Skew (Zero-Rerender CSS Variable)
+    let lastScrollY = window.scrollY;
+    let currentSkew = 0;
+    let targetSkew = 0;
+    let skewRaf = 0;
+    let skewRunning = false;
+
+    const tickSkew = () => {
+      targetSkew *= 0.82;
+      currentSkew += (targetSkew - currentSkew) * 0.22;
+
+      if (Math.abs(currentSkew) < 0.015 && Math.abs(targetSkew) < 0.015) {
+        currentSkew = 0;
+        targetSkew = 0;
+        document.documentElement.style.setProperty('--scroll-skew', '0deg');
+        skewRunning = false;
+        return;
+      }
+
+      document.documentElement.style.setProperty('--scroll-skew', `${currentSkew.toFixed(3)}deg`);
+      skewRaf = requestAnimationFrame(tickSkew);
+    };
+
+    const handleVelocityScroll = () => {
+      const nowY = window.scrollY;
+      const dy = nowY - lastScrollY;
+      lastScrollY = nowY;
+      targetSkew = Math.max(-2.35, Math.min(2.35, dy * 0.042));
+      if (!skewRunning) {
+        skewRunning = true;
+        skewRaf = requestAnimationFrame(tickSkew);
+      }
+    };
+    window.addEventListener('scroll', handleVelocityScroll, { passive: true });
     
     // Crossfade background every 7s
     const bgInterval = setInterval(() => {
@@ -304,12 +342,19 @@ export default function Home() {
       el.classList.add('processed');
     });
 
-    // Auto numbering section labels
+    // Auto numbering section labels + target numbers for hex decryption
+    const HEX_CHARS = '0123456789ABCDEF';
+    const scrambleTimers = new Map<Element, ReturnType<typeof setInterval>>();
+
     document.querySelectorAll('.section-label').forEach((el, i) => {
-      el.setAttribute('data-no', (i < 9 ? '0' : '') + (i + 1));
+      const finalNo = (i < 9 ? '0' : '') + (i + 1);
+      el.setAttribute('data-target-no', finalNo);
+      if (!el.hasAttribute('data-scrambled')) {
+        el.setAttribute('data-no', finalNo);
+      }
     });
 
-        // Scroll Reveal: observe each text element directly for perfect bidirectional trigger
+    // Scroll Reveal: observe each text element directly for bidirectional brightness
     const revealObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -320,31 +365,140 @@ export default function Home() {
           }
         });
       },
-      // Trigger when element is slightly inside viewport
       { threshold: [0, 1], rootMargin: "0px" }
     );
     document.querySelectorAll('.scroll-reveal-line').forEach((el) => revealObserver.observe(el));
 
+    // Bidirectional Section Wipeout (.cyber-shutter) + Hex Scramble (.section-label)
+    // Replays every time a section enters the viewport (scrolling down OR scrolling back up)!
+    document.documentElement.classList.add('shutter-ready');
+    const settleTimers = new Map<Element, ReturnType<typeof setTimeout>>();
 
-    // Section label sweep animation
-    const labelObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-          }
-        });
+    const triggerLabelScramble = (labelEl: HTMLElement | null) => {
+      if (!labelEl) return;
+      labelEl.classList.add('is-visible');
+      if (labelEl.hasAttribute('data-scrambled')) return;
+      labelEl.setAttribute('data-scrambled', '1');
+      labelEl.setAttribute('data-scrambling', 'true');
+      const targetNo = labelEl.getAttribute('data-target-no') || '01';
+      const oldTimer = scrambleTimers.get(labelEl);
+      if (oldTimer) clearInterval(oldTimer);
+
+      let step = 0;
+      const maxSteps = 9; // ~405ms at 45ms/frame
+      const timer = setInterval(() => {
+        step += 1;
+        if (step >= maxSteps) {
+          labelEl.setAttribute('data-no', targetNo);
+          labelEl.removeAttribute('data-scrambling');
+          clearInterval(timer);
+          scrambleTimers.delete(labelEl);
+        } else {
+          const h1 = HEX_CHARS[Math.floor(Math.random() * 16)];
+          const h2 = HEX_CHARS[Math.floor(Math.random() * 16)];
+          labelEl.setAttribute('data-no', `0x${h1}${h2}`);
+        }
+      }, 45);
+      scrambleTimers.set(labelEl, timer);
+    };
+
+    const resetLabelScramble = (labelEl: HTMLElement | null) => {
+      if (!labelEl) return;
+      labelEl.classList.remove('is-visible');
+      labelEl.removeAttribute('data-scrambled');
+      labelEl.removeAttribute('data-scrambling');
+      const oldTimer = scrambleTimers.get(labelEl);
+      if (oldTimer) {
+        clearInterval(oldTimer);
+        scrambleTimers.delete(labelEl);
+      }
+      const targetNo = labelEl.getAttribute('data-target-no') || '01';
+      labelEl.setAttribute('data-no', targetNo);
+    };
+
+    const openSectionShutter = (sectionEl: Element) => {
+      const shutter = sectionEl.querySelector<HTMLElement>('.cyber-shutter');
+      const label = sectionEl.querySelector<HTMLElement>('.section-label');
+      triggerLabelScramble(label);
+
+      if (!shutter || shutter.classList.contains('is-shutter-open')) return;
+      const pending = settleTimers.get(sectionEl);
+      if (pending) clearTimeout(pending);
+
+      shutter.classList.remove('is-shutter-settled');
+      // Force initial clipped layout read so CSS transition + laser sweep play smoothly
+      void shutter.offsetWidth;
+      shutter.classList.add('is-shutter-open');
+
+      sectionEl.querySelectorAll('.scroll-reveal-line').forEach((line) => {
+        line.classList.add('is-bright');
+      });
+
+      const t = setTimeout(() => {
+        shutter.classList.add('is-shutter-settled');
+        settleTimers.delete(sectionEl);
+      }, 850);
+      settleTimers.set(sectionEl, t);
+    };
+
+    const closeSectionShutter = (sectionEl: Element) => {
+      const shutter = sectionEl.querySelector<HTMLElement>('.cyber-shutter');
+      const label = sectionEl.querySelector<HTMLElement>('.section-label');
+      resetLabelScramble(label);
+
+      if (!shutter) return;
+      if (!shutter.classList.contains('is-shutter-open') && !shutter.classList.contains('is-shutter-settled')) {
+        return;
+      }
+      const pending = settleTimers.get(sectionEl);
+      if (pending) {
+        clearTimeout(pending);
+        settleTimers.delete(sectionEl);
+      }
+      shutter.classList.remove('is-shutter-open', 'is-shutter-settled');
+    };
+
+    const syncSectionShutters = () => {
+      const vh = window.innerHeight;
+      document.querySelectorAll('.ms-section').forEach((sec) => {
+        const rect = sec.getBoundingClientRect();
+        // Open when section enters active viewport zone
+        if (rect.top < vh * 0.78 && rect.bottom > vh * 0.22) {
+          openSectionShutter(sec);
+        }
+        // Reset when section scrolls away (above or below) so re-entering replays the wipeout!
+        else if (rect.bottom < vh * 0.08 || rect.top > vh * 0.92) {
+          closeSectionShutter(sec);
+        }
+      });
+    };
+
+    const shutterObserver = new IntersectionObserver(
+      () => {
+        syncSectionShutters();
       },
-      { threshold: 0.5 }
+      { threshold: [0, 0.08, 0.25, 0.75] }
     );
-    document.querySelectorAll('.section-label').forEach((el) => labelObserver.observe(el));
+    document.querySelectorAll('.ms-section').forEach((sec) => shutterObserver.observe(sec));
+    window.addEventListener('scroll', syncSectionShutters, { passive: true });
+    window.addEventListener('resize', syncSectionShutters, { passive: true });
+    const initRaf = requestAnimationFrame(syncSectionShutters);
 
     return () => {
       window.removeEventListener('scroll', handleScrollNav);
       window.removeEventListener('scroll', handleScrollHero);
+      window.removeEventListener('scroll', handleVelocityScroll);
+      window.removeEventListener('scroll', syncSectionShutters);
+      window.removeEventListener('resize', syncSectionShutters);
+      cancelAnimationFrame(initRaf);
+      if (skewRaf) cancelAnimationFrame(skewRaf);
+      document.documentElement.style.setProperty('--scroll-skew', '0deg');
+      document.documentElement.classList.remove('shutter-ready');
       clearInterval(bgInterval);
+      scrambleTimers.forEach((timer) => clearInterval(timer));
+      settleTimers.forEach((t) => clearTimeout(t));
       revealObserver.disconnect();
-      labelObserver.disconnect();
+      shutterObserver.disconnect();
     };
   }, [chaosMode]);
 
@@ -540,12 +694,9 @@ export default function Home() {
           {/* ══ MANIFESTO ════════════════════════════════ */}
           <section id="sec-manifesto" className="ms-section">
             <div className="section-label">Manifesto</div>
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-16 items-start">
+            <div className="cyber-shutter grid grid-cols-1 md:grid-cols-12 gap-16 items-start">
               
-              <motion.div 
-                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}
-                className="md:col-span-3 flex flex-col gap-10"
-              >
+              <div className="md:col-span-3 flex flex-col gap-10">
                 <div className="flex flex-col gap-4 items-start">
                   <div className="flex flex-wrap gap-2">
                     <span className="px-3 py-1 border border-[#333330] text-[9px] uppercase tracking-widest font-mono text-[#A9A9A2]">
@@ -579,15 +730,12 @@ export default function Home() {
                 </div>
                 
                 {/* Khung ảnh bên trái dưới chữ Hire Me */}
-                <div className="mt-auto pt-16 hidden md:block w-full">
+                <div className="mt-auto pt-16 hidden md:block w-full velocity-skew-target" data-cursor="zoom">
                   <img src="/meme5.jpg" alt="Left Image" className="w-full aspect-square object-cover border border-[#333330] rounded-sm opacity-100" />
                 </div>
-              </motion.div>
+              </div>
               
-              <motion.div 
-                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.15 }}
-                className="md:col-span-9 relative"
-              >
+              <div className="md:col-span-9 relative">
                 {/* Khung nhãn góc trên bên phải */}
                 <div className="absolute top-0 right-0 hidden md:flex flex-col items-end gap-2 z-10">
                   <span className="px-3 py-1 border border-[#333330] text-[9px] uppercase tracking-widest font-mono text-[#3B82F6]">
@@ -610,7 +758,7 @@ export default function Home() {
                   </div>
                 )}
                 
-                <h2 className="split-lines scroll-reveal-line font-serif text-[clamp(2rem,4vw,3.5rem)] leading-[1.4] text-white font-light mb-12">
+                <h2 className="velocity-skew-target split-lines scroll-reveal-line font-serif text-[clamp(2rem,4vw,3.5rem)] leading-[1.4] text-white font-light mb-12">
                   <span className="scroll-reveal-line" data-reveal-delay="0">InfoSec Student </span><br/>
                   <span className="scroll-reveal-line italic text-[#A9A9A2] text-[0.65em] inline-block pt-1" data-reveal-delay="2">Please excuse me for being weird.</span>
                 </h2>
@@ -626,55 +774,54 @@ export default function Home() {
                     </span>
                   </p>
                   
-                  <div className="flex flex-col items-end w-full translate-y-10"> 
+                  <div className="flex flex-col items-end w-full translate-y-10 velocity-skew-target" data-cursor="zoom"> 
                     
                     <img src="/pic2.jpg" alt="Meme 1" className="max-w-full max-h-[35vh] object-contain border border-[#333330] bg-[#0A0A0A] scale-[1.15]" />
                     
                     <div className="mt-8 w-full text-right">
                     <span className="block font-mono text-[16px] text-[#A9A9A2]/60 uppercase tracking-widest">
-                      The enemy cannot know your next move if u don't know it either
+                      The enemy cannot know your next move if u don&apos;t know it either
                     </span>
                     <span className="block font-mono text-[12px] text-[#A9A9A2]/60 tracking-widest mt-1">
-                      - Lao Tzu didn't say that
+                      - Lao Tzu didn&apos;t say that
                     </span>
                   </div>
                   </div>
                 </div>
-            </motion.div>
+            </div>
             </div>
 
 
           </section>
 
           {/* ══ VISUAL ARCHIVE (MEME GRID) ═══════════════ */}
-          
-            
-
-
-            <section id="sec-archive" className="ms-section">
+          <section id="sec-archive" className="ms-section">
             <div className="section-label">RANDOM THINGS</div>
-            <div className="flex flex-col md:flex-row gap-6 items-stretch justify-center h-[75vh]">
-              <motion.div initial={{ opacity: 0, x: -60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }} className="flex-1 h-full w-full min-w-0 min-h-0 flex items-center justify-center">
+            <div className="cyber-shutter velocity-skew-target flex flex-col md:flex-row gap-6 items-stretch justify-center h-[75vh]">
+              <div className="flex-1 h-full w-full min-w-0 min-h-0 flex items-center justify-center" data-cursor="zoom">
                 <img src="/p1.jpg" alt="Portrait Meme" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" />
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.2 }} className="flex-1 flex flex-col gap-6 h-full w-full min-w-0 min-h-0">
-                <div className="flex-1 w-full min-h-0 flex items-center justify-center"><img src="/meme3.jpg" alt="Landscape Meme 1" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" /></div>
-                <div className="flex-1 w-full min-h-0 flex items-center justify-center"><img src="/meme4.jpg" alt="Landscape Meme 2" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" /></div>
-              </motion.div>
-             <motion.div initial={{ opacity: 0, x: 60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.4 }} className="flex-1 h-full w-full min-w-0 min-h-0 flex items-center justify-center">
+              </div>
+              <div className="flex-1 flex flex-col gap-6 h-full w-full min-w-0 min-h-0">
+                <div className="flex-1 w-full min-h-0 flex items-center justify-center" data-cursor="zoom">
+                  <img src="/meme3.jpg" alt="Landscape Meme 1" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" />
+                </div>
+                <div className="flex-1 w-full min-h-0 flex items-center justify-center" data-cursor="zoom">
+                  <img src="/meme4.jpg" alt="Landscape Meme 2" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" />
+                </div>
+              </div>
+              <div className="flex-1 h-full w-full min-w-0 min-h-0 flex items-center justify-center" data-cursor="zoom">
                 <img src="/p2.jpg" alt="Portrait Meme" className="max-w-full max-h-full object-contain border border-[#333330] bg-[#0A0A0A]" />
-              </motion.div>
-
+              </div>
             </div>
           </section>
 
           {/* ══ SYSTEM BULLETIN // COMPACT TIMELINE WITH DROPDOWN REVISIONS ═══════════════ */}
           <section id="sec-bulletin" className="ms-section">
             <div className="section-label">Index</div>
-            <div className="flex flex-col space-y-5 font-mono">
+            <div className="cyber-shutter flex flex-col space-y-5 font-mono">
               {/* Header with clear typography */}
               <div className="flex items-baseline justify-between border-b border-[#222220] pb-3.5">
-                <h3 className="font-serif text-3xl sm:text-4xl text-white font-light">
+                <h3 className="velocity-skew-target font-serif text-3xl sm:text-4xl text-white font-light">
                   What&apos;s New <span className="italic text-[#3B82F6]">&amp; Updates</span>
                 </h3>
                 <span className="text-xs uppercase tracking-widest text-[#A9A9A2] hidden sm:inline-block">
@@ -838,37 +985,37 @@ export default function Home() {
           {/* ══ SELECTED WORKS ───────────────────────── */}
           <section id="sec-works" className="ms-section">
             <div className="section-label">Selected Works</div>
-            <div className="flex flex-col">
+            <div className="cyber-shutter velocity-skew-target flex flex-col">
 
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}>
-                <TiltCard><Link href="/info-sec" className="service-item">
+              <div>
+                <TiltCard maxTilt={3.5} dataCursor="inspect"><Link href="/info-sec" className="service-item">
                   <div className="service-item__body">
                     <h3 className="service-item__title scroll-reveal-line" data-reveal-delay="0">Notes</h3>
                     <div className="service-item__meta mt-2 scroll-reveal-line" data-reveal-delay="1">Transition from a script kiddie to a professional overthinker.</div>
                   </div>
                   <span className="service-item__arrow">→</span>
                 </Link></TiltCard>
-              </motion.div>
+              </div>
 
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}>
-                <TiltCard><Link href="/blog" className="service-item">
+              <div>
+                <TiltCard maxTilt={3.5} dataCursor="decrypt"><Link href="/blog" className="service-item">
                   <div className="service-item__body">
                     <h3 className="service-item__title scroll-reveal-line" data-reveal-delay="0">CTF Training</h3>
                     <div className="service-item__meta mt-2 scroll-reveal-line" data-reveal-delay="1">A note dump of my CTF journey</div>
                   </div>
                   <span className="service-item__arrow">→</span>
                 </Link></TiltCard>
-              </motion.div>
+              </div>
 
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}>
-                <TiltCard><a href="/free-cookie" target="_blank" rel="noopener noreferrer" className="service-item">
+              <div>
+                <TiltCard maxTilt={3.5} dataCursor="decrypt"><a href="/free-cookie" target="_blank" rel="noopener noreferrer" className="service-item">
                   <div className="service-item__body">
                     <h3 className="service-item__title scroll-reveal-line">Free Cookie {chaosMode ? '☢️' : '🍪'}</h3>
                     <div className="service-item__meta mt-2 scroll-reveal-line" data-reveal-delay="1">Totally safe. Not a rickroll. I promise.</div>
                   </div>
                   <span className="service-item__arrow">→</span>
                 </a></TiltCard>
-              </motion.div>
+              </div>
             </div>
           </section>
 
@@ -876,17 +1023,11 @@ export default function Home() {
           <section id="sec-rfid" className="ms-section">
             <div className="section-label">Project: RFID Vault</div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            <div className="cyber-shutter grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
               {/* Left Column: Minimal Typography & Story */}
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }} 
-                whileInView={{ opacity: 1, x: 0 }} 
-                viewport={{ once: false, amount: 0.1 }} 
-                transition={{ duration: 0.8, ease: EASE_OUT }}
-                className="lg:col-span-5 flex flex-col gap-6"
-              >
+              <div className="lg:col-span-5 flex flex-col gap-6">
                 <div>
-                  <h3 className="font-serif text-[clamp(2.5rem,4vw,4rem)] leading-[1.05] font-light text-white tracking-tight">
+                  <h3 className="velocity-skew-target font-serif text-[clamp(2.5rem,4vw,4rem)] leading-[1.05] font-light text-white tracking-tight">
                     RFID Vault
                   </h3>
                 </div>
@@ -914,18 +1055,12 @@ export default function Home() {
                     </Link>
                   </MagneticWrapper>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Right Column: Tactile Matte Smart Keycard */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }} 
-                whileInView={{ opacity: 1, y: 0 }} 
-                viewport={{ once: false, amount: 0.1 }} 
-                transition={{ duration: 0.8, delay: 0.15, ease: EASE_OUT }}
-                className="lg:col-span-7 flex justify-center"
-              >
+              <div className="lg:col-span-7 flex justify-center velocity-skew-target">
                 <div className="w-full max-w-lg">
-                  <TiltCard>
+                  <TiltCard dataCursor="inspect">
                     <Link
                       href="/projects/rfid"
                       className="group block relative w-full aspect-[1.586/1] bg-gradient-to-br from-[#121212] via-[#0A0A0A] to-[#050505] border border-[#2A2A28] hover:border-[#3B82F6] rounded-2xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden shadow-2xl transition-all duration-300 cursor-pointer"
@@ -988,7 +1123,7 @@ export default function Home() {
                     </Link>
                   </TiltCard>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </section>
 
@@ -996,15 +1131,9 @@ export default function Home() {
           <section id="sec-egov" className="ms-section">
             <div className="section-label">Applied Cryptography: e-Gov PKI</div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            <div className="cyber-shutter grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
               {/* Left Column: Tactile PAdES Sealed Decree & Interactive Byte-Flipper */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.1 }}
-                transition={{ duration: 0.8, ease: EASE_OUT }}
-                className="lg:col-span-7 order-2 lg:order-1 flex justify-center"
-              >
+              <div className="lg:col-span-7 order-2 lg:order-1 flex justify-center velocity-skew-target">
                 <div className="w-full max-w-lg relative">
                   {/* Subtle Stacked Paper Back-Sheet */}
                   <div
@@ -1015,7 +1144,7 @@ export default function Home() {
                     }`}
                   />
 
-                  <TiltCard>
+                  <TiltCard dataCursor="decrypt">
                     <Link
                       href="/projects/e-gov"
                       className={`group block relative w-full bg-[#0A0A0A] border rounded-sm p-5 sm:p-6 transition-all duration-300 shadow-2xl overflow-hidden cursor-pointer ${
@@ -1165,22 +1294,16 @@ export default function Home() {
                     </Link>
                   </TiltCard>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Right Column: Concise Editorial Typography */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: false, amount: 0.1 }}
-                transition={{ duration: 0.8, delay: 0.15, ease: EASE_OUT }}
-                className="lg:col-span-5 order-1 lg:order-2 flex flex-col gap-5"
-              >
+              <div className="lg:col-span-5 order-1 lg:order-2 flex flex-col gap-5">
                 <div>
                   <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#3B82F6] mb-2.5">
                     <span className="w-2 h-2 rounded-full bg-[#3B82F6] animate-pulse" />
                     ZERO-TRUST PKI & PADES
                   </div>
-                  <h3 className="font-serif text-[clamp(2.4rem,4vw,3.6rem)] leading-[1.06] font-light text-white">
+                  <h3 className="velocity-skew-target font-serif text-[clamp(2.4rem,4vw,3.6rem)] leading-[1.06] font-light text-white">
                     e-Gov Signature.
                   </h3>
                 </div>
@@ -1208,21 +1331,18 @@ export default function Home() {
                     </Link>
                   </MagneticWrapper>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </section>
 
           {/* ══ HOME SOC LAB ════════════════════════════════════════ */}
           <section id="sec-topic" className="ms-section">
             <div className="section-label">Project: SOC Lab</div>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start h-full">
+            <div className="cyber-shutter grid grid-cols-1 lg:grid-cols-12 gap-12 items-start h-full">
               
               {/* Left Info */}
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.8, ease: "easeOut" }}
-                className="lg:col-span-4 flex flex-col gap-6"
-              >
-                <h3 className="font-serif text-[clamp(2.5rem,4vw,3.8rem)] leading-[1.1] font-light text-white scroll-reveal-line">
+              <div className="lg:col-span-4 flex flex-col gap-6">
+                <h3 className="velocity-skew-target font-serif text-[clamp(2.5rem,4vw,3.8rem)] leading-[1.1] font-light text-white scroll-reveal-line">
                   <span className="scroll-reveal-line" data-reveal-delay="0">Wazuh</span><br/>
                 </h3>
                 
@@ -1240,13 +1360,10 @@ export default function Home() {
                   |||||
                 </p>
 
-              </motion.div>
+              </div>
 
               {/* Right Terminal List */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                className="lg:col-span-8 bg-[#050505] border border-[#333330] flex flex-col font-mono text-sm h-[65vh] max-h-[600px]"
-              >
+              <div className="velocity-skew-target lg:col-span-8 bg-[#050505] border border-[#333330] flex flex-col font-mono text-sm h-[65vh] max-h-[600px]">
                 {/* Terminal Header */}
                 <div className="flex justify-between items-center px-6 py-4 border-b border-[#333330] bg-[#0A0A0A]">
                   <span className="text-[#A9A9A2] text-sm">~/projects/home-soc-lab</span>
@@ -1268,7 +1385,7 @@ export default function Home() {
                     "Coming Soon...",
                     "Coming Soon..."
                   ].map((file, i) => (
-                    <TiltCard key={i}><a href={`/soc-lab/${file.replace('.md', '')}`} className="flex justify-between items-center py-4 border-b border-[#111111] hover:bg-[#111111] transition-colors group cursor-pointer px-4">
+                    <TiltCard key={i} maxTilt={3} dataCursor="inspect"><a href={`/soc-lab/${file.replace('.md', '')}`} className="flex justify-between items-center py-4 border-b border-[#111111] hover:bg-[#111111] transition-colors group cursor-pointer px-4">
                       <span className="flex gap-5 items-center">
                         <span className="text-[#333330] group-hover:text-[#3B82F6] text-sm">[{String(i+1).padStart(2, '0')}]</span>
                         <span className="text-[#D8D8D1] group-hover:text-white transition-colors text-base">{file}</span>
@@ -1282,7 +1399,7 @@ export default function Home() {
                     <span className="animate-pulse text-base">_</span>
                   </div>
                 </div>
-              </motion.div>
+              </div>
               
             </div>
           </section>
@@ -1290,14 +1407,11 @@ export default function Home() {
           {/* ══ PROJECT: FALLGUARD ════════════════════════════════════════ */}
           <section id="sec-fallguard" className="ms-section">
             <div className="section-label">Project: FallGuard</div>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="cyber-shutter grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               
               {/* Left Info */}
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.8, ease: "easeOut" }}
-                className="lg:col-span-5 flex flex-col gap-5"
-              >
-                <h3 className="font-serif text-[clamp(2.5rem,4vw,3.8rem)] leading-[1.1] font-light text-white scroll-reveal-line">
+              <div className="lg:col-span-5 flex flex-col gap-5">
+                <h3 className="velocity-skew-target font-serif text-[clamp(2.5rem,4vw,3.8rem)] leading-[1.1] font-light text-white scroll-reveal-line">
                   <span className="scroll-reveal-line" data-reveal-delay="0">FallGuard</span><br/>
                   <span className="scroll-reveal-line" data-reveal-delay="1">SYSTEM</span>
                 </h3>
@@ -1321,14 +1435,11 @@ export default function Home() {
                     </Link>
                   </MagneticWrapper>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Right Clickable Architecture Portal Card */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                className="lg:col-span-7"
-              >
-                <TiltCard>
+              <div className="lg:col-span-7 velocity-skew-target">
+                <TiltCard dataCursor="inspect">
                   <Link
                     href="/projects/fallguard"
                     className="group block bg-[#050505] border border-[#333330] hover:border-[#3B82F6] transition-colors overflow-hidden font-mono"
@@ -1398,7 +1509,7 @@ export default function Home() {
                     </div>
                   </Link>
                 </TiltCard>
-              </motion.div>
+              </div>
               
             </div>
           </section>
@@ -1406,91 +1517,89 @@ export default function Home() {
           {/* ══ THEME SELECTION SECTION ═════════════════════════ */}
           <section id="sec-theme" className="ms-section">
             <div className="section-label">Realities</div>
-            
-            <button 
-              onClick={() => setIsThemeOpen(!isThemeOpen)}
-              className="flex flex-col mb-8 text-left w-full hover:opacity-80 transition-opacity cursor-pointer border-none bg-transparent outline-none"
-            >
-              <h2 className="font-mono text-2xl md:text-3xl text-white uppercase tracking-widest mb-2 flex items-center gap-4">
-                <HackerText text="Select_Environment" /> 
-                <span className="text-[#3B82F6] text-sm">{isThemeOpen ? '[-]' : '[+]'}</span>
-              </h2>
-              <p className="font-mono text-[10px] md:text-xs text-[#A9A9A2] opacity-70 tracking-[0.2em] uppercase">
-                &gt; CLICK TO DEPLOY THEME_SELECTION_MODULE
-              </p>
-            </button>
+            <div className="cyber-shutter">
+              <button 
+                onClick={() => setIsThemeOpen(!isThemeOpen)}
+                className="flex flex-col text-left w-full hover:opacity-80 transition-opacity cursor-pointer border-none bg-transparent outline-none"
+              >
+                <h2 className="velocity-skew-target font-mono text-2xl md:text-3xl text-white uppercase tracking-widest mb-2 flex items-center gap-4">
+                  <HackerText text="Select_Environment" /> 
+                  <span className="text-[#3B82F6] text-sm">{isThemeOpen ? '[-]' : '[+]'}</span>
+                </h2>
+                <p className="font-mono text-[10px] md:text-xs text-[#A9A9A2] opacity-70 tracking-[0.2em] uppercase">
+                  &gt; CLICK TO DEPLOY THEME_SELECTION_MODULE
+                </p>
+              </button>
 
-            <AnimatePresence>
-              {isThemeOpen && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="flex flex-wrap gap-8 md:gap-12 w-full justify-center items-center overflow-hidden py-8"
-                >
-                  {[
-                    { id: 'matrix', name: 'THE MATRIX', role: 'CURRENT REALITY', img: '/the_matrix.jpg', color: '#4ade80', link: 'https://kanp9.io.vn/' },
-                    { id: 'crystal', name: 'CRYSTAL CARBON', role: 'DEEP DIVE', img: '/cyan_carbon.jpg', color: '#3B82F6', link: 'https://v3.kanp9.io.vn/' },
-                    { id: 'cybercore', name: 'CYBERCORE OS', role: 'NOSTALGIA SECTOR', img: '/cyber_core.jpg', color: '#a855f7', link: 'https://v4.kanp9.io.vn/' }
-                  ].map((theme, i) => (
-                    <motion.a
-                      key={theme.id}
-                      href={theme.link}
-                      initial={{ opacity: 0, y: 50, rotateY: 30, borderColor: "#333330", boxShadow: "0 0 0px rgba(0,0,0,0)" }}
-                      whileInView={{ opacity: 1, y: 0, rotateY: 0, borderColor: "#333330", boxShadow: "0 0 0px rgba(0,0,0,0)" }}
-                      viewport={{ once: false, amount: 0.1 }}
-                      transition={{ delay: 0.01 + i * 0.15, type: "spring", stiffness: 700, damping: 20 }}
-                      whileHover={{ 
-                        scale: 1.05, 
-                        y: -15, 
-                        boxShadow: `0 0 30px ${theme.color}40`,
-                        borderColor: theme.color
-                      }}
-                      className="relative group bg-[#0A0A0A] border border-[#333330] p-6 w-48 md:w-56 flex flex-col items-center transition-all duration-50 no-underline cursor-pointer"
-                      style={{
-                        transformStyle: 'preserve-3d',
-                        perspective: '1000px'
-                      }}
-                    >
-                      {/* Image Container */}
-                      <div className="w-24 h-24 md:w-28 md:h-28 overflow-hidden mb-6 border border-[#333330] group-hover:border-transparent transition-colors relative bg-[#050505]">
-                        <div className="absolute inset-0 bg-black/60 group-hover:bg-transparent transition-colors z-10"></div>
-                        <img src={theme.img} alt={theme.name} className="w-full h-full object-cover grayscale opacity-50 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-500" />
-                      </div>
-                      
-                      {/* Text Info */}
-                      <h3 
-                        className="font-mono text-xl tracking-widest text-center transition-colors uppercase group-hover:text-white"
-                        style={{ color: '#A9A9A2' }}
+              <AnimatePresence>
+                {isThemeOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="flex flex-wrap gap-8 md:gap-12 w-full justify-center items-center overflow-hidden pt-8 pb-4"
+                  >
+                    {[
+                      { id: 'matrix', name: 'THE MATRIX', role: 'CURRENT REALITY', img: '/the_matrix.jpg', color: '#4ade80', link: 'https://kanp9.io.vn/' },
+                      { id: 'crystal', name: 'CRYSTAL CARBON', role: 'DEEP DIVE', img: '/cyan_carbon.jpg', color: '#3B82F6', link: 'https://v3.kanp9.io.vn/' },
+                      { id: 'cybercore', name: 'CYBERCORE OS', role: 'NOSTALGIA SECTOR', img: '/cyber_core.jpg', color: '#a855f7', link: 'https://v4.kanp9.io.vn/' }
+                    ].map((theme, i) => (
+                      <motion.a
+                        key={theme.id}
+                        href={theme.link}
+                        data-cursor="inspect"
+                        initial={{ opacity: 0, y: 30, rotateY: 20, borderColor: "#333330", boxShadow: "0 0 0px rgba(0,0,0,0)" }}
+                        animate={{ opacity: 1, y: 0, rotateY: 0, borderColor: "#333330", boxShadow: "0 0 0px rgba(0,0,0,0)" }}
+                        transition={{ delay: 0.02 + i * 0.1, type: "spring", stiffness: 500, damping: 24 }}
+                        whileHover={{ 
+                          scale: 1.05, 
+                          y: -12, 
+                          boxShadow: `0 0 30px ${theme.color}40`,
+                          borderColor: theme.color
+                        }}
+                        className="relative group bg-[#0A0A0A] border border-[#333330] p-6 w-48 md:w-56 flex flex-col items-center transition-all duration-50 no-underline cursor-pointer"
+                        style={{
+                          transformStyle: 'preserve-3d',
+                          perspective: '1000px'
+                        }}
                       >
-                        {theme.name}
-                      </h3>
-                      <p className="font-mono text-[9px] text-[#A9A9A2] opacity-50 tracking-[0.2em] text-center mt-2 group-hover:opacity-100 transition-colors uppercase">
-                        {theme.role}
-                      </p>
-
-                      {theme.id === 'matrix' && (
-                        <div className="absolute -top-3 right-4 bg-[#A9A9A2] text-black text-[8px] font-bold px-2 py-1 uppercase tracking-widest">
-                          Active
+                        {/* Image Container */}
+                        <div className="w-24 h-24 md:w-28 md:h-28 overflow-hidden mb-6 border border-[#333330] group-hover:border-transparent transition-colors relative bg-[#050505]">
+                          <div className="absolute inset-0 bg-black/60 group-hover:bg-transparent transition-colors z-10"></div>
+                          <img src={theme.img} alt={theme.name} className="w-full h-full object-cover grayscale opacity-50 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-500" />
                         </div>
-                      )}
-                    </motion.a>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                        
+                        {/* Text Info */}
+                        <h3 
+                          className="font-mono text-xl tracking-widest text-center transition-colors uppercase group-hover:text-white"
+                          style={{ color: '#A9A9A2' }}
+                        >
+                          {theme.name}
+                        </h3>
+                        <p className="font-mono text-[9px] text-[#A9A9A2] opacity-50 tracking-[0.2em] text-center mt-2 group-hover:opacity-100 transition-colors uppercase">
+                          {theme.role}
+                        </p>
+
+                        {theme.id === 'matrix' && (
+                          <div className="absolute -top-3 right-4 bg-[#A9A9A2] text-black text-[8px] font-bold px-2 py-1 uppercase tracking-widest">
+                            Active
+                          </div>
+                        )}
+                      </motion.a>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </section>
 
           {/* ══ CONNECT & CYBER COMPANION ═════════════════════════ */}
           <section id="sec-connect" className="ms-section pb-0">
             <div className="section-label">Connect</div>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-center">
+            <div className="cyber-shutter grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-center">
               
               {/* Connect part */}
-              <motion.div 
-                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT }}
-                className="lg:col-span-6"
-              >
+              <div className="lg:col-span-6 velocity-skew-target">
                 <h2 className="split-lines scroll-reveal-line font-serif text-[clamp(2.5rem,4.6vw,5.6rem)] leading-[1.4] text-white font-light mb-10 pb-4"
                   style={{
                     textShadow: `
@@ -1517,15 +1626,12 @@ export default function Home() {
                   <MagneticWrapper><a href="https://github.com/anphan991" target="_blank" rel="noopener noreferrer" className="cta-link"><HackerText text="GitHub"/></a></MagneticWrapper>
                   <MagneticWrapper><a href="https://x.com/TezD991" target="_blank" rel="noopener noreferrer" className="cta-link"><HackerText text="Twitter"/></a></MagneticWrapper>
                 </div>
-              </motion.div>
+              </div>
 
-              {/* Hybrid Cyber-Tamagotchi Companion */}
-              <motion.div 
-                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.15 }}
-                className="lg:col-span-6 flex flex-col items-center w-full"
-              >
+              {/* Tactical Cyber-Mecha Companion Deck */}
+              <div className="lg:col-span-6 flex flex-col items-center w-full">
                 <CyberCompanion chaosMode={chaosMode} />
-              </motion.div>
+              </div>
             </div>
           </section>
 
@@ -1538,16 +1644,17 @@ export default function Home() {
             
           
               <button
-                onClick={() => setIsDestructing(true)}
-                className="flex items-center gap-3 px-5 py-2.5 border border-[#333330] text-[10px] font-mono uppercase tracking-widest text-[#A9A9A2] hover:text-red-500 hover:border-red-500 hover:bg-red-950/30 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all group"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('companion-signal', { detail: { type: 'wipe-init' } }));
+                  setIsDestructing(true);
+                }}
+                className="flex items-center gap-3 px-5 py-2.5 border border-[#333330] text-[10px] font-mono uppercase tracking-widest text-[#A9A9A2] hover:text-red-500 hover:border-red-500 hover:bg-red-950/30 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all group cursor-pointer"
               >
                 <span className="text-red-500 group-hover:animate-pulse">?</span>
                 execute(wipe_data.sh)
               </button>
             </div>
         </footer>
-
-        
       
         {/* SELF DESTRUCT OVERLAY */}
         <AnimatePresence>
@@ -1558,8 +1665,13 @@ export default function Home() {
               transition={{ duration: 0.1 }}
               className="fixed inset-0 z-[999999] bg-red-950 flex flex-col items-center justify-center pointer-events-auto overflow-hidden"
             >
-              {/* Scanlines and intense noise */}
-              <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-50 mix-blend-overlay"></div>
+              {/* Scanlines and intense local SVG noise */}
+              <div
+                className="absolute inset-0 opacity-45 mix-blend-overlay pointer-events-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")`,
+                }}
+              />
               <div className="absolute inset-0 pointer-events-none" style={{ background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,0,0,0.3) 2px, rgba(255,0,0,0.3) 4px)' }}></div>
               
               <motion.h1 

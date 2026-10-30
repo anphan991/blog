@@ -25,7 +25,7 @@ type BrainrotChannel = 'subway' | 'flappy' | 'crush' | 'gacha' | 'dvd';
 const PAGE_TLDR: Record<string, { title: string; text: string }> = {
   '/': {
     title: 'TL;DR Homepage (5s)',
-    text: 'Minimalist tech-zine exterior hiding memes, a cyber tamagotchi, and 3 AM security engineering rabbit holes.',
+    text: 'There are a few interactive features and Easter eggs hidden throughout the site, but I will not spoil them here.',
   },
   '/projects/e-gov': {
     title: 'TL;DR e-Gov Signature (5s)',
@@ -79,6 +79,7 @@ export default function BrainrotSuite() {
   const [isLargePip, setIsLargePip] = useState<boolean>(false);
   const [channel, setChannel] = useState<BrainrotChannel>('subway');
   const [showTldr, setShowTldr] = useState<boolean>(false);
+  const [hudExpanded, setHudExpanded] = useState<boolean>(false);
 
   // Page-wide visual mutators
   const [australianMode, setAustralianMode] = useState<boolean>(false);
@@ -316,6 +317,10 @@ export default function BrainrotSuite() {
     return () => window.removeEventListener('scroll', onScroll);
   }, [pathname, addAuraToast]);
 
+  useEffect(() => {
+    setShowTldr(false);
+  }, [pathname]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -323,8 +328,9 @@ export default function BrainrotSuite() {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent('toggle-brainrot'));
       }
-      if (e.key === 'Escape' && ctxMenu.visible) {
-        setCtxMenu((prev) => ({ ...prev, visible: false }));
+      if (e.key === 'Escape') {
+        if (ctxMenu.visible) setCtxMenu((prev) => ({ ...prev, visible: false }));
+        if (showTldr) setShowTldr(false);
       }
       if (brainrotOpen && channel === 'subway') {
         if (e.key === 'ArrowLeft') {
@@ -340,7 +346,7 @@ export default function BrainrotSuite() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [ctxMenu.visible, brainrotOpen, channel]);
+  }, [ctxMenu.visible, showTldr, brainrotOpen, channel]);
 
   // Custom Context Menu listener
   useEffect(() => {
@@ -975,77 +981,147 @@ export default function BrainrotSuite() {
 
   return (
     <div className="brainrot-hud-root">
-      {/* ══ 1. FLOATING AURA & ADHD HUD PILLS (NO EXPENSIVE BACKDROP-BLUR) ═══ */}
-      <div className="fixed bottom-4 left-16 z-[9990] flex flex-wrap items-center gap-2 font-mono text-xs select-none">
-        <button
-          type="button"
-          onClick={() =>
-            addAuraToast(
-              100,
-              `Rank: ${auraRank} (Right-click anywhere to open the Secret Root Menu!)`,
-              '✨'
-            )
-          }
-          className={`px-3.5 py-2 border transition-colors cursor-pointer flex items-center gap-2 shadow-lg ${
-            aura < 0
-              ? 'bg-[#260808] border-red-500/60 text-red-300'
-              : 'bg-[#0A0A0A] border-[#333330] hover:border-[#3B82F6] text-[#F5F5F0]'
+      {/* ══ 1. STEALTH EDGE SYSTEM POD (AUTO-TUCKED ON RIGHT EDGE) ═══════════ */}
+      <div className="fixed bottom-5 right-0 z-[9990] overflow-hidden pointer-events-none pl-4 py-2 font-mono select-none">
+        <div
+          className={`pointer-events-auto group flex items-stretch bg-[#0A0A0A] border border-r-0 border-[#262624] hover:border-[#333330] shadow-[0_10px_30px_rgba(0,0,0,0.88)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            hudExpanded || showTldr || brainrotOpen
+              ? 'translate-x-0 opacity-100'
+              : 'translate-x-[calc(100%-38px)] hover:translate-x-0 opacity-50 hover:opacity-100'
           }`}
         >
-          <span className={aura < 0 ? 'text-red-400' : 'text-[#3B82F6]'}>●</span>
-          <span className="font-bold">AURA: {aura.toLocaleString()}</span>
-        </button>
+          {/* Leftmost 38px Stealth Tab Handle (Always peeks out from right screen edge) */}
+          <button
+            type="button"
+            onClick={() => setHudExpanded((prev) => !prev)}
+            className="w-[38px] shrink-0 py-2 flex items-center justify-center gap-1.5 border-r border-[#1C1C1A] hover:bg-[#111111] transition-colors cursor-pointer"
+            title={hudExpanded ? 'Collapse System Pod' : 'Expand / Pin System Pod'}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                aura < 0
+                  ? 'bg-red-500 animate-pulse'
+                  : brainrotOpen || showTldr
+                  ? 'bg-[#3B82F6] shadow-[0_0_8px_#3B82F6]'
+                  : 'bg-[#3B82F6]/80'
+              }`}
+            />
+            <span className="text-[10px] text-[#A9A9A2] leading-none transition-transform duration-300 group-hover:text-[#F5F5F0]">
+              {hudExpanded ? '›' : '‹'}
+            </span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new CustomEvent('toggle-brainrot'))}
-          className={`px-3.5 py-2 border transition-colors cursor-pointer flex items-center gap-2 shadow-lg font-bold ${
-            brainrotOpen
-              ? 'bg-[#3B82F6] border-[#3B82F6] text-black'
-              : 'bg-[#0A0A0A] border-[#333330] hover:border-[#3B82F6] text-[#D8D8D1] hover:text-white'
-          }`}
-        >
-          <span>🧠</span>
-          <span>{brainrotOpen ? 'ADHD: ON' : 'ADHD_MODE'}</span>
-        </button>
-
-        {currentTldr && pathname !== '/' && (
+          {/* Segment 1: AURA Telemetry */}
           <button
             type="button"
             onClick={() => {
-              setShowTldr((prev) => !prev);
-              if (!showTldr) {
-                addAuraToast(250, 'Activated 5-second TL;DR speedrun mode!', '📖');
-              }
+              setIslandOpen((o) => !o);
+              addAuraToast(
+                100,
+                `Rank: ${auraRank} (Right-click anywhere for Root Menu)`,
+                '✨'
+              );
             }}
-            className={`px-3.5 py-2 border transition-colors cursor-pointer flex items-center gap-1.5 shadow-lg ${
-              showTldr
-                ? 'bg-emerald-950 border-emerald-400 text-emerald-300 font-bold'
-                : 'bg-[#0A0A0A] border-[#333330] hover:border-[#3B82F6] text-[#D8D8D1] hover:text-white'
-            }`}
+            className="px-3.5 py-2 flex items-center gap-2 border-r border-[#1C1C1A] hover:bg-[#111111] transition-colors cursor-pointer text-[10px] tracking-[0.16em] uppercase whitespace-nowrap"
+            title="Inspect Aura Rank & Transaction Log"
           >
-            <span>⚡</span>
-            <span>TL;DR 5s</span>
+            <span className="text-[#A9A9A2]">AURA</span>
+            <span
+              className={`font-bold tabular-nums tracking-wider ${
+                aura < 0 ? 'text-red-400' : 'text-[#F5F5F0]'
+              }`}
+            >
+              {aura.toLocaleString()}
+            </span>
           </button>
-        )}
+
+          {/* Segment 2: ADHD Arcade Toggle */}
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('toggle-brainrot'))}
+            className={`px-3.5 py-2 flex items-center gap-2 transition-colors cursor-pointer text-[10px] tracking-[0.16em] uppercase whitespace-nowrap ${
+              currentTldr ? 'border-r border-[#1C1C1A]' : ''
+            } ${
+              brainrotOpen
+                ? 'bg-[#111111] text-[#3B82F6]'
+                : 'text-[#A9A9A2] hover:text-[#F5F5F0] hover:bg-[#111111]'
+            }`}
+            title="Toggle ADHD Arcade PiP (Alt+B)"
+          >
+            <span>ARCADE</span>
+            <span
+              className={`text-[8px] px-1 py-0.5 border leading-none ${
+                brainrotOpen
+                  ? 'border-[#3B82F6] text-[#3B82F6] font-bold'
+                  : 'border-[#262624] text-[#A9A9A2]'
+              }`}
+            >
+              {brainrotOpen ? 'ON' : 'OFF'}
+            </span>
+          </button>
+
+          {/* Segment 3: 05s TL;DR Executive Brief */}
+          {currentTldr && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowTldr((prev) => !prev);
+                if (!showTldr) {
+                  addAuraToast(250, 'Activated 5-second TL;DR executive brief!', '📖');
+                }
+              }}
+              className={`px-3.5 py-2 flex items-center gap-2 transition-colors cursor-pointer text-[10px] tracking-[0.16em] uppercase whitespace-nowrap ${
+                showTldr
+                  ? 'bg-[#111111] text-[#3B82F6]'
+                  : 'text-[#A9A9A2] hover:text-[#F5F5F0] hover:bg-[#111111]'
+              }`}
+              title="Read 5-second Executive Summary"
+            >
+              <span>TL;DR</span>
+              <span
+                className={`text-[8px] px-1 py-0.5 border leading-none ${
+                  showTldr
+                    ? 'border-[#3B82F6] text-[#3B82F6] font-bold'
+                    : 'border-[#262624] text-[#A9A9A2]'
+                }`}
+              >
+                05S
+              </span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* ══ 2. TL;DR SUMMARY POPUP BANNER ════════════════════════════════════ */}
+      {/* ══ 2. EDITORIAL TL;DR DOSSIER POPOVER ════════════════════════════════ */}
       {showTldr && currentTldr && (
-        <div className="fixed bottom-16 left-16 z-[9991] max-w-md bg-[#0D131F] border border-[#3B82F6] p-4 shadow-2xl font-mono text-xs sm:text-sm text-[#F5F5F0]">
-          <div className="flex items-center justify-between gap-3 border-b border-[#3B82F6]/30 pb-2 mb-2">
-            <span className="text-[#3B82F6] font-bold uppercase tracking-wider">
-              🧠 {currentTldr.title}
-            </span>
+        <div className="fixed bottom-16 right-4 sm:right-6 z-[9993] w-[min(92vw,390px)] bg-[#0A0A0A] border border-[#262624] border-l-2 border-l-[#3B82F6] shadow-[0_24px_60px_rgba(0,0,0,0.92)] font-mono select-none">
+          <div className="px-4 py-2.5 bg-[#111111] border-b border-[#1C1C1A] flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" />
+              <span className="text-[9px] tracking-[0.22em] uppercase text-[#3B82F6] font-bold">
+                SYS.BRIEF // 05S_SUMMARY
+              </span>
+            </div>
             <button
               type="button"
               onClick={() => setShowTldr(false)}
-              className="text-[#A9A9A2] hover:text-white px-1.5 cursor-pointer"
+              className="text-[9px] tracking-[0.18em] uppercase text-[#A9A9A2] hover:text-[#F5F5F0] px-1 cursor-pointer transition-colors"
             >
-              [X]
+              [ ESC ]
             </button>
           </div>
-          <p className="font-sans text-[#D8D8D1] leading-relaxed">{currentTldr.text}</p>
+          <div className="p-4">
+            <div className="text-[11px] uppercase tracking-[0.14em] text-[#F5F5F0] font-bold mb-2">
+              {currentTldr.title}
+            </div>
+            <p className="font-sans text-xs sm:text-[13px] text-[#D8D8D1] leading-relaxed">
+              {currentTldr.text}
+            </p>
+          </div>
+          <div className="px-4 py-1.5 bg-[#070707] border-t border-[#1C1C1A] flex items-center justify-between text-[9px] tracking-[0.16em] uppercase text-[#A9A9A2]">
+            <span className="truncate max-w-[220px]">PATH: {pathname}</span>
+            <span>EST: 05S</span>
+          </div>
         </div>
       )}
 
@@ -1480,6 +1556,24 @@ export default function BrainrotSuite() {
               <span>🧠 {brainrotOpen ? 'Close ADHD Arcade' : 'Open ADHD Arcade'}</span>
               <span className="text-[10px] text-[#A9A9A2]">Alt+B</span>
             </button>
+
+            {currentTldr && (
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !showTldr;
+                  setShowTldr(next);
+                  if (next) {
+                    addAuraToast(250, 'Activated 5-second TL;DR executive brief!', '📖');
+                  }
+                  setCtxMenu({ visible: false, x: 0, y: 0 });
+                }}
+                className="w-full px-3 py-2 text-left hover:bg-[#3B82F6]/15 hover:text-[#3B82F6] transition-colors flex items-center justify-between cursor-pointer"
+              >
+                <span>📖 {showTldr ? 'Hide 5s TL;DR Brief' : 'Read 5s TL;DR Brief'}</span>
+                <span className="text-[10px] text-[#3B82F6]">05S</span>
+              </button>
+            )}
 
             <button
               type="button"
