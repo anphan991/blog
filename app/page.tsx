@@ -151,13 +151,15 @@ export default function Home() {
   const [bsodState, setBsodState] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
 
+  const SHOW_SELECTED_WORKS = false;
+  const SHOW_CRYSTAL_THEME = false;
+
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isDestructing, setIsDestructing] = useState(false);
-  const [activeBulletinIdx, setActiveBulletinIdx] = useState(4);
   const [isTimelineOpen, setIsTimelineOpen] = useState(true);
   const [egovTampered, setEgovTampered] = useState(false);
 
-  const RELEASES = [
+  const ALL_RELEASES = [
     {
       id: 'works',
       short: 'Selected Works',
@@ -233,6 +235,8 @@ export default function Home() {
       ],
     },
   ];
+  const RELEASES = ALL_RELEASES.filter((r) => SHOW_SELECTED_WORKS || r.id !== 'works');
+  const [activeBulletinIdx, setActiveBulletinIdx] = useState(RELEASES.length - 1);
   const activeRelease = RELEASES[activeBulletinIdx] || RELEASES[RELEASES.length - 1];
   const jumpToSection = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 
@@ -618,16 +622,32 @@ export default function Home() {
                 
                 {navOpen && (
                   <div className="absolute top-full right-0 mt-4 bg-[#111111] border border-[#333330] p-4 flex flex-col gap-4 text-[11px] uppercase tracking-widest text-blue-400 font-mono min-w-[160px] shadow-2xl z-50">
-                    <button onClick={() => { document.getElementById('sec-manifesto')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[01] MANIFESTO" /></button>
-                    <button onClick={() => { document.getElementById('sec-archive')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[02] ARCHIVE" /></button>
-                    <button onClick={() => { document.getElementById('sec-bulletin')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[03] INDEX" /></button>
-                    <button onClick={() => { document.getElementById('sec-works')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[04] WORKS" /></button>
-                    <button onClick={() => { document.getElementById('sec-rfid')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[05] RFID VAULT" /></button>
-                    <button onClick={() => { document.getElementById('sec-egov')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[06] E-GOV PKI" /></button>
-                    <button onClick={() => { document.getElementById('sec-topic')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[07] WAZUH" /></button>
-                    <button onClick={() => { document.getElementById('sec-fallguard')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[08] FALLGUARD" /></button>
-                    <button onClick={() => { document.getElementById('sec-theme')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[09] THEMES" /></button>
-                    <button onClick={() => { document.getElementById('sec-connect')?.scrollIntoView({behavior: 'smooth'}); setNavOpen(false); }} className="text-left hover:text-[#3B82F6] transition-colors duration-300"><HackerText text="[10] CONNECT" /></button>
+                    {[
+                      { id: 'sec-manifesto', label: 'MANIFESTO' },
+                      { id: 'sec-archive', label: 'ARCHIVE' },
+                      { id: 'sec-bulletin', label: 'INDEX' },
+                      ...(SHOW_SELECTED_WORKS ? [{ id: 'sec-works', label: 'WORKS' }] : []),
+                      { id: 'sec-rfid', label: 'RFID VAULT' },
+                      { id: 'sec-egov', label: 'E-GOV PKI' },
+                      { id: 'sec-topic', label: 'WAZUH' },
+                      { id: 'sec-fallguard', label: 'FALLGUARD' },
+                      { id: 'sec-theme', label: 'THEMES' },
+                      { id: 'sec-connect', label: 'CONNECT' },
+                    ].map((navItem, idx) => {
+                      const num = idx + 1 < 10 ? `0${idx + 1}` : `${idx + 1}`;
+                      return (
+                        <button
+                          key={navItem.id}
+                          onClick={() => {
+                            document.getElementById(navItem.id)?.scrollIntoView({ behavior: 'smooth' });
+                            setNavOpen(false);
+                          }}
+                          className="text-left hover:text-[#3B82F6] transition-colors duration-300"
+                        >
+                          <HackerText text={`[${num}] ${navItem.label}`} />
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -831,8 +851,8 @@ export default function Home() {
 
               {/* Unified Panel */}
               <div className="border border-[#222220] bg-[#0A0A0A] p-5 sm:p-6 space-y-5">
-                {/* 5 Segmented Tabs with enhanced font size */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 border-b border-[#1A1A1A] pb-4">
+                {/* Segmented Tabs with dynamic columns */}
+                <div className={`grid grid-cols-2 ${RELEASES.length >= 5 ? 'sm:grid-cols-3 lg:grid-cols-5' : 'lg:grid-cols-4'} gap-2.5 border-b border-[#1A1A1A] pb-4`}>
                   {RELEASES.map((item, idx) => {
                     const isSelected = idx === activeBulletinIdx;
                     return (
@@ -982,7 +1002,8 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ══ SELECTED WORKS ───────────────────────── */}
+          {/* ══ SELECTED WORKS (TEMPORARILY HIDDEN) ───────────────────────── */}
+          {SHOW_SELECTED_WORKS && (
           <section id="sec-works" className="ms-section">
             <div className="section-label">Selected Works</div>
             <div className="cyber-shutter velocity-skew-target flex flex-col">
@@ -1018,6 +1039,7 @@ export default function Home() {
               </div>
             </div>
           </section>
+          )}
 
           {/* ══ PROJECT: RFID VAULT ════════════════════════════════════════ */}
           <section id="sec-rfid" className="ms-section">
@@ -1541,7 +1563,9 @@ export default function Home() {
                   >
                     {[
                       { id: 'matrix', name: 'THE MATRIX', role: 'CURRENT REALITY', img: '/the_matrix.jpg', color: '#4ade80', link: 'https://kanp9.io.vn/' },
-                      { id: 'crystal', name: 'CRYSTAL CARBON', role: 'DEEP DIVE', img: '/cyan_carbon.jpg', color: '#3B82F6', link: 'https://v3.kanp9.io.vn/' },
+                      ...(SHOW_CRYSTAL_THEME
+                        ? [{ id: 'crystal', name: 'CRYSTAL CARBON', role: 'DEEP DIVE', img: '/cyan_carbon.jpg', color: '#3B82F6', link: 'https://v3.kanp9.io.vn/' }]
+                        : []),
                       { id: 'cybercore', name: 'CYBERCORE OS', role: 'NOSTALGIA SECTOR', img: '/cyber_core.jpg', color: '#a855f7', link: 'https://v4.kanp9.io.vn/' }
                     ].map((theme, i) => (
                       <motion.a
