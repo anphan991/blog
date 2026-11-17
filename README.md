@@ -5,7 +5,7 @@
 ![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js&logoColor=white)
 ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
-###  **[Enter the site here](https://v3.kanp9.io.vn)**
+###  **[Enter the site here](https://kanp9.io.vn)**
 <br />
 </div>
 
